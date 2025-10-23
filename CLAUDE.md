@@ -77,6 +77,96 @@ PROGRESS_TRACKER.md            # Progress tracker (6 phases)
 README.md                      # Project overview (for humans)
 ```
 
+### 📚 Code Snippets from Context7
+
+**Folder:** `.snippets/` - **Saved snippets from Context7 for future reference**
+
+**Purpose:** When using MCP Context7 and retrieving extensive documentation (>50% unused immediately), save snippets for later use.
+
+**Structure:**
+```
+.snippets/
+├── README.md                           # Index of all snippets
+├── spring-security-jwt-config.md       # Spring Security 6 JWT setup
+├── spring-boot-file-upload.md          # Multipart file upload patterns
+├── flyway-migrations-postgresql.md     # Flyway best practices
+├── leaflet-marker-clustering.md        # Leaflet.js clustering API
+└── angular-signals-patterns.md         # Angular 18 Signals + BehaviorSubject
+```
+
+**Naming Convention:**
+- Descriptive names (technology-feature-scope.md)
+- Examples: `spring-security-jwt-config.md`, `leaflet-marker-clustering.md`
+
+**When to Save Snippets:**
+- ✅ Context7 retrieval with >50% content unused immediately
+- ✅ Complex API documentation for later phases
+- ✅ Library-specific patterns likely needed multiple times
+
+**Important:**
+- **Snippets ARE committed** (documentation, not secrets)
+- Safe to commit (public documentation from Context7)
+- Backup for VM loss scenarios
+- Add to `.snippets/README.md` index with: phase reference, use case, date
+
+**Workflow:**
+1. Use Context7 to retrieve library docs
+2. Use 10-20% immediately for current task
+3. Save remaining 80-90% to `.snippets/descriptive-name.md`
+4. Update `.snippets/README.md` index
+5. Later: check index, read relevant snippet, implement
+
+---
+
+## 🧹 Context Management
+
+**Monitor token usage** and proactively signal when to compact/clean context.
+
+### When to Signal /compact
+
+**Trigger conditions:**
+- Token usage > 150k (75% of 200k context window)
+- Before starting complex multi-step task (e.g., full JWT auth flow implementation)
+- User asks "gdzie jesteśmy?" or similar status questions
+
+**Signal format:**
+```
+💡 Sugestia: Warto zrobić /compact - zbliżamy się do 150k tokenów
+i zacznę złożone zadanie (JWT authentication flow z wieloma plikami).
+```
+
+### When to Signal /clean
+
+**Trigger conditions:**
+- ✅ Finished complete phase (e.g., Phase 1 complete, starting Phase 2)
+- ✅ Moving to entirely different area (backend → frontend, auth → photos)
+- ✅ All needed info documented in `.ai/` files + PROGRESS_TRACKER Current Status
+- ✅ No active debugging or complex state to maintain
+
+**Signal format:**
+```
+💡 Sugestia: Możesz zrobić /clean - kończymy Phase 1 (Backend Setup & Auth),
+przechodzimy do Phase 2 (Frontend Setup & Auth).
+
+Wszystko potrzebne jest w:
+- PROGRESS_TRACKER.md (Current Status → Task 2.1)
+- .ai/ui-plan.md (Angular architecture)
+- .ai/tech-stack.md (Tailwind 3.4.17, standalone components)
+```
+
+### After /compact or /clean
+
+**First action:**
+1. Read `PROGRESS_TRACKER.md` → check **Current Status** section
+2. Identify: Last Completed, Currently Working On, Next Action
+3. Read relevant `.ai/` file for current phase
+4. Continue from **Next Action** steps
+
+**This ensures:**
+- ✅ Immediate context recovery
+- ✅ No lost progress
+- ✅ Clear next steps
+
 ---
 
 ## 🤖 AI Model Strategy - Claude Sonnet 4.5
