@@ -7,33 +7,28 @@
 
 ## 🔄 Current Status
 
-**Last Updated:** 2025-10-23 23:02
+**Last Updated:** 2025-10-23 23:19
 
-**Phase:** 1. Backend - Setup & Auth (⏳ In Progress)
+**Phase:** 1. Backend - Setup & Auth (✅ Completed)
 
 **Last Completed:**
-- ✅ Task 1.3 - JWT Authentication (2025-10-23 23:02)
-  - Commit: [`260686d`](https://github.com/kojder/photo-map-app/commit/260686d) - feat(auth): implement JWT authentication with unit tests and i18n
-  - ✅ Spring Security configuration with stateless JWT
-  - ✅ JwtTokenProvider (generate, validate, parse tokens)
-  - ✅ CustomUserDetailsService + JwtAuthenticationFilter
-  - ✅ AuthController: `/api/auth/register`, `/api/auth/login`
-  - ✅ Unit tests: AuthService + JwtTokenProvider (13/13 passing, coverage >70%)
-  - ✅ ValidationMessages.properties for i18n
-  - ✅ CLAUDE.md updated with Testing & Quality Standards
-  - ✅ Verified with curl: registration (201) and login (200 + JWT token)
+- ✅ Task 1.4 - Admin User Management API (2025-10-23 23:19)
+  - Commit: [`66a8ad0`](https://github.com/kojder/photo-map-app/commit/66a8ad0) - feat(admin): implement admin user management API with unit tests
+  - ✅ AdminController: GET /api/admin/users, PUT /api/admin/users/{id}/role, DELETE /api/admin/users/{id}
+  - ✅ UserService with admin operations (listAll, changeRole, deleteUser)
+  - ✅ DTOs: UpdateRoleRequest, UserAdminResponse (with totalPhotos)
+  - ✅ PhotoRepository.countByUserId() method
+  - ✅ Unit tests: UserService (6 tests, 19/19 total passing, coverage >70%)
+  - ✅ Self-delete protection (admin cannot delete themselves)
+  - ✅ Verified with curl: all endpoints working with ADMIN JWT token
 
 **Currently Working On:**
-- 🎯 Task 1.4 - User CRUD API
+- 🎯 Phase 1 Complete! Ready for Phase 2 (Frontend) or integration tests
 
 **Next Action:**
-1. Implement UserService with CRUD operations
-2. Create `/api/users` GET (list all - admin only)
-3. Create `/api/users/{id}` GET (single user)
-4. Create `/api/users/{id}` PUT (update user)
-5. Create `/api/users/{id}` DELETE (delete user - admin only)
-6. Write unit tests (coverage >70%)
-7. Test with curl/Postman
+1. Option A: Write integration tests for Phase 1 endpoints (recommended end-of-phase)
+2. Option B: Start Phase 2 - Frontend Setup & Auth (Angular 18)
+3. Option C: Continue with Phase 3 - Backend Photo Handling
 
 **Blocked By:** None
 
@@ -41,11 +36,11 @@
 
 ## 📊 Project Status
 
-**Overall Progress:** 0/6 phases (0%)
+**Overall Progress:** 1/6 phases (17%)
 
 | Phase | Status | Description |
 |------|--------|------|
-| 1. Backend - Setup & Auth | 🔜 | Spring Boot, PostgreSQL (full schema), JWT, User CRUD |
+| 1. Backend - Setup & Auth | ✅ | Spring Boot, PostgreSQL (full schema), JWT, Admin API |
 | 2. Frontend - Setup & Auth | 🔜 | Angular, Login/Register, Guards (auth end-to-end!) |
 | 3. Backend - Photo Handling | 🔜 | Upload, EXIF, thumbnails, Photo API |
 | 4. Frontend - Gallery & Map | 🔜 | Gallery view, Map Leaflet, Rating, Upload form |
@@ -76,7 +71,7 @@
 
 ## 📋 Phase 1: Backend - Setup & Auth
 
-**Time:** ~2-3 hours | **Status:** ⏳ In Progress
+**Time:** ~2-3 hours | **Status:** ✅ Completed
 
 ### Tasks:
 
@@ -102,11 +97,12 @@
   - Unit tests (coverage >70%)
   - Test with curl/Postman
 
-- [ ] **1.4 User CRUD API**
-  - `/api/users` GET (list all - admin only)
-  - `/api/users/{id}` GET (single user)
-  - `/api/users/{id}` PUT (update user)
-  - `/api/users/{id}` DELETE (delete user - admin only)
+- [x] **1.4 Admin User Management API**
+  - `/api/admin/users` GET (list all users with pagination - admin only)
+  - `/api/admin/users/{id}/role` PUT (change user role - admin only)
+  - `/api/admin/users/{id}` DELETE (delete user - admin only)
+  - Unit tests (coverage >70%)
+  - Test with curl (ADMIN JWT token)
 
 ### Acceptance Criteria:
 - ✅ Backend compiles and runs on `localhost:8080`
