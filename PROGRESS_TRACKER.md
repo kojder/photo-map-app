@@ -5,6 +5,33 @@
 
 ---
 
+## 🔄 Current Status
+
+**Last Updated:** 2025-10-23 21:32
+
+**Phase:** 1. Backend - Setup & Auth (⏳ In Progress)
+
+**Last Completed:**
+- ✅ Task 1.1 - Project Setup (2025-10-23 21:32)
+  - Commit: [`63a5dbe`](https://github.com/kojder/photo-map-app/commit/63a5dbe) - feat(backend): initialize Spring Boot 3.5.7 project with core dependencies
+  - ✅ Spring Boot 3.5.7 + Maven
+  - ✅ Dependencies: Web, JPA, Security, PostgreSQL, Flyway, JWT, Lombok
+  - ✅ application.properties configured
+  - ✅ Build verified (./mvnw clean install -DskipTests)
+
+**Currently Working On:**
+- 🎯 Task 1.2 - Database Schema (FULL SCHEMA)
+
+**Next Action:**
+1. Create Flyway migration: `backend/src/main/resources/db/migration/V1__initial_schema.sql`
+2. Define all tables: `users`, `photos`, `ratings` (with indexes, constraints, triggers)
+3. Create JPA entities: `User`, `Photo`, `Rating` (with relationships)
+4. Verify migration with PostgreSQL
+
+**Blocked By:** None
+
+---
+
 ## 📊 Project Status
 
 **Overall Progress:** 0/6 phases (0%)
