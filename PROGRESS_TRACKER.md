@@ -7,26 +7,29 @@
 
 ## 🔄 Current Status
 
-**Last Updated:** 2025-10-23 21:32
+**Last Updated:** 2025-10-23 22:27
 
 **Phase:** 1. Backend - Setup & Auth (⏳ In Progress)
 
 **Last Completed:**
-- ✅ Task 1.1 - Project Setup (2025-10-23 21:32)
-  - Commit: [`63a5dbe`](https://github.com/kojder/photo-map-app/commit/63a5dbe) - feat(backend): initialize Spring Boot 3.5.7 project with core dependencies
-  - ✅ Spring Boot 3.5.7 + Maven
-  - ✅ Dependencies: Web, JPA, Security, PostgreSQL, Flyway, JWT, Lombok
-  - ✅ application.properties configured
-  - ✅ Build verified (./mvnw clean install -DskipTests)
+- ✅ Task 1.2 - Database Schema (2025-10-23 22:27)
+  - Commit: [`67696b4`](https://github.com/kojder/photo-map-app/commit/67696b4) - feat(database): implement full database schema with JPA entities and repositories
+  - ✅ Docker Compose with PostgreSQL 15
+  - ✅ Flyway migration V1__initial_schema.sql (users, photos, ratings)
+  - ✅ JPA entities: User, Photo, Rating (with relationships, indexes, constraints)
+  - ✅ Repositories: UserRepository, PhotoRepository, RatingRepository
+  - ✅ Migration verified - all tables created successfully
 
 **Currently Working On:**
-- 🎯 Task 1.2 - Database Schema (FULL SCHEMA)
+- 🎯 Task 1.3 - JWT Authentication
 
 **Next Action:**
-1. Create Flyway migration: `backend/src/main/resources/db/migration/V1__initial_schema.sql`
-2. Define all tables: `users`, `photos`, `ratings` (with indexes, constraints, triggers)
-3. Create JPA entities: `User`, `Photo`, `Rating` (with relationships)
-4. Verify migration with PostgreSQL
+1. Create Spring Security configuration with JWT
+2. Implement JwtTokenProvider (generate, validate tokens)
+3. Implement UserDetailsService
+4. Create `/api/auth/register` endpoint
+5. Create `/api/auth/login` endpoint
+6. Test authentication flow
 
 **Blocked By:** None
 
@@ -69,16 +72,16 @@
 
 ## 📋 Phase 1: Backend - Setup & Auth
 
-**Time:** ~2-3 hours | **Status:** 🔜 Pending
+**Time:** ~2-3 hours | **Status:** ⏳ In Progress
 
 ### Tasks:
 
-- [ ] **1.1 Project Setup**
+- [x] **1.1 Project Setup**
   - Spring Boot 3 project (Spring Initializr: Web, Data JPA, Security, PostgreSQL)
   - Configure `application.properties` (database, JWT secret)
   - Verify build with `./mvnw clean install`
 
-- [ ] **1.2 Database Schema (FULL SCHEMA)**
+- [x] **1.2 Database Schema (FULL SCHEMA)**
   - **Plan:** `.ai/db-plan.md`
   - Create **ALL tables** in one migration: `users`, `photos`, `ratings`
   - Create `User` entity (id, email, password, roles)
