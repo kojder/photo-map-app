@@ -19,19 +19,19 @@ public class AuthController {
 
     private final AuthService authService;
 
-    public AuthController(AuthService authService) {
+    public AuthController(final AuthService authService) {
         this.authService = authService;
     }
 
     @PostMapping("/register")
-    public ResponseEntity<UserResponse> register(@Valid @RequestBody RegisterRequest request) {
-        UserResponse response = authService.register(request);
+    public ResponseEntity<UserResponse> register(@Valid @RequestBody final RegisterRequest request) {
+        final UserResponse response = authService.register(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
     @PostMapping("/login")
-    public ResponseEntity<LoginResponse> login(@Valid @RequestBody LoginRequest request) {
-        LoginResponse response = authService.login(request);
+    public ResponseEntity<LoginResponse> login(@Valid @RequestBody final LoginRequest request) {
+        final LoginResponse response = authService.login(request);
         return ResponseEntity.ok(response);
     }
 }

@@ -19,12 +19,13 @@ public class UserService {
     private final UserRepository userRepository;
     private final PhotoRepository photoRepository;
 
-    public UserService(UserRepository userRepository, PhotoRepository photoRepository) {
+    public UserService(final UserRepository userRepository, final PhotoRepository photoRepository) {
         this.userRepository = userRepository;
         this.photoRepository = photoRepository;
     }
 
-    public Page<UserAdminResponse> listAllUsers(Pageable pageable) {
+    @Transactional(readOnly = true)
+    public Page<UserAdminResponse> listAllUsers(final Pageable pageable) {
         return userRepository.findAll(pageable)
                 .map(user -> new UserAdminResponse(
                         user.getId(),
@@ -36,12 +37,12 @@ public class UserService {
     }
 
     @Transactional
-    public UserResponse changeUserRole(Long userId, UpdateRoleRequest request) {
-        User user = userRepository.findById(userId)
+    public UserResponse changeUserRole(final Long userId, final UpdateRoleRequest request) {
+        final User user = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
 
         user.setRole(request.role());
-        User savedUser = userRepository.save(user);
+        final User savedUser = userRepository.save(user);
 
         return new UserResponse(
                 savedUser.getId(),
@@ -52,11 +53,11 @@ public class UserService {
     }
 
     @Transactional
-    public void deleteUser(Long userId) {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        String currentUserEmail = authentication.getName();
+    public void deleteUser(final Long userId) {
+        final Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        final String currentUserEmail = authentication.getName();
 
-        User userToDelete = userRepository.findById(userId)
+        final User userToDelete = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
 
         if (userToDelete.getEmail().equals(currentUserEmail)) {

@@ -21,38 +21,38 @@ public class AdminController {
 
     private final UserService userService;
 
-    public AdminController(UserService userService) {
+    public AdminController(final UserService userService) {
         this.userService = userService;
     }
 
     @GetMapping("/users")
     public ResponseEntity<Page<UserAdminResponse>> listAllUsers(
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "20") int size,
-            @RequestParam(defaultValue = "createdAt,desc") String sort) {
+            @RequestParam(defaultValue = "0") final int page,
+            @RequestParam(defaultValue = "20") final int size,
+            @RequestParam(defaultValue = "createdAt,desc") final String sort) {
 
-        String[] sortParams = sort.split(",");
-        Sort.Direction direction = sortParams.length > 1 && sortParams[1].equalsIgnoreCase("asc")
+        final String[] sortParams = sort.split(",");
+        final Sort.Direction direction = sortParams.length > 1 && sortParams[1].equalsIgnoreCase("asc")
                 ? Sort.Direction.ASC
                 : Sort.Direction.DESC;
 
-        Pageable pageable = PageRequest.of(page, size, Sort.by(direction, sortParams[0]));
-        Page<UserAdminResponse> users = userService.listAllUsers(pageable);
+        final Pageable pageable = PageRequest.of(page, size, Sort.by(direction, sortParams[0]));
+        final Page<UserAdminResponse> users = userService.listAllUsers(pageable);
 
         return ResponseEntity.ok(users);
     }
 
     @PutMapping("/users/{id}/role")
     public ResponseEntity<UserResponse> changeUserRole(
-            @PathVariable Long id,
-            @Valid @RequestBody UpdateRoleRequest request) {
+            @PathVariable final Long id,
+            @Valid @RequestBody final UpdateRoleRequest request) {
 
-        UserResponse response = userService.changeUserRole(id, request);
+        final UserResponse response = userService.changeUserRole(id, request);
         return ResponseEntity.ok(response);
     }
 
     @DeleteMapping("/users/{id}")
-    public ResponseEntity<Void> deleteUser(@PathVariable Long id) {
+    public ResponseEntity<Void> deleteUser(@PathVariable final Long id) {
         userService.deleteUser(id);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }

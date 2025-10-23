@@ -13,6 +13,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class AuthService {
@@ -22,25 +23,26 @@ public class AuthService {
     private final JwtTokenProvider jwtTokenProvider;
     private final AuthenticationManager authenticationManager;
 
-    public AuthService(UserRepository userRepository, PasswordEncoder passwordEncoder,
-                       JwtTokenProvider jwtTokenProvider, AuthenticationManager authenticationManager) {
+    public AuthService(final UserRepository userRepository, final PasswordEncoder passwordEncoder,
+                       final JwtTokenProvider jwtTokenProvider, final AuthenticationManager authenticationManager) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtTokenProvider = jwtTokenProvider;
         this.authenticationManager = authenticationManager;
     }
 
-    public UserResponse register(RegisterRequest request) {
+    @Transactional
+    public UserResponse register(final RegisterRequest request) {
         if (userRepository.existsByEmail(request.email())) {
             throw new IllegalArgumentException("Email already exists");
         }
 
-        User user = new User();
+        final User user = new User();
         user.setEmail(request.email());
         user.setPasswordHash(passwordEncoder.encode(request.password()));
         user.setRole(Role.USER);
 
-        User savedUser = userRepository.save(user);
+        final User savedUser = userRepository.save(user);
 
         return new UserResponse(
                 savedUser.getId(),
@@ -50,17 +52,18 @@ public class AuthService {
         );
     }
 
-    public LoginResponse login(LoginRequest request) {
-        Authentication authentication = authenticationManager.authenticate(
+    @Transactional(readOnly = true)
+    public LoginResponse login(final LoginRequest request) {
+        final Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(request.email(), request.password())
         );
 
-        String token = jwtTokenProvider.generateToken(authentication);
+        final String token = jwtTokenProvider.generateToken(authentication);
 
-        User user = userRepository.findByEmail(request.email())
+        final User user = userRepository.findByEmail(request.email())
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
 
-        UserResponse userResponse = new UserResponse(
+        final UserResponse userResponse = new UserResponse(
                 user.getId(),
                 user.getEmail(),
                 user.getRole(),

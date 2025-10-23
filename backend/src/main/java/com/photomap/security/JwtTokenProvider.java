@@ -21,10 +21,10 @@ public class JwtTokenProvider {
     @Value("${jwt.expiration}")
     private long jwtExpirationMs;
 
-    public String generateToken(Authentication authentication) {
-        UserDetails userDetails = (UserDetails) authentication.getPrincipal();
-        Date now = new Date();
-        Date expiryDate = new Date(now.getTime() + jwtExpirationMs);
+    public String generateToken(final Authentication authentication) {
+        final UserDetails userDetails = (UserDetails) authentication.getPrincipal();
+        final Date now = new Date();
+        final Date expiryDate = new Date(now.getTime() + jwtExpirationMs);
 
         return Jwts.builder()
                 .subject(userDetails.getUsername())
@@ -34,9 +34,9 @@ public class JwtTokenProvider {
                 .compact();
     }
 
-    public String generateToken(String email) {
-        Date now = new Date();
-        Date expiryDate = new Date(now.getTime() + jwtExpirationMs);
+    public String generateToken(final String email) {
+        final Date now = new Date();
+        final Date expiryDate = new Date(now.getTime() + jwtExpirationMs);
 
         return Jwts.builder()
                 .subject(email)
@@ -46,8 +46,8 @@ public class JwtTokenProvider {
                 .compact();
     }
 
-    public String getEmailFromToken(String token) {
-        Claims claims = Jwts.parser()
+    public String getEmailFromToken(final String token) {
+        final Claims claims = Jwts.parser()
                 .verifyWith(getSigningKey())
                 .build()
                 .parseSignedClaims(token)
@@ -56,7 +56,7 @@ public class JwtTokenProvider {
         return claims.getSubject();
     }
 
-    public boolean validateToken(String token) {
+    public boolean validateToken(final String token) {
         try {
             Jwts.parser()
                     .verifyWith(getSigningKey())
@@ -69,7 +69,7 @@ public class JwtTokenProvider {
     }
 
     private SecretKey getSigningKey() {
-        byte[] keyBytes = jwtSecret.getBytes(StandardCharsets.UTF_8);
+        final byte[] keyBytes = jwtSecret.getBytes(StandardCharsets.UTF_8);
         return Keys.hmacShaKeyFor(keyBytes);
     }
 }
