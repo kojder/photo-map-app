@@ -7,27 +7,27 @@
 
 ## 🔄 Current Status
 
-**Last Updated:** 2025-10-23 23:40
+**Last Updated:** 2025-10-24
 
-**Phase:** 1. Backend - Setup & Auth (✅ Completed with Integration Tests)
+**Phase:** 2. Frontend - Setup & Auth (⏳ In Progress)
 
 **Last Completed:**
-- ✅ Integration Tests for Phase 1 (2025-10-23 23:40)
-  - Commit: [`2e45811`](https://github.com/kojder/photo-map-app/commit/2e45811) - test(integration): add Phase 1 integration tests for auth and admin endpoints
-  - ✅ AuthIntegrationTest: 10 tests for /api/auth/* endpoints
-  - ✅ AdminIntegrationTest: 14 tests for /api/admin/* endpoints
-  - ✅ GlobalExceptionHandler: proper HTTP error responses (400, 403, 404, 409, 500)
-  - ✅ ErrorResponse DTO: consistent error format
-  - ✅ H2 database for integration testing
-  - ✅ All 43 tests passing (19 unit + 24 integration)
-  - ✅ Full coverage for Phase 1 endpoints
+- ✅ Task 2.1: Angular Project Setup (2025-10-24)
+  - Commit: [`8573b6d`](https://github.com/kojder/photo-map-app/commit/8573b6d) - feat(frontend): setup Angular 18 with Tailwind 3
+  - ✅ Angular 18.2.0 project with standalone components
+  - ✅ Tailwind CSS 3.4.17 configured
+  - ✅ Proxy config for backend API (localhost:8080)
+  - ✅ Routing enabled with app.routes.ts
+  - ✅ TypeScript strict mode
+  - ✅ Dev server verified working (localhost:4200)
 
 **Currently Working On:**
-- 🎯 Phase 1 Complete with Integration Tests! Ready for Phase 2 (Frontend)
+- 🎯 Task 2.2: Auth Service (login/register, JWT storage, HTTP interceptor)
 
 **Next Action:**
-1. Start Phase 2 - Frontend Setup & Auth (Angular 18)
-2. Alternative: Continue with Phase 3 - Backend Photo Handling
+1. Implement AuthService with login/register methods
+2. JWT token storage (localStorage)
+3. HTTP interceptor for adding JWT to requests
 
 **Blocked By:** None
 
@@ -40,7 +40,7 @@
 | Phase | Status | Description |
 |------|--------|------|
 | 1. Backend - Setup & Auth | ✅ | Spring Boot, PostgreSQL (full schema), JWT, Admin API |
-| 2. Frontend - Setup & Auth | 🔜 | Angular, Login/Register, Guards (auth end-to-end!) |
+| 2. Frontend - Setup & Auth | ⏳ | Angular, Login/Register, Guards (auth end-to-end!) |
 | 3. Backend - Photo Handling | 🔜 | Upload, EXIF, thumbnails, Photo API |
 | 4. Frontend - Gallery & Map | 🔜 | Gallery view, Map Leaflet, Rating, Upload form |
 | 5. Admin Panel | 🔜 | Admin API, Admin UI |
@@ -114,13 +114,13 @@
 
 ## 📋 Phase 2: Frontend - Setup & Auth
 
-**Time:** ~2-3 hours | **Status:** 🔜 Pending
+**Time:** ~2-3 hours | **Status:** ⏳ In Progress
 
 **🎯 MILESTONE:** Działający auth flow end-to-end! Po tej fazie użytkownik może rejestrować się i logować przez przeglądarkę.
 
 ### Tasks:
 
-- [ ] **2.1 Angular Project Setup**
+- [x] **2.1 Angular Project Setup**
   - Angular 18 project (standalone components)
   - Tailwind CSS 3 configuration
   - Configure `proxy.conf.json` for backend API
