@@ -13,7 +13,7 @@
 
 **Last Completed:**
 - ✅ Task 2.3: Login/Register Pages (2025-10-24)
-  - Commit: [pending] - feat(frontend): implement Login and Register components with Tailwind styling
+  - Commit: [`fce43d0`](https://github.com/kojder/photo-map-app/commit/fce43d0) - feat(frontend): implement Login and Register components with Tailwind styling
   - ✅ LoginComponent (ReactiveFormsModule, email/password validation)
   - ✅ RegisterComponent (password match validator, auto-login)
   - ✅ Tailwind CSS styling (responsive forms, error messages)
