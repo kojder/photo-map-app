@@ -7,29 +7,33 @@
 
 ## 🔄 Current Status
 
-**Last Updated:** 2025-10-23 22:27
+**Last Updated:** 2025-10-23 23:02
 
 **Phase:** 1. Backend - Setup & Auth (⏳ In Progress)
 
 **Last Completed:**
-- ✅ Task 1.2 - Database Schema (2025-10-23 22:27)
-  - Commit: [`67696b4`](https://github.com/kojder/photo-map-app/commit/67696b4) - feat(database): implement full database schema with JPA entities and repositories
-  - ✅ Docker Compose with PostgreSQL 15
-  - ✅ Flyway migration V1__initial_schema.sql (users, photos, ratings)
-  - ✅ JPA entities: User, Photo, Rating (with relationships, indexes, constraints)
-  - ✅ Repositories: UserRepository, PhotoRepository, RatingRepository
-  - ✅ Migration verified - all tables created successfully
+- ✅ Task 1.3 - JWT Authentication (2025-10-23 23:02)
+  - Commit: [`260686d`](https://github.com/kojder/photo-map-app/commit/260686d) - feat(auth): implement JWT authentication with unit tests and i18n
+  - ✅ Spring Security configuration with stateless JWT
+  - ✅ JwtTokenProvider (generate, validate, parse tokens)
+  - ✅ CustomUserDetailsService + JwtAuthenticationFilter
+  - ✅ AuthController: `/api/auth/register`, `/api/auth/login`
+  - ✅ Unit tests: AuthService + JwtTokenProvider (13/13 passing, coverage >70%)
+  - ✅ ValidationMessages.properties for i18n
+  - ✅ CLAUDE.md updated with Testing & Quality Standards
+  - ✅ Verified with curl: registration (201) and login (200 + JWT token)
 
 **Currently Working On:**
-- 🎯 Task 1.3 - JWT Authentication
+- 🎯 Task 1.4 - User CRUD API
 
 **Next Action:**
-1. Create Spring Security configuration with JWT
-2. Implement JwtTokenProvider (generate, validate tokens)
-3. Implement UserDetailsService
-4. Create `/api/auth/register` endpoint
-5. Create `/api/auth/login` endpoint
-6. Test authentication flow
+1. Implement UserService with CRUD operations
+2. Create `/api/users` GET (list all - admin only)
+3. Create `/api/users/{id}` GET (single user)
+4. Create `/api/users/{id}` PUT (update user)
+5. Create `/api/users/{id}` DELETE (delete user - admin only)
+6. Write unit tests (coverage >70%)
+7. Test with curl/Postman
 
 **Blocked By:** None
 
@@ -90,11 +94,12 @@
   - Flyway migration: `V1__initial_schema.sql` (users, photos, ratings + indexes)
   - **Note:** Full schema now, implement endpoints incrementally
 
-- [ ] **1.3 JWT Authentication**
+- [x] **1.3 JWT Authentication**
   - Spring Security config with JWT
   - UserDetailsService implementation
   - `/api/auth/register` endpoint (POST)
   - `/api/auth/login` endpoint (POST → JWT token)
+  - Unit tests (coverage >70%)
   - Test with curl/Postman
 
 - [ ] **1.4 User CRUD API**
