@@ -475,6 +475,728 @@ export class MapViewComponent implements OnInit {
 
 ---
 
+## TypeScript Best Practices
+
+### Use `const` and `readonly` Wherever Possible
+
+**Benefits:**
+- **Immutability** - prevents accidental reassignment
+- **Thread safety** - immutable objects are safe in async operations
+- **Readability** - clear intent that value won't change
+- **Type narrowing** - TypeScript can infer more precise types
+
+**Where to use:**
+
+1. **Local variables** - default to `const`
+```typescript
+// ✅ GOOD: Use const for variables that won't be reassigned
+export class PhotoGalleryComponent {
+  loadPhotos(): void {
+    const userId = this.authService.currentUserId;
+    const filters = { rating: 5, dateFrom: new Date() };
+
+    this.photoService.getPhotos(userId, filters).subscribe(photos => {
+      const sortedPhotos = photos.sort((a, b) => b.rating - a.rating);
+      this.photos.set(sortedPhotos);
+    });
+  }
+}
+
+// ❌ BAD: Using let when const is sufficient
+loadPhotos(): void {
+  let userId = this.authService.currentUserId; // Should be const!
+  let filters = { rating: 5 }; // Should be const!
+}
+```
+
+2. **Class properties (injected services)** - use `readonly`
+```typescript
+// ✅ GOOD: Readonly services
+export class PhotoGalleryComponent {
+  private readonly photoService = inject(PhotoService);
+  private readonly router = inject(Router);
+  private readonly activatedRoute = inject(ActivatedRoute);
+}
+
+// ❌ BAD: Non-readonly services (allows reassignment)
+export class PhotoGalleryComponent {
+  private photoService = inject(PhotoService); // Can be reassigned!
+}
+```
+
+3. **Signals and state** - readonly for public API
+```typescript
+// ✅ GOOD: Readonly signals (encapsulation)
+export class PhotoService {
+  private readonly photosSignal = signal<Photo[]>([]);
+  readonly photos = this.photosSignal.asReadonly(); // Public readonly
+
+  loadPhotos(): void {
+    this.http.get<Photo[]>('/api/photos').subscribe(photos => {
+      this.photosSignal.set(photos); // Only service can update
+    });
+  }
+}
+```
+
+4. **Interface properties** - readonly for immutable data
+```typescript
+// ✅ GOOD: Immutable Photo interface
+export interface Photo {
+  readonly id: number;
+  readonly fileName: string;
+  readonly thumbnailUrl: string;
+  readonly latitude?: number;
+  readonly longitude?: number;
+  rating: number; // Mutable - can be updated
+}
+```
+
+**When NOT to use `const`/`readonly`:**
+- Loop variables that change (`for (let i = 0; i < n; i++)`)
+- State that needs reassignment (counters, flags)
+- Function parameters (already immutable by default)
+
+### Type Safety
+
+**Always use explicit types for public API:**
+
+```typescript
+// ✅ GOOD: Explicit return types
+export class PhotoService {
+  getPhotos(): Observable<Photo[]> {
+    return this.http.get<Photo[]>('/api/photos');
+  }
+
+  uploadPhoto(file: File): Observable<PhotoUploadResponse> {
+    const formData = new FormData();
+    formData.append('file', file);
+    return this.http.post<PhotoUploadResponse>('/api/photos/upload', formData);
+  }
+}
+
+// ❌ BAD: Implicit return types (unclear API)
+getPhotos() { // What does this return?
+  return this.http.get('/api/photos');
+}
+```
+
+**Use strict null checks:**
+
+```typescript
+// ✅ GOOD: Handle null/undefined explicitly
+export class PhotoDetailComponent {
+  photo: Photo | null = null;
+
+  loadPhoto(id: number): void {
+    this.photoService.getPhoto(id).subscribe(photo => {
+      this.photo = photo;
+    });
+  }
+
+  get photoTitle(): string {
+    return this.photo?.fileName ?? 'Unknown Photo';
+  }
+}
+```
+
+---
+
+## SOLID Principles
+
+### 1. Single Responsibility Principle (SRP)
+
+**Each class/component should have ONE reason to change.**
+
+```typescript
+// ❌ BAD: Component does too many things (violates SRP)
+@Component({
+  selector: 'app-photo-gallery'
+})
+export class PhotoGalleryComponent {
+  photos: Photo[] = [];
+
+  loadPhotos(): void {
+    // HTTP call
+    fetch('/api/photos')
+      .then(res => res.json())
+      .then(data => this.photos = data);
+
+    // Filtering logic
+    this.photos = this.photos.filter(p => p.rating >= 5);
+
+    // Sorting logic
+    this.photos.sort((a, b) => b.takenAt - a.takenAt);
+
+    // Analytics
+    console.log(`Loaded ${this.photos.length} photos`);
+  }
+}
+
+// ✅ GOOD: Separate concerns into services
+// PhotoService - handles HTTP
+@Injectable({ providedIn: 'root' })
+export class PhotoService {
+  private readonly http = inject(HttpClient);
+
+  getPhotos(): Observable<Photo[]> {
+    return this.http.get<Photo[]>('/api/photos');
+  }
+}
+
+// FilterService - handles filtering logic
+@Injectable({ providedIn: 'root' })
+export class FilterService {
+  filterByRating(photos: Photo[], minRating: number): Photo[] {
+    return photos.filter(p => p.rating >= minRating);
+  }
+
+  sortByDate(photos: Photo[]): Photo[] {
+    return [...photos].sort((a, b) =>
+      new Date(b.takenAt).getTime() - new Date(a.takenAt).getTime()
+    );
+  }
+}
+
+// AnalyticsService - handles analytics
+@Injectable({ providedIn: 'root' })
+export class AnalyticsService {
+  trackPhotoLoad(count: number): void {
+    console.log(`Loaded ${count} photos`);
+  }
+}
+
+// Component - orchestrates only
+@Component({
+  selector: 'app-photo-gallery'
+})
+export class PhotoGalleryComponent implements OnInit {
+  private readonly photoService = inject(PhotoService);
+  private readonly filterService = inject(FilterService);
+  private readonly analyticsService = inject(AnalyticsService);
+
+  photos = signal<Photo[]>([]);
+
+  ngOnInit(): void {
+    this.loadPhotos();
+  }
+
+  loadPhotos(): void {
+    this.photoService.getPhotos().subscribe(photos => {
+      const filtered = this.filterService.filterByRating(photos, 5);
+      const sorted = this.filterService.sortByDate(filtered);
+      this.photos.set(sorted);
+      this.analyticsService.trackPhotoLoad(sorted.length);
+    });
+  }
+}
+```
+
+### 2. Open/Closed Principle (OCP)
+
+**Open for extension, closed for modification.**
+
+```typescript
+// ❌ BAD: Must modify service to add new export format
+export class ExportService {
+  export(photos: Photo[], format: string): void {
+    if (format === 'json') {
+      this.exportJson(photos);
+    } else if (format === 'csv') {
+      this.exportCsv(photos);
+    } else if (format === 'xml') {
+      this.exportXml(photos);
+    }
+  }
+}
+
+// ✅ GOOD: Strategy pattern - add formats without modifying service
+export interface ExportStrategy {
+  export(photos: Photo[]): string;
+}
+
+export class JsonExportStrategy implements ExportStrategy {
+  export(photos: Photo[]): string {
+    return JSON.stringify(photos, null, 2);
+  }
+}
+
+export class CsvExportStrategy implements ExportStrategy {
+  export(photos: Photo[]): string {
+    const headers = 'id,fileName,rating\n';
+    const rows = photos.map(p => `${p.id},${p.fileName},${p.rating}`).join('\n');
+    return headers + rows;
+  }
+}
+
+export class XmlExportStrategy implements ExportStrategy {
+  export(photos: Photo[]): string {
+    return `<photos>${photos.map(p => `<photo id="${p.id}">${p.fileName}</photo>`).join('')}</photos>`;
+  }
+}
+
+@Injectable({ providedIn: 'root' })
+export class ExportService {
+  private strategies = new Map<string, ExportStrategy>([
+    ['json', new JsonExportStrategy()],
+    ['csv', new CsvExportStrategy()],
+    ['xml', new XmlExportStrategy()]
+  ]);
+
+  export(photos: Photo[], format: string): string {
+    const strategy = this.strategies.get(format);
+    if (!strategy) {
+      throw new Error(`Unknown format: ${format}`);
+    }
+    return strategy.export(photos);
+  }
+
+  // Add new format without modifying existing code
+  registerStrategy(format: string, strategy: ExportStrategy): void {
+    this.strategies.set(format, strategy);
+  }
+}
+```
+
+### 3. Liskov Substitution Principle (LSP)
+
+**Subtypes must be substitutable for their base types.**
+
+```typescript
+// ❌ BAD: Subclass changes behavior unexpectedly
+export abstract class BasePhotoComponent {
+  abstract loadPhoto(id: number): void;
+}
+
+export class StandardPhotoComponent extends BasePhotoComponent {
+  loadPhoto(id: number): void {
+    this.photoService.getPhoto(id).subscribe(/* ... */);
+  }
+}
+
+export class SecurePhotoComponent extends BasePhotoComponent {
+  loadPhoto(id: number): void {
+    // Surprise! Now throws error if not authenticated (violates LSP)
+    if (!this.authService.isAuthenticated) {
+      throw new Error('Not authenticated');
+    }
+    this.photoService.getPhoto(id).subscribe(/* ... */);
+  }
+}
+
+// ✅ GOOD: Consistent behavior, use composition
+export interface PhotoLoader {
+  loadPhoto(id: number): Observable<Photo>;
+}
+
+@Injectable()
+export class StandardPhotoLoader implements PhotoLoader {
+  private readonly photoService = inject(PhotoService);
+
+  loadPhoto(id: number): Observable<Photo> {
+    return this.photoService.getPhoto(id);
+  }
+}
+
+@Injectable()
+export class SecurePhotoLoader implements PhotoLoader {
+  private readonly photoService = inject(PhotoService);
+  private readonly authService = inject(AuthService);
+
+  loadPhoto(id: number): Observable<Photo> {
+    // Consistent behavior - returns Observable, not throwing
+    return this.authService.isAuthenticated
+      ? this.photoService.getPhoto(id)
+      : throwError(() => new Error('Not authenticated'));
+  }
+}
+
+// Component uses interface (works with any implementation)
+export class PhotoDetailComponent {
+  @Input() loader!: PhotoLoader; // Inject strategy
+
+  loadPhoto(id: number): void {
+    this.loader.loadPhoto(id).subscribe(/* ... */);
+  }
+}
+```
+
+### 4. Interface Segregation Principle (ISP)
+
+**No client should depend on methods it doesn't use.**
+
+```typescript
+// ❌ BAD: Bloated interface forces implementations to provide unused methods
+export interface PhotoManager {
+  getPhotos(): Observable<Photo[]>;
+  uploadPhoto(file: File): Observable<Photo>;
+  deletePhoto(id: number): Observable<void>;
+  updateRating(id: number, rating: number): Observable<void>;
+  sharePhoto(id: number, email: string): Observable<void>;
+  exportPhotos(format: string): Observable<Blob>;
+}
+
+// Gallery component only needs read operations, but must inject full PhotoManager
+export class PhotoGalleryComponent {
+  constructor(private photoManager: PhotoManager) { }
+}
+
+// ✅ GOOD: Split into focused interfaces
+export interface PhotoReader {
+  getPhotos(): Observable<Photo[]>;
+  getPhoto(id: number): Observable<Photo>;
+}
+
+export interface PhotoWriter {
+  uploadPhoto(file: File): Observable<Photo>;
+  deletePhoto(id: number): Observable<void>;
+  updateRating(id: number, rating: number): Observable<void>;
+}
+
+export interface PhotoSharer {
+  sharePhoto(id: number, email: string): Observable<void>;
+}
+
+export interface PhotoExporter {
+  exportPhotos(format: string): Observable<Blob>;
+}
+
+// Components depend only on what they need
+export class PhotoGalleryComponent {
+  private readonly photoReader = inject(PhotoReader);
+  // Only needs read operations
+}
+
+export class PhotoUploadComponent {
+  private readonly photoWriter = inject(PhotoWriter);
+  // Only needs write operations
+}
+
+export class PhotoShareComponent {
+  private readonly photoSharer = inject(PhotoSharer);
+  // Only needs sharing
+}
+
+// Service implements all interfaces
+@Injectable({ providedIn: 'root' })
+export class PhotoService implements PhotoReader, PhotoWriter, PhotoSharer, PhotoExporter {
+  // Implementation...
+}
+```
+
+### 5. Dependency Inversion Principle (DIP)
+
+**Depend on abstractions, not concretions.**
+
+```typescript
+// ❌ BAD: Component depends on concrete HttpClient
+export class PhotoGalleryComponent {
+  private readonly http = inject(HttpClient);
+
+  loadPhotos(): void {
+    this.http.get<Photo[]>('/api/photos').subscribe(photos => {
+      this.photos.set(photos);
+    });
+  }
+}
+
+// ✅ GOOD: Component depends on abstraction
+export abstract class PhotoRepository {
+  abstract getPhotos(): Observable<Photo[]>;
+  abstract getPhoto(id: number): Observable<Photo>;
+}
+
+@Injectable({ providedIn: 'root' })
+export class HttpPhotoRepository implements PhotoRepository {
+  private readonly http = inject(HttpClient);
+
+  getPhotos(): Observable<Photo[]> {
+    return this.http.get<Photo[]>('/api/photos');
+  }
+
+  getPhoto(id: number): Observable<Photo> {
+    return this.http.get<Photo>(`/api/photos/${id}`);
+  }
+}
+
+// Can easily swap implementations
+@Injectable({ providedIn: 'root' })
+export class MockPhotoRepository implements PhotoRepository {
+  getPhotos(): Observable<Photo[]> {
+    return of([
+      { id: 1, fileName: 'mock.jpg', rating: 8 }
+    ]);
+  }
+
+  getPhoto(id: number): Observable<Photo> {
+    return of({ id, fileName: 'mock.jpg', rating: 8 });
+  }
+}
+
+// Component depends on abstraction
+export class PhotoGalleryComponent {
+  private readonly photoRepo = inject(PhotoRepository); // Abstraction!
+
+  loadPhotos(): void {
+    this.photoRepo.getPhotos().subscribe(photos => {
+      this.photos.set(photos);
+    });
+  }
+}
+
+// Provide implementation in app.config.ts
+export const appConfig: ApplicationConfig = {
+  providers: [
+    { provide: PhotoRepository, useClass: HttpPhotoRepository }
+    // Or for testing: { provide: PhotoRepository, useClass: MockPhotoRepository }
+  ]
+};
+```
+
+---
+
+## TypeScript 5 Modern Features
+
+### 1. Type Narrowing with `satisfies`
+
+```typescript
+// ✅ MODERN: satisfies operator (TypeScript 4.9+)
+export const photoConfig = {
+  maxFileSize: 50 * 1024 * 1024,
+  allowedTypes: ['image/jpeg', 'image/png'],
+  thumbnailSize: 150
+} satisfies Record<string, number | string[]>; // Validates type without losing specificity
+
+// Type is inferred precisely: { maxFileSize: number, allowedTypes: string[], ... }
+// NOT Record<string, number | string[]>
+```
+
+### 2. Const Type Parameters
+
+```typescript
+// ✅ MODERN: Const type parameters (TypeScript 5.0+)
+function createAction<const T extends string>(type: T) {
+  return { type } as const;
+}
+
+const action = createAction('LOAD_PHOTOS');
+// Type: { readonly type: "LOAD_PHOTOS" }
+// NOT { readonly type: string }
+```
+
+### 3. Template Literal Types
+
+```typescript
+// ✅ MODERN: Template literal types
+type PhotoEventType = 'photo:uploaded' | 'photo:deleted' | 'photo:rated';
+type PhotoEventHandler<T extends PhotoEventType> =
+  (event: { type: T, data: PhotoEventData }) => void;
+
+// Usage
+const handler: PhotoEventHandler<'photo:uploaded'> = (event) => {
+  // event.type is exactly 'photo:uploaded', not string
+};
+```
+
+### 4. Utility Types
+
+```typescript
+// ✅ Built-in utility types
+export interface Photo {
+  id: number;
+  fileName: string;
+  rating: number;
+  latitude?: number;
+  longitude?: number;
+}
+
+// Partial - all properties optional
+type PhotoUpdate = Partial<Photo>; // { id?: number, fileName?: string, ... }
+
+// Required - all properties required
+type PhotoRequired = Required<Photo>; // { latitude: number, longitude: number }
+
+// Pick - select specific properties
+type PhotoPreview = Pick<Photo, 'id' | 'fileName' | 'rating'>;
+
+// Omit - exclude properties
+type PhotoWithoutId = Omit<Photo, 'id'>;
+
+// Readonly - immutable
+type ImmutablePhoto = Readonly<Photo>;
+```
+
+---
+
+## Angular Signals (Modern Reactive State)
+
+### Signal Basics
+
+**Signals provide fine-grained reactivity (Angular 16+).**
+
+```typescript
+import { signal, computed, effect } from '@angular/core';
+
+export class PhotoGalleryComponent {
+  // Writable signal
+  photos = signal<Photo[]>([]);
+  selectedRating = signal<number>(0);
+
+  // Computed signal (auto-updates when dependencies change)
+  filteredPhotos = computed(() => {
+    const rating = this.selectedRating();
+    return this.photos().filter(p => p.rating >= rating);
+  });
+
+  // Effect (side effects when signals change)
+  constructor() {
+    effect(() => {
+      console.log(`Filtered photos count: ${this.filteredPhotos().length}`);
+    });
+  }
+
+  // Update signals
+  loadPhotos(): void {
+    this.photoService.getPhotos().subscribe(photos => {
+      this.photos.set(photos); // Replace entire value
+    });
+  }
+
+  addPhoto(photo: Photo): void {
+    this.photos.update(current => [...current, photo]); // Update based on current
+  }
+
+  updateRating(newRating: number): void {
+    this.selectedRating.set(newRating);
+    // filteredPhotos computed automatically re-runs
+  }
+}
+```
+
+**Template usage:**
+```html
+<div>
+  <h2>Photos ({{ filteredPhotos().length }})</h2>
+
+  <select [(ngModel)]="selectedRating">
+    <option [value]="0">All</option>
+    <option [value]="5">5+ stars</option>
+  </select>
+
+  <div class="grid">
+    @for (photo of filteredPhotos(); track photo.id) {
+      <app-photo-card [photo]="photo" />
+    }
+  </div>
+</div>
+```
+
+### Signals vs BehaviorSubject
+
+**When to use Signals:**
+- ✅ Component-local state (counters, UI flags, filters)
+- ✅ Computed values (derived state)
+- ✅ Simple synchronous state
+
+**When to use BehaviorSubject:**
+- ✅ Service state (cross-component communication)
+- ✅ Async operations (HTTP, timers)
+- ✅ Complex RxJS pipelines
+
+**Hybrid pattern (best of both):**
+```typescript
+@Injectable({ providedIn: 'root' })
+export class PhotoService {
+  private readonly http = inject(HttpClient);
+
+  // Private BehaviorSubject for async operations
+  private readonly photosSubject = new BehaviorSubject<Photo[]>([]);
+
+  // Public Signal for components
+  readonly photos = toSignal(this.photosSubject.asObservable(), { initialValue: [] });
+
+  loadPhotos(): void {
+    this.http.get<Photo[]>('/api/photos').subscribe(photos => {
+      this.photosSubject.next(photos);
+    });
+  }
+}
+
+// Component usage (no async pipe needed!)
+export class PhotoGalleryComponent {
+  private readonly photoService = inject(PhotoService);
+
+  // Direct access to signal
+  photos = this.photoService.photos;
+}
+```
+
+---
+
+## Design Patterns
+
+### 1. Facade Pattern (Simplify Complex APIs)
+
+```typescript
+// ✅ Facade: PhotoFacadeService simplifies interaction with multiple services
+@Injectable({ providedIn: 'root' })
+export class PhotoFacadeService {
+  private readonly photoService = inject(PhotoService);
+  private readonly filterService = inject(FilterService);
+  private readonly analyticsService = inject(AnalyticsService);
+  private readonly notificationService = inject(NotificationService);
+
+  // Simple API for components
+  loadFilteredPhotos(minRating: number): Observable<Photo[]> {
+    return this.photoService.getPhotos().pipe(
+      map(photos => this.filterService.filterByRating(photos, minRating)),
+      tap(photos => this.analyticsService.trackPhotoLoad(photos.length)),
+      tap(() => this.notificationService.showSuccess('Photos loaded'))
+    );
+  }
+
+  uploadPhotoWithFeedback(file: File): Observable<Photo> {
+    return this.photoService.uploadPhoto(file).pipe(
+      tap(() => this.notificationService.showSuccess('Photo uploaded')),
+      tap(photo => this.analyticsService.trackPhotoUpload(photo.id)),
+      catchError(error => {
+        this.notificationService.showError('Upload failed');
+        return throwError(() => error);
+      })
+    );
+  }
+}
+
+// Component uses simple facade API
+export class PhotoGalleryComponent {
+  private readonly photoFacade = inject(PhotoFacadeService);
+
+  loadPhotos(): void {
+    this.photoFacade.loadFilteredPhotos(5).subscribe(photos => {
+      this.photos.set(photos);
+    });
+  }
+}
+```
+
+### 2. Observer Pattern (RxJS Subjects)
+
+**Already covered in BehaviorSubject section - core Angular pattern!**
+
+### 3. Singleton Pattern (Angular Services)
+
+**All services with `providedIn: 'root'` are singletons by default.**
+
+```typescript
+// ✅ Singleton service
+@Injectable({ providedIn: 'root' })
+export class AuthService {
+  // Single instance shared across entire app
+}
+```
+
+---
+
 ## Testing (Jasmine + Karma)
 
 ### Component Testing

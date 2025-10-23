@@ -91,6 +91,273 @@ public Photo getPhoto(Long photoId, Long userId) {
 
 ---
 
+## Java Code Quality Best Practices
+
+### Use `final` Keyword Wherever Possible
+
+**Benefits:**
+- **Immutability** - prevents accidental reassignment
+- **Thread safety** - immutable objects are inherently thread-safe
+- **Readability** - clear intent that value won't change
+- **JVM optimization** - potential performance improvements
+
+**Where to use `final`:**
+
+1. **Method parameters** - prevents accidental modification
+```java
+// ✅ GOOD: Method parameters are final
+public PhotoDto getPhoto(final Long photoId, final Long userId) {
+    return photoRepository.findByIdAndUserId(photoId, userId)
+        .map(PhotoDto::fromEntity)
+        .orElseThrow(() -> new ResourceNotFoundException("Photo not found"));
+}
+
+// ❌ BAD: Parameters can be reassigned (confusing)
+public PhotoDto getPhoto(Long photoId, Long userId) {
+    userId = userId != null ? userId : 0L; // Modifying parameter - confusing!
+    // ...
+}
+```
+
+2. **Local variables** - when value won't change
+```java
+// ✅ GOOD: Variables that won't change are final
+public String savePhoto(final MultipartFile file) {
+    final String fileName = file.getOriginalFilename();
+    final String uniqueName = generateUniqueName(fileName);
+    final Path targetPath = storageLocation.resolve(uniqueName);
+
+    Files.copy(file.getInputStream(), targetPath);
+    return uniqueName;
+}
+```
+
+3. **Class fields (injected dependencies)** - always final with constructor injection
+```java
+// ✅ GOOD: Injected dependencies are final
+@Service
+@RequiredArgsConstructor
+public class PhotoService {
+    private final PhotoRepository photoRepository;
+    private final UserRepository userRepository;
+    private final ExifService exifService;
+    // ...
+}
+
+// ❌ BAD: Non-final dependencies (allows reassignment)
+@Service
+public class PhotoService {
+    @Autowired
+    private PhotoRepository photoRepository; // Can be reassigned!
+}
+```
+
+4. **Configuration values** - immutable after injection
+```java
+// ✅ GOOD: Configuration values are final
+@Component
+public class StorageConfig {
+    private final String uploadPath;
+    private final long maxFileSize;
+
+    public StorageConfig(
+        @Value("${photo.upload.path}") final String uploadPath,
+        @Value("${photo.upload.max-size}") final long maxFileSize
+    ) {
+        this.uploadPath = uploadPath;
+        this.maxFileSize = maxFileSize;
+    }
+}
+```
+
+**When NOT to use `final`:**
+
+- Loop variables that change (`for (int i = 0; i < n; i++)`)
+- Builder pattern fields
+- Mutable state in entities (JPA requires non-final fields)
+- Variables that genuinely need reassignment
+
+**Example: Complete Service Method with `final`**
+```java
+@Transactional(readOnly = true)
+public List<PhotoDto> findPhotosWithFilters(
+    final Long userId,
+    final Integer minRating,
+    final LocalDateTime fromDate
+) {
+    final List<Photo> photos = photoRepository.findByUserIdOrderByTakenAtDesc(userId);
+
+    return photos.stream()
+        .filter(photo -> matchesRating(photo, minRating))
+        .filter(photo -> matchesDate(photo, fromDate))
+        .map(PhotoDto::fromEntity)
+        .toList();
+}
+
+private boolean matchesRating(final Photo photo, final Integer minRating) {
+    if (minRating == null) {
+        return true;
+    }
+    final Integer photoRating = photo.getRating();
+    return photoRating != null && photoRating >= minRating;
+}
+```
+
+---
+
+## SOLID Principles
+
+### Single Responsibility Principle (SRP)
+
+**Each class should have ONE reason to change.**
+
+```java
+// ❌ BAD: PhotoService does too many things
+@Service
+public class PhotoService {
+    public void uploadPhoto(MultipartFile file, Long userId) {
+        validateFile(file);
+        String path = saveToFileSystem(file);
+        ExifData exif = extractExif(file);
+        String thumbnail = generateThumbnail(path);
+        saveToDatabase(path, thumbnail, exif);
+    }
+}
+
+// ✅ GOOD: Separate services, PhotoService orchestrates
+@Service
+@RequiredArgsConstructor
+public class PhotoService {
+    private final FileStorageService fileStorageService;
+    private final ExifService exifService;
+    private final ThumbnailService thumbnailService;
+    private final PhotoRepository photoRepository;
+
+    public PhotoUploadResponse uploadPhoto(final MultipartFile file, final Long userId) {
+        final String originalPath = fileStorageService.saveFile(file, userId);
+        final ExifData exifData = exifService.extractExif(file);
+        final String thumbnailPath = thumbnailService.generateThumbnail(originalPath);
+
+        final Photo photo = buildPhoto(file, userId, originalPath, thumbnailPath, exifData);
+        return PhotoUploadResponse.fromEntity(photoRepository.save(photo));
+    }
+}
+```
+
+### Dependency Inversion Principle (DIP)
+
+**Depend on abstractions, not concretions.**
+
+```java
+// ❌ BAD: Direct dependency on concrete implementation
+@Service
+public class PhotoService {
+    private final LocalFileStorage storage = new LocalFileStorage("/uploads");
+}
+
+// ✅ GOOD: Depend on abstraction
+public interface FileStorage {
+    String saveFile(MultipartFile file, String directory);
+}
+
+@Service
+@RequiredArgsConstructor
+public class PhotoService {
+    private final FileStorage fileStorage; // Abstraction - easy to swap implementations
+}
+
+@Component
+@ConditionalOnProperty(name = "storage.type", havingValue = "local", matchIfMissing = true)
+public class LocalFileStorage implements FileStorage { /* ... */ }
+
+@Component
+@ConditionalOnProperty(name = "storage.type", havingValue = "s3")
+public class S3FileStorage implements FileStorage { /* ... */ }
+```
+
+---
+
+## Java 17 Modern Features
+
+### Records for DTOs
+
+```java
+// ✅ Use Records for immutable DTOs (Java 16+)
+public record PhotoDto(
+    Long id,
+    String fileName,
+    Double latitude,
+    Double longitude
+) {
+    public static PhotoDto fromEntity(final Photo photo) {
+        return new PhotoDto(photo.getId(), photo.getFileName(),
+            photo.getLatitude(), photo.getLongitude());
+    }
+}
+```
+
+**When to use:** DTOs, value objects, query results
+**When NOT:** JPA Entities (need no-arg constructor, mutable fields)
+
+### Text Blocks for SQL
+
+```java
+// ✅ Text Blocks for readable multi-line queries (Java 15+)
+@Query("""
+    SELECT p FROM Photo p
+    WHERE p.user.id = :userId
+      AND p.latitude IS NOT NULL
+    ORDER BY p.takenAt DESC
+    """)
+List<Photo> findPhotosWithGps(@Param("userId") Long userId);
+```
+
+### Stream.toList()
+
+```java
+// ✅ Use .toList() instead of .collect(Collectors.toList()) (Java 16+)
+public List<PhotoDto> findPhotos(final Long userId) {
+    return photoRepository.findByUserId(userId)
+        .stream()
+        .map(PhotoDto::fromEntity)
+        .toList(); // Concise, returns immutable list
+}
+```
+
+---
+
+## Design Patterns
+
+### Constructor Injection (Best Practice)
+
+```java
+// ✅ ALWAYS use constructor injection with final fields
+@Service
+@RequiredArgsConstructor // Lombok generates constructor
+public class PhotoService {
+    private final PhotoRepository photoRepository;
+    private final ExifService exifService;
+    // Immutable, required, testable, explicit dependencies
+}
+```
+
+### Static Factory Methods
+
+```java
+// ✅ DTOs with fromEntity() conversion
+public record PhotoDto(Long id, String fileName) {
+    public static PhotoDto fromEntity(final Photo photo) {
+        return new PhotoDto(photo.getId(), photo.getFileName());
+    }
+
+    public static List<PhotoDto> fromEntities(final List<Photo> photos) {
+        return photos.stream().map(PhotoDto::fromEntity).toList();
+    }
+}
+```
+
+---
+
 ## REST API Patterns
 
 ### Controller Structure
@@ -672,6 +939,340 @@ class PhotoControllerTest {
     }
 }
 ```
+
+---
+
+## Database Migrations (Flyway)
+
+### Migration Pattern
+
+**Flyway manages database schema changes with versioned SQL files.**
+
+**Directory structure:**
+```
+src/main/resources/db/migration/
+├── V1__create_users_table.sql
+├── V2__create_photos_table.sql
+├── V3__add_rating_column.sql
+└── V4__add_indexes.sql
+```
+
+**Naming convention:** `V{version}__{description}.sql`
+
+**Example: V1__create_users_table.sql**
+```sql
+CREATE TABLE users (
+    id BIGSERIAL PRIMARY KEY,
+    email VARCHAR(255) NOT NULL UNIQUE,
+    password_hash VARCHAR(255) NOT NULL,
+    role VARCHAR(50) NOT NULL DEFAULT 'USER',
+    enabled BOOLEAN NOT NULL DEFAULT TRUE,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX idx_users_email ON users(email);
+```
+
+**Example: V2__create_photos_table.sql**
+```sql
+CREATE TABLE photos (
+    id BIGSERIAL PRIMARY KEY,
+    user_id BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    file_name VARCHAR(255) NOT NULL,
+    file_size BIGINT NOT NULL,
+    original_path VARCHAR(500) NOT NULL,
+    thumbnail_path VARCHAR(500) NOT NULL,
+    latitude DECIMAL(10, 7),
+    longitude DECIMAL(10, 7),
+    rating INTEGER CHECK (rating >= 1 AND rating <= 10),
+    taken_at TIMESTAMP,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX idx_photos_user_id ON photos(user_id);
+CREATE INDEX idx_photos_taken_at ON photos(taken_at);
+CREATE INDEX idx_photos_rating ON photos(rating);
+```
+
+**Configuration (application.properties):**
+```properties
+# Flyway configuration
+spring.flyway.enabled=true
+spring.flyway.baseline-on-migrate=true
+spring.flyway.locations=classpath:db/migration
+```
+
+**Best Practices:**
+- ✅ **Never modify existing migrations** - create new migration instead
+- ✅ **Use sequential versioning** (V1, V2, V3...)
+- ✅ **Test migrations on local database** before committing
+- ✅ **Keep migrations simple** - one logical change per file
+- ✅ **Add indexes in separate migrations** (easier to rollback)
+- ❌ **Never use DROP TABLE** in production migrations (data loss risk)
+
+**Rollback Pattern:**
+```sql
+-- V5__add_description_column.sql
+ALTER TABLE photos ADD COLUMN description TEXT;
+
+-- If rollback needed, create new migration:
+-- V6__remove_description_column.sql
+ALTER TABLE photos DROP COLUMN description;
+```
+
+---
+
+## API Documentation (Springdoc OpenAPI)
+
+### Swagger UI Configuration
+
+**Add dependency (pom.xml):**
+```xml
+<dependency>
+    <groupId>org.springdoc</groupId>
+    <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+    <version>2.3.0</version>
+</dependency>
+```
+
+**Configuration (application.properties):**
+```properties
+# Springdoc OpenAPI
+springdoc.api-docs.path=/api-docs
+springdoc.swagger-ui.path=/swagger-ui.html
+springdoc.swagger-ui.enabled=true
+```
+
+**Document endpoints with annotations:**
+```java
+@RestController
+@RequestMapping("/api/photos")
+@Tag(name = "Photos", description = "Photo management API")
+@RequiredArgsConstructor
+public class PhotoController {
+
+    private final PhotoService photoService;
+
+    @Operation(
+        summary = "Get user photos",
+        description = "Returns all photos for authenticated user, sorted by date taken"
+    )
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "Photos retrieved successfully"),
+        @ApiResponse(responseCode = "401", description = "Not authenticated")
+    })
+    @GetMapping
+    public ResponseEntity<List<PhotoDto>> getUserPhotos(
+        @Parameter(hidden = true) @AuthenticationPrincipal final UserDetails userDetails
+    ) {
+        final Long userId = extractUserId(userDetails);
+        final List<PhotoDto> photos = photoService.findPhotosByUserId(userId);
+        return ResponseEntity.ok(photos);
+    }
+
+    @Operation(summary = "Upload photo")
+    @ApiResponses({
+        @ApiResponse(responseCode = "201", description = "Photo uploaded successfully"),
+        @ApiResponse(responseCode = "400", description = "Invalid file or file too large"),
+        @ApiResponse(responseCode = "401", description = "Not authenticated")
+    })
+    @PostMapping(value = "/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<PhotoUploadResponse> uploadPhoto(
+        @Parameter(description = "Photo file (JPEG or PNG, max 50MB)")
+        @RequestParam("file") final MultipartFile file,
+        @Parameter(hidden = true) @AuthenticationPrincipal final UserDetails userDetails
+    ) {
+        final Long userId = extractUserId(userDetails);
+        final PhotoUploadResponse response = photoService.uploadPhoto(file, userId);
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    }
+}
+```
+
+**Access Swagger UI:**
+- Development: http://localhost:8080/swagger-ui.html
+- Production: https://yourdomain.com/swagger-ui.html
+
+**Benefits:**
+- Automatic API documentation from code
+- Interactive testing (try endpoints directly in browser)
+- Request/response examples
+- Authentication support (add JWT token in Swagger UI)
+
+---
+
+## Health Checks (Spring Boot Actuator)
+
+### Configuration
+
+**Add dependency (pom.xml):**
+```xml
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-actuator</artifactId>
+</dependency>
+```
+
+**Configuration (application.properties):**
+```properties
+# Actuator configuration
+management.endpoints.web.base-path=/actuator
+management.endpoints.web.exposure.include=health,info,metrics
+management.endpoint.health.show-details=when-authorized
+
+# Info endpoint
+info.app.name=Photo Map MVP
+info.app.version=@project.version@
+info.app.description=Photo management with geolocation
+```
+
+**Security configuration for actuator:**
+```java
+@Configuration
+@EnableWebSecurity
+public class SecurityConfig {
+
+    @Bean
+    public SecurityFilterChain securityFilterChain(final HttpSecurity http) throws Exception {
+        http
+            .authorizeHttpRequests(auth -> auth
+                .requestMatchers("/api/auth/**").permitAll()
+                .requestMatchers("/actuator/health").permitAll() // Public health check
+                .requestMatchers("/actuator/**").hasRole("ADMIN") // Admin-only endpoints
+                .anyRequest().authenticated()
+            );
+        return http.build();
+    }
+}
+```
+
+**Available endpoints:**
+
+| Endpoint | Description | Access |
+|----------|-------------|--------|
+| `/actuator/health` | Application health status | Public |
+| `/actuator/info` | Application info (name, version) | Admin |
+| `/actuator/metrics` | Application metrics (memory, CPU) | Admin |
+
+**Health check response:**
+```json
+{
+  "status": "UP",
+  "components": {
+    "db": {
+      "status": "UP",
+      "details": {
+        "database": "PostgreSQL",
+        "validationQuery": "isValid()"
+      }
+    },
+    "diskSpace": {
+      "status": "UP",
+      "details": {
+        "total": 536870912000,
+        "free": 321234567890,
+        "threshold": 10485760
+      }
+    }
+  }
+}
+```
+
+**Use cases:**
+- ✅ Monitoring: Check if app is running (for Nginx, systemd)
+- ✅ Debugging: Check database connectivity
+- ✅ Deployment: Health check before marking service as ready
+
+---
+
+## Validation (Bean Validation)
+
+### Request DTO Validation
+
+**Use Bean Validation annotations on DTOs.**
+
+**Example: UserRegistrationRequest**
+```java
+public record UserRegistrationRequest(
+    @NotBlank(message = "{validation.email.required}")
+    @Email(message = "{validation.email.invalid}")
+    String email,
+
+    @NotBlank(message = "{validation.password.required}")
+    @Size(min = 8, max = 100, message = "{validation.password.size}")
+    String password
+) {}
+```
+
+**Validation messages (src/main/resources/ValidationMessages.properties):**
+```properties
+# English (default)
+validation.email.required=Email is required
+validation.email.invalid=Email must be valid
+validation.password.required=Password is required
+validation.password.size=Password must be between 8 and 100 characters
+validation.rating.range=Rating must be between 1 and 10
+```
+
+**Optional: Polish translations (ValidationMessages_pl.properties):**
+```properties
+validation.email.required=Email jest wymagany
+validation.email.invalid=Email musi być prawidłowy
+validation.password.required=Hasło jest wymagane
+validation.password.size=Hasło musi mieć od 8 do 100 znaków
+validation.rating.range=Ocena musi być od 1 do 10
+```
+
+**Controller usage:**
+```java
+@PostMapping("/register")
+public ResponseEntity<AuthResponse> register(
+    @Valid @RequestBody final UserRegistrationRequest request
+) {
+    // @Valid triggers validation, throws MethodArgumentNotValidException if invalid
+    final AuthResponse response = authService.register(request);
+    return ResponseEntity.status(HttpStatus.CREATED).body(response);
+}
+```
+
+**Global exception handler for validation errors:**
+```java
+@RestControllerAdvice
+public class GlobalExceptionHandler {
+
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<ErrorResponse> handleValidationErrors(
+        final MethodArgumentNotValidException ex
+    ) {
+        final List<String> errors = ex.getBindingResult()
+            .getFieldErrors()
+            .stream()
+            .map(error -> error.getField() + ": " + error.getDefaultMessage())
+            .toList();
+
+        final ErrorResponse response = ErrorResponse.builder()
+            .status(HttpStatus.BAD_REQUEST.value())
+            .message("Validation failed")
+            .errors(errors)
+            .timestamp(LocalDateTime.now())
+            .build();
+
+        return ResponseEntity.badRequest().body(response);
+    }
+}
+```
+
+**Common validation annotations:**
+
+| Annotation | Purpose | Example |
+|------------|---------|---------|
+| `@NotNull` | Field cannot be null | `@NotNull Long userId` |
+| `@NotBlank` | String not null/empty/whitespace | `@NotBlank String email` |
+| `@Email` | Valid email format | `@Email String email` |
+| `@Size` | String/collection size | `@Size(min=8, max=100)` |
+| `@Min` / `@Max` | Numeric range | `@Min(1) @Max(10) Integer rating` |
+| `@Pattern` | Regex pattern | `@Pattern(regexp="[A-Z]+")` |
+| `@Valid` | Nested object validation | `@Valid AddressDto address` |
 
 ---
 
