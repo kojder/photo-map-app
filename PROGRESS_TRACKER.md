@@ -11,9 +11,9 @@
 
 | Phase | Status | Description |
 |------|--------|------|
-| 1. Backend - Setup & Auth | 🔜 | Spring Boot, PostgreSQL, JWT, User CRUD |
-| 2. Backend - Photo Handling | 🔜 | Upload, EXIF, thumbnails, Photo API |
-| 3. Frontend - Setup & Auth | 🔜 | Angular, Login/Register, Guards |
+| 1. Backend - Setup & Auth | 🔜 | Spring Boot, PostgreSQL (full schema), JWT, User CRUD |
+| 2. Frontend - Setup & Auth | 🔜 | Angular, Login/Register, Guards (auth end-to-end!) |
+| 3. Backend - Photo Handling | 🔜 | Upload, EXIF, thumbnails, Photo API |
 | 4. Frontend - Gallery & Map | 🔜 | Gallery view, Map Leaflet, Rating, Upload form |
 | 5. Admin Panel | 🔜 | Admin API, Admin UI |
 | 6. Deployment | 🔜 | Mikrus config, Nginx, SSL, Monitoring |
@@ -51,12 +51,14 @@
   - Configure `application.properties` (database, JWT secret)
   - Verify build with `./mvnw clean install`
 
-- [ ] **1.2 Database Schema**
+- [ ] **1.2 Database Schema (FULL SCHEMA)**
   - **Plan:** `.ai/db-plan.md`
+  - Create **ALL tables** in one migration: `users`, `photos`, `ratings`
   - Create `User` entity (id, email, password, roles)
   - Create `Photo` entity (id, filename, location, exifData, userId)
-  - Create `Rating` entity (id, photoId, userId, rating)
-  - PostgreSQL migrations (Flyway or manual SQL)
+  - Create `Rating` entity (id, photoId, userId, rating 1-5)
+  - Flyway migration: `V1__initial_schema.sql` (users, photos, ratings + indexes)
+  - **Note:** Full schema now, implement endpoints incrementally
 
 - [ ] **1.3 JWT Authentication**
   - Spring Security config with JWT
@@ -80,68 +82,31 @@
 
 ---
 
-## 📋 Phase 2: Backend - Photo Handling
-
-**Time:** ~3-4 hours | **Status:** 🔜 Pending
-
-### Tasks:
-
-- [ ] **2.1 Photo Upload Endpoint**
-  - **Plan:** `.ai/api-plan.md`
-  - `/api/photos/upload` POST (multipart/form-data)
-  - Save file to disk (`/uploads` directory)
-  - Return photo ID and filename
-
-- [ ] **2.2 EXIF Extraction**
-  - Use `metadata-extractor` library
-  - Extract GPS coordinates (latitude, longitude)
-  - Extract date taken, camera model
-  - Store in `Photo` entity `exifData` JSON field
-
-- [ ] **2.3 Thumbnail Generation**
-  - Use `Thumbnailator` library
-  - Generate 3 sizes: small (200x200), medium (800x600), large (1600x1200)
-  - Save thumbnails alongside original photo
-  - Return thumbnail URLs
-
-- [ ] **2.4 Photo API Endpoints**
-  - `/api/photos` GET (list all photos with pagination)
-  - `/api/photos/{id}` GET (single photo details)
-  - `/api/photos/{id}` DELETE (delete photo)
-  - `/api/photos/{id}/rate` POST (rate photo 1-5)
-
-### Acceptance Criteria:
-- ✅ User can upload photo (JPG, PNG)
-- ✅ EXIF GPS coordinates extracted correctly
-- ✅ Thumbnails generated in 3 sizes
-- ✅ Photo metadata saved to database
-- ✅ Photos can be listed, viewed, deleted
-
----
-
-## 📋 Phase 3: Frontend - Setup & Auth
+## 📋 Phase 2: Frontend - Setup & Auth
 
 **Time:** ~2-3 hours | **Status:** 🔜 Pending
 
+**🎯 MILESTONE:** Działający auth flow end-to-end! Po tej fazie użytkownik może rejestrować się i logować przez przeglądarkę.
+
 ### Tasks:
 
-- [ ] **3.1 Angular Project Setup**
+- [ ] **2.1 Angular Project Setup**
   - Angular 18 project (standalone components)
   - Tailwind CSS 3 configuration
   - Configure `proxy.conf.json` for backend API
 
-- [ ] **3.2 Auth Service**
+- [ ] **2.2 Auth Service**
+  - **Plan:** `.ai/ui-plan.md`
   - `AuthService` with login/register methods
   - JWT token storage (localStorage)
   - HTTP interceptor for adding JWT to requests
 
-- [ ] **3.3 Login/Register Pages**
-  - **Plan:** `.ai/ui-plan.md`
+- [ ] **2.3 Login/Register Pages**
   - Login form component (email, password)
   - Register form component (email, password, confirm)
   - Tailwind CSS styling (utility-first)
 
-- [ ] **3.4 Auth Guards**
+- [ ] **2.4 Auth Guards**
   - `authGuard` - protect routes requiring login
   - `adminGuard` - protect admin-only routes
   - Redirect to login if not authenticated
@@ -151,6 +116,50 @@
 - ✅ User can register and login via UI
 - ✅ JWT token stored and sent with API requests
 - ✅ Protected routes redirect to login
+- ✅ **Auth flow działa end-to-end (backend + frontend)!**
+
+---
+
+## 📋 Phase 3: Backend - Photo Handling
+
+**Time:** ~3-4 hours | **Status:** 🔜 Pending
+
+**Note:** Database schema (photos, ratings tables) już istnieje z Phase 1. Teraz implementujemy entities, repositories, services i API.
+
+### Tasks:
+
+- [ ] **3.1 Photo Upload Endpoint**
+  - **Plan:** `.ai/api-plan.md`
+  - `/api/photos/upload` POST (multipart/form-data)
+  - Save file to disk (`/uploads` directory)
+  - Return photo ID and filename
+
+- [ ] **3.2 EXIF Extraction**
+  - Use `metadata-extractor` library
+  - Extract GPS coordinates (latitude, longitude)
+  - Extract date taken, camera model
+  - Store in `Photo` entity EXIF fields
+
+- [ ] **3.3 Thumbnail Generation**
+  - Use `Thumbnailator` library
+  - Generate 3 sizes: small (150x150), medium (400x400), large (800x800) - square thumbnails
+  - Save thumbnails alongside original photo
+  - Return thumbnail URLs
+
+- [ ] **3.4 Photo API Endpoints**
+  - `/api/photos` GET (list all photos with pagination)
+  - `/api/photos/{id}` GET (single photo details)
+  - `/api/photos/{id}` DELETE (delete photo)
+  - `/api/photos/{id}/rating` PUT (rate photo 1-5 stars)
+  - `/api/photos/{id}/rating` DELETE (clear rating)
+
+### Acceptance Criteria:
+- ✅ User can upload photo (JPG, PNG)
+- ✅ EXIF GPS coordinates extracted correctly
+- ✅ Thumbnails generated in 3 sizes
+- ✅ Photo metadata saved to database
+- ✅ Photos can be listed, viewed, deleted
+- ✅ Rating system działa (PUT + DELETE)
 
 ---
 
@@ -161,7 +170,7 @@
 ### Tasks:
 
 - [ ] **4.1 Photo Service**
-  - `PhotoService` with API methods (list, get, upload, delete, rate)
+  - `PhotoService` with API methods (list, get, upload, delete, rate, clearRating)
   - RxJS BehaviorSubject for photo state
   - Error handling
 
@@ -179,8 +188,9 @@
 
 - [ ] **4.4 Photo Rating**
   - Star rating component (1-5 stars)
-  - Click star → call API `/api/photos/{id}/rate`
-  - Display average rating
+  - Click star → call API PUT `/api/photos/{id}/rating`
+  - Clear rating button → call API DELETE `/api/photos/{id}/rating`
+  - Display average rating lub "No rating yet"
 
 - [ ] **4.5 Photo Upload Form**
   - Upload form component (file input, drag-and-drop)
@@ -190,9 +200,11 @@
 ### Acceptance Criteria:
 - ✅ Gallery displays all photos in grid
 - ✅ Map shows photos with GPS coordinates
-- ✅ User can rate photos (stars)
+- ✅ User can rate photos (1-5 stars)
+- ✅ User can clear rating ze zdjęcia
 - ✅ User can upload new photos
 - ✅ Photos filterable by date
+- ✅ **Pełny MVP działa end-to-end!**
 
 ---
 

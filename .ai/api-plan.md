@@ -176,12 +176,12 @@ REST API dla Photo Map MVP zapewnia endpointy do:
 
 **Security:** Requires authentication
 
-**Request Body:** `{ rating }` (Integer 1-10)
+**Request Body:** `{ rating }` (Integer 1-5)
 
 **Response (200 OK):** `{ id, photoId, userId, rating, createdAt }`
 
 **Error Responses:**
-- **400 Bad Request** - Rating out of range (1-10)
+- **400 Bad Request** - Rating out of range (1-5)
 - **401 Unauthorized** - Missing or invalid JWT token
 - **403 Forbidden** - Cannot rate own photo
 - **404 Not Found** - Photo not found
@@ -189,7 +189,25 @@ REST API dla Photo Map MVP zapewnia endpointy do:
 **Business Rules:**
 - Użytkownik NIE może ocenić własnego zdjęcia
 - Jeden użytkownik = jedna ocena na photo (update jeśli już ocenił)
-- Rating: 1-10
+- Rating: 1-5 gwiazdek
+
+---
+
+### DELETE /api/photos/{id}/rating
+
+**Opis:** Usuwa ocenę użytkownika ze zdjęcia (clear rating).
+
+**Security:** Requires authentication
+
+**Response (204 No Content):** Empty body
+
+**Error Responses:**
+- **401 Unauthorized** - Missing or invalid JWT token
+- **404 Not Found** - Photo not found lub user nie ocenił tego zdjęcia
+
+**Business Rules:**
+- Użytkownik może usunąć tylko własną ocenę
+- Jeśli użytkownik nie ocenił zdjęcia - 404 Not Found
 
 ---
 
@@ -272,7 +290,7 @@ REST API dla Photo Map MVP zapewnia endpointy do:
 
 - **RegisterRequest:** `{ email, password }` - Validation: `@NotBlank`, `@Email`, `@Size(min=8)`
 - **LoginRequest:** `{ email, password }` - Validation: `@NotBlank`
-- **RatingRequest:** `{ rating }` - Validation: `@NotNull`, `@Min(1)`, `@Max(10)`
+- **RatingRequest:** `{ rating }` - Validation: `@NotNull`, `@Min(1)`, `@Max(5)`
 - **UpdateRoleRequest:** `{ role }` - Validation: `@NotNull`, enum Role
 
 ### Response DTOs
@@ -325,6 +343,7 @@ REST API dla Photo Map MVP zapewnia endpointy do:
 | GET /api/photos/{id} | USER, ADMIN | User must own the photo |
 | POST /api/photos | USER, ADMIN | - |
 | PUT /api/photos/{id}/rating | USER, ADMIN | Cannot rate own photo |
+| DELETE /api/photos/{id}/rating | USER, ADMIN | Can only delete own rating |
 | DELETE /api/photos/{id} | USER, ADMIN | User must own the photo |
 | GET /api/admin/users | ADMIN | - |
 | PUT /api/admin/users/{id}/role | ADMIN | - |

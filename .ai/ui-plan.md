@@ -237,8 +237,8 @@ Frontend Photo Map MVP to Single Page Application (SPA) zbudowana z Angular 18 (
 - Thumbnail image (w-full h-48 object-cover)
 - Original filename (truncate)
 - Date taken (or uploaded, Angular date pipe: 'short')
-- Average rating (⭐ + number + total count)
-- Actions: Rate button, Delete button
+- Average rating (⭐ 1-5 stars + average + total count)
+- Actions: Rate button, Clear rating button, Delete button
 
 **Template Structure:**
 - Card container (bg-white, shadow-lg, rounded-lg, hover:shadow-xl)
@@ -246,14 +246,15 @@ Frontend Photo Map MVP to Single Page Application (SPA) zbudowana z Angular 18 (
 - Content (p-4):
   - Filename (font-semibold, truncate)
   - Date (text-sm, gray-600)
-  - Rating (flex: ⭐ + average + (total))
-  - Actions (flex justify-between): Rate | Delete buttons
+  - Rating (flex: ⭐ + average + (total) lub "No rating yet")
+  - Actions (flex justify-between): Rate | Clear Rating | Delete buttons
 
 **Methods:**
-- `onRate()` - Open rating dialog or inline rating input
+- `onRate()` - Open rating dialog or inline rating input (1-5 stars)
+- `onClearRating()` - Call `PhotoService.clearRating()` (DELETE endpoint) + confirmation
 - `onDelete()` - Call `PhotoService.deletePhoto()` + confirm dialog (optional)
 
-**Test IDs:** `photo-card`, `photo-card-rate-button`, `photo-card-delete-button`
+**Test IDs:** `photo-card`, `photo-card-rate-button`, `photo-card-clear-rating-button`, `photo-card-delete-button`
 
 ---
 
@@ -404,7 +405,8 @@ Frontend Photo Map MVP to Single Page Application (SPA) zbudowana z Angular 18 (
 - `getAllPhotos(filters): Observable<PageResponse<Photo>>`
 - `getPhotoById(id): Observable<Photo>`
 - `uploadPhoto(file): Observable<Photo>` - multipart/form-data
-- `ratePhoto(photoId, rating): Observable<RatingResponse>`
+- `ratePhoto(photoId, rating): Observable<RatingResponse>` - rating 1-5
+- `clearRating(photoId): Observable<void>` - DELETE /api/photos/{id}/rating
 - `deletePhoto(id): Observable<void>`
 
 ---
@@ -537,7 +539,7 @@ service.observable$.subscribe(data => signal.set(data))
 - `login-email-input`, `login-password-input`, `login-submit-button`
 - `register-email-input`, `register-password-input`, `register-confirm-input`, `register-submit-button`
 - `gallery-upload-button`, `gallery-photo-card`
-- `photo-card-rate-button`, `photo-card-delete-button`
+- `photo-card-rate-button`, `photo-card-clear-rating-button`, `photo-card-delete-button`
 - `upload-dialog`, `upload-dropzone`, `upload-cancel-button`, `upload-submit-button`
 - `filter-bar`, `filter-date-from`, `filter-date-to`, `filter-rating`, `filter-clear-button`
 - `admin-users-table`, `admin-user-role-select`, `admin-delete-user-button`

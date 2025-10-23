@@ -87,16 +87,18 @@ Photo Map MVP to full-stack aplikacja (Angular 18 + Spring Boot 3 + PostgreSQL) 
 ### 2.5. System Ocen
 
 **Wymagania:**
-- Ocena 1-10 (liczby całkowite)
+- Ocena 1-5 (gwiazdki, liczby całkowite)
+- Zdjęcia mogą być bez oceny (rating nullable)
 - Inline rating w galerii
 - Rating w popup'ach mapy
-- Edycja i usuwanie ocen
+- Edycja i usuwanie ocen (możliwość wyczyszczenia ratingu)
 - Sortowanie po ocenie
 
 **User Stories:**
-- **US-RAT-001:** Jako użytkownik mogę ocenić zdjęcie 1-10
+- **US-RAT-001:** Jako użytkownik mogę ocenić zdjęcie 1-5 gwiazdek
 - **US-RAT-002:** Jako użytkownik mogę zmienić ocenę
-- **US-RAT-003:** Jako użytkownik widzę oceny w galerii i na mapie
+- **US-RAT-003:** Jako użytkownik mogę wyczyścić ocenę ze zdjęcia (usunąć rating)
+- **US-RAT-004:** Jako użytkownik widzę oceny w galerii i na mapie
 
 **Business Rules:**
 - Użytkownik NIE może ocenić własnego zdjęcia
@@ -106,7 +108,7 @@ Photo Map MVP to full-stack aplikacja (Angular 18 + Spring Boot 3 + PostgreSQL) 
 ### 2.6. Filtrowanie
 
 **Wymagania:**
-- **Rating Filter:** min-max ocena (np. 8-10 dla ulubionych)
+- **Rating Filter:** min-max ocena (np. 4-5 gwiazdek dla ulubionych)
 - **Date Filter:** zakres dat z precyzją do dnia
 - **Combined Filters:** rating AND date razem
 - Real-time update listy zdjęć

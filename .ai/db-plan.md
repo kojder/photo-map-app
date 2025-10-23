@@ -85,20 +85,22 @@ Database schema dla Photo Map MVP składa się z 3 głównych tabel:
 
 ### 3. ratings
 
-**Opis:** Oceny zdjęć przez użytkowników (1-10 stars).
+**Opis:** Oceny zdjęć przez użytkowników (1-5 gwiazdek).
 
 **Kolumny:**
 - `id` - BIGSERIAL PRIMARY KEY (auto-increment)
 - `photo_id` - BIGINT NOT NULL REFERENCES photos(id) ON DELETE CASCADE (oceniane zdjęcie)
 - `user_id` - BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE (użytkownik oceniający)
-- `rating` - INTEGER NOT NULL (ocena 1-10)
+- `rating` - INTEGER NOT NULL (ocena 1-5 gwiazdek)
 - `created_at` - TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 
 **Constraints:**
 - `photo_id` - NOT NULL, FOREIGN KEY
 - `user_id` - NOT NULL, FOREIGN KEY
-- `rating` - CHECK (rating BETWEEN 1 AND 10)
+- `rating` - CHECK (rating BETWEEN 1 AND 5)
 - `UNIQUE(photo_id, user_id)` - Jeden użytkownik może ocenić dane zdjęcie tylko raz
+
+**Uwaga:** Zdjęcia bez ocen - jeśli zdjęcie nie ma żadnego rekordu w tabeli ratings, znaczy że nie zostało jeszcze ocenione. Użytkownik może usunąć swoją ocenę (DELETE rating record).
 
 **Indexes:**
 - `ratings_photo_id_idx` - INDEX na `photo_id` (query: "oceny dla zdjęcia")
@@ -168,7 +170,7 @@ users (1) ----< (N) photos
 | role CHECK | users | CHECK | role IN ('USER', 'ADMIN') |
 | gps_latitude CHECK | photos | CHECK | BETWEEN -90 AND 90 |
 | gps_longitude CHECK | photos | CHECK | BETWEEN -180 AND 180 |
-| rating CHECK | ratings | CHECK | BETWEEN 1 AND 10 |
+| rating CHECK | ratings | CHECK | BETWEEN 1 AND 5 |
 | (photo_id, user_id) UNIQUE | ratings | UNIQUE | One rating per user per photo |
 
 ---
