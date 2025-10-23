@@ -12,22 +12,22 @@
 **Phase:** 2. Frontend - Setup & Auth (⏳ In Progress)
 
 **Last Completed:**
-- ✅ Task 2.1: Angular Project Setup (2025-10-24)
-  - Commit: [`8573b6d`](https://github.com/kojder/photo-map-app/commit/8573b6d) - feat(frontend): setup Angular 18 with Tailwind 3
-  - ✅ Angular 18.2.0 project with standalone components
-  - ✅ Tailwind CSS 3.4.17 configured
-  - ✅ Proxy config for backend API (localhost:8080)
-  - ✅ Routing enabled with app.routes.ts
-  - ✅ TypeScript strict mode
-  - ✅ Dev server verified working (localhost:4200)
+- ✅ Task 2.2: Auth Service (2025-10-24)
+  - Commit: [`ce6ed10`](https://github.com/kojder/photo-map-app/commit/ce6ed10) - feat(frontend): implement AuthService with JWT interceptor and unit tests
+  - ✅ AuthService (login, register, logout, isLoggedIn, isAdmin)
+  - ✅ JWT token storage in localStorage
+  - ✅ JWT Interceptor (functional, auto-add Bearer token)
+  - ✅ User and Auth models (TypeScript interfaces)
+  - ✅ HttpClient registered with JWT interceptor in app.config.ts
+  - ✅ Unit tests: 22 test cases (100% method coverage, Angular 18 API)
 
 **Currently Working On:**
-- 🎯 Task 2.2: Auth Service (login/register, JWT storage, HTTP interceptor)
+- 🎯 Task 2.3: Login/Register Pages (components, forms, Tailwind styling)
 
 **Next Action:**
-1. Implement AuthService with login/register methods
-2. JWT token storage (localStorage)
-3. HTTP interceptor for adding JWT to requests
+1. Create LoginComponent with ReactiveFormsModule
+2. Create RegisterComponent with password match validator
+3. Add Tailwind CSS styling (utility-first)
 
 **Blocked By:** None
 
