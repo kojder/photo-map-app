@@ -12,22 +12,22 @@
 **Phase:** 2. Frontend - Setup & Auth (⏳ In Progress)
 
 **Last Completed:**
-- ✅ Task 2.2: Auth Service (2025-10-24)
-  - Commit: [`ce6ed10`](https://github.com/kojder/photo-map-app/commit/ce6ed10) - feat(frontend): implement AuthService with JWT interceptor and unit tests
-  - ✅ AuthService (login, register, logout, isLoggedIn, isAdmin)
-  - ✅ JWT token storage in localStorage
-  - ✅ JWT Interceptor (functional, auto-add Bearer token)
-  - ✅ User and Auth models (TypeScript interfaces)
-  - ✅ HttpClient registered with JWT interceptor in app.config.ts
-  - ✅ Unit tests: 22 test cases (100% method coverage, Angular 18 API)
+- ✅ Task 2.3: Login/Register Pages (2025-10-24)
+  - Commit: [pending] - feat(frontend): implement Login and Register components with Tailwind styling
+  - ✅ LoginComponent (ReactiveFormsModule, email/password validation)
+  - ✅ RegisterComponent (password match validator, auto-login)
+  - ✅ Tailwind CSS styling (responsive forms, error messages)
+  - ✅ Routing: /login and /register
+  - ✅ Unit tests: 33 test cases (15 for Login, 18 for Register)
+  - ✅ All 55 tests passing (100% component coverage)
 
 **Currently Working On:**
-- 🎯 Task 2.3: Login/Register Pages (components, forms, Tailwind styling)
+- 🎯 Task 2.4: Auth Guards (authGuard, adminGuard, route protection)
 
 **Next Action:**
-1. Create LoginComponent with ReactiveFormsModule
-2. Create RegisterComponent with password match validator
-3. Add Tailwind CSS styling (utility-first)
+1. Create authGuard (protect routes requiring login)
+2. Create adminGuard (protect admin-only routes)
+3. Update routing with guards
 
 **Blocked By:** None
 
@@ -125,13 +125,13 @@
   - Tailwind CSS 3 configuration
   - Configure `proxy.conf.json` for backend API
 
-- [ ] **2.2 Auth Service**
+- [x] **2.2 Auth Service**
   - **Plan:** `.ai/ui-plan.md`
   - `AuthService` with login/register methods
   - JWT token storage (localStorage)
   - HTTP interceptor for adding JWT to requests
 
-- [ ] **2.3 Login/Register Pages**
+- [x] **2.3 Login/Register Pages**
   - Login form component (email, password)
   - Register form component (email, password, confirm)
   - Tailwind CSS styling (utility-first)
