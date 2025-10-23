@@ -213,10 +213,23 @@ Before starting implementation **ALWAYS**:
 - `docs: update PROGRESS_TRACKER.md after Phase 1`
 
 **CRITICAL RULES:**
-- ✅ **EVERY commit MUST be confirmed by user** - never commit without asking
+- ✅ **BEFORE EVERY commit - show changes for review:**
+  - Run `git status` to show modified files
+  - Run `git diff --cached --stat` to show summary of staged changes
+  - **WAIT for user confirmation** before executing `git commit`
+  - User will review changes and either approve or request corrections
+  - If corrections needed - make changes and repeat review process
 - ✅ **EVERY push MUST be confirmed by user** - NEVER auto-push (critical!)
 - ❌ NO promotional messages ("Generated with Claude Code")
 - ✅ Professional commits focused on changes only
+
+**Commit Review Workflow:**
+1. Make changes to files
+2. Stage changes: `git add <files>`
+3. Show summary: `git status` + `git diff --cached --stat`
+4. **ASK USER: "Czy zacommitować te zmiany?"**
+5. If YES → create commit with Conventional Commits message
+6. If NO → make corrections, return to step 3
 
 ## 🛠️ Tech Stack Guidelines
 
