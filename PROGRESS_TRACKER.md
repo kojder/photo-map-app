@@ -7,28 +7,27 @@
 
 ## 🔄 Current Status
 
-**Last Updated:** 2025-10-23 23:19
+**Last Updated:** 2025-10-23 23:40
 
-**Phase:** 1. Backend - Setup & Auth (✅ Completed)
+**Phase:** 1. Backend - Setup & Auth (✅ Completed with Integration Tests)
 
 **Last Completed:**
-- ✅ Task 1.4 - Admin User Management API (2025-10-23 23:19)
-  - Commit: [`66a8ad0`](https://github.com/kojder/photo-map-app/commit/66a8ad0) - feat(admin): implement admin user management API with unit tests
-  - ✅ AdminController: GET /api/admin/users, PUT /api/admin/users/{id}/role, DELETE /api/admin/users/{id}
-  - ✅ UserService with admin operations (listAll, changeRole, deleteUser)
-  - ✅ DTOs: UpdateRoleRequest, UserAdminResponse (with totalPhotos)
-  - ✅ PhotoRepository.countByUserId() method
-  - ✅ Unit tests: UserService (6 tests, 19/19 total passing, coverage >70%)
-  - ✅ Self-delete protection (admin cannot delete themselves)
-  - ✅ Verified with curl: all endpoints working with ADMIN JWT token
+- ✅ Integration Tests for Phase 1 (2025-10-23 23:40)
+  - Commit: [`2e45811`](https://github.com/kojder/photo-map-app/commit/2e45811) - test(integration): add Phase 1 integration tests for auth and admin endpoints
+  - ✅ AuthIntegrationTest: 10 tests for /api/auth/* endpoints
+  - ✅ AdminIntegrationTest: 14 tests for /api/admin/* endpoints
+  - ✅ GlobalExceptionHandler: proper HTTP error responses (400, 403, 404, 409, 500)
+  - ✅ ErrorResponse DTO: consistent error format
+  - ✅ H2 database for integration testing
+  - ✅ All 43 tests passing (19 unit + 24 integration)
+  - ✅ Full coverage for Phase 1 endpoints
 
 **Currently Working On:**
-- 🎯 Phase 1 Complete! Ready for Phase 2 (Frontend) or integration tests
+- 🎯 Phase 1 Complete with Integration Tests! Ready for Phase 2 (Frontend)
 
 **Next Action:**
-1. Option A: Write integration tests for Phase 1 endpoints (recommended end-of-phase)
-2. Option B: Start Phase 2 - Frontend Setup & Auth (Angular 18)
-3. Option C: Continue with Phase 3 - Backend Photo Handling
+1. Start Phase 2 - Frontend Setup & Auth (Angular 18)
+2. Alternative: Continue with Phase 3 - Backend Photo Handling
 
 **Blocked By:** None
 
