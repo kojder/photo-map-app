@@ -280,6 +280,48 @@ Before starting implementation **ALWAYS**:
 - **Minimize comments** - only for complex business logic
 - **TypeScript strict mode** - all types explicit
 
+### Testing & Quality Standards
+
+**Testing Policy (Approved 2025-10-23):**
+
+#### Unit Tests
+- **When:** PRZED KAŻDYM COMMITEM (TDD-like approach)
+- **What:** All service methods, utility classes, business logic
+- **Coverage:** >70% for new code
+- **Framework:** JUnit 5 + Mockito + Spring Boot Test (backend), Jasmine + Karma (frontend)
+- **Pattern:**
+  1. Implement feature
+  2. Verify with curl/Postman (backend) or manual test (frontend)
+  3. Write unit tests (>70% coverage)
+  4. Run tests: `./mvnw test` (backend) or `ng test` (frontend)
+  5. All tests passing → commit
+
+#### Integration Tests
+- **When:** NA KOŃCU KAŻDEJ FAZY (przed przejściem do następnej fazy)
+- **What:** Full flow tests with Spring Context, database, HTTP endpoints
+- **Framework:** @SpringBootTest + MockMvc (backend), Playwright (frontend E2E)
+- **Example:** End of Phase 1 → test all /api/auth/* endpoints with real DB
+
+#### i18n Policy
+- **Validation messages:** Use message codes from `ValidationMessages.properties`
+  - Format: `{validation.field.rule}` (e.g., `{validation.email.required}`)
+  - File: `src/main/resources/ValidationMessages.properties`
+  - All `@NotBlank`, `@Email`, `@Size` etc. use message codes
+  - Languages: English (required), Polish (optional)
+- **API error messages:** Hardcoded OK for MVP
+  - ErrorResponse messages can be hardcoded
+  - Refactoring i18n post-MVP
+
+#### Commit Checklist (Updated)
+```
+- [ ] Code implementation ready
+- [ ] Verification passing (curl/Postman or manual test)
+- [ ] Unit tests written (coverage >70%)
+- [ ] All tests passing (./mvnw test or ng test)
+- [ ] Code review (git diff --cached)
+- [ ] Commit message (Conventional Commits)
+```
+
 ### Git Workflow
 
 **Commit Strategy:**
