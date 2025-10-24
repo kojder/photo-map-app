@@ -118,31 +118,46 @@ REST API dla Photo Map MVP zapewnia endpointy do:
 
 ### POST /api/photos
 
-**Opis:** Upload zdjęcia z automatyczną ekstrakcją EXIF i generowaniem thumbnail.
+**Opis:** Upload zdjęcia z asynchronicznym przetwarzaniem (Spring Integration).
 
 **Security:** Requires authentication
 
 **Content-Type:** `multipart/form-data`
 
-**Request Body:** `file` - Photo file (JPEG, PNG, HEIC/HEIF)
+**Request Body:** `file` - Photo file (JPEG, PNG)
 
-**Response (201 Created):** Photo details (id, filename, EXIF, GPS, etc.)
+**Response (202 Accepted):**
+```json
+{
+  "message": "Photo queued for processing",
+  "filename": "uuid.jpg",
+  "status": "processing"
+}
+```
 
 **Processing Steps:**
-1. Validate file (type: JPEG/PNG/HEIC, size: max 10MB)
-2. Extract EXIF metadata (GPS, camera, date)
-3. Generate thumbnail (400x300px)
-4. Save to filesystem with UUID filename
-5. Save metadata to database
+1. Validate file (type: JPEG/PNG, size: max 10MB)
+2. Save to `input/` directory with UUID filename
+3. Return 202 Accepted (processing starts asynchronously)
+4. **Background processing (Spring Integration):**
+   - Poller detects file in `input/` (10s interval)
+   - Extract EXIF metadata (GPS, camera, date)
+   - Generate 3 thumbnails (150px, 400px, 800px)
+   - Move original to `original/`, thumbnails to `small/`, `medium/`, `large/`
+   - Save metadata to database (user_id = admin)
+   - On error: move to `failed/` + error log
 
 **Error Responses:**
 - **400 Bad Request** - Invalid file format, file too large (max 10MB)
 - **401 Unauthorized** - Missing or invalid JWT token
-- **500 Internal Server Error** - EXIF extraction failed, thumbnail generation failed
 
 **Validation:**
 - `file` - NOT NULL, max 10MB
-- Allowed MIME: `image/jpeg`, `image/png`, `image/heic`, `image/heif`
+- Allowed MIME: `image/jpeg`, `image/png`
+
+**Batch Upload Alternative:**
+- Users can upload multiple photos directly to `input/` via scp/ftp
+- Spring Integration will process them automatically
 
 ---
 

@@ -1,5 +1,6 @@
 import { Component, OnInit, AfterViewInit, OnDestroy, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { HttpClient } from '@angular/common/http';
 import * as L from 'leaflet';
 import 'leaflet.markercluster';
 import { Photo } from '../../models/photo.model';
@@ -17,6 +18,7 @@ export class MapComponent implements OnInit, AfterViewInit, OnDestroy {
   private map?: L.Map;
   private markerClusterGroup?: L.MarkerClusterGroup;
   private resizeObserver?: ResizeObserver;
+  private thumbnailUrls = new Map<number, string>();
 
   photos = signal<Photo[]>([]);
   loading = signal(false);
@@ -24,12 +26,16 @@ export class MapComponent implements OnInit, AfterViewInit, OnDestroy {
 
   constructor(
     private photoService: PhotoService,
-    private filterService: FilterService
+    private filterService: FilterService,
+    private http: HttpClient
   ) {
     this.fixLeafletIconPaths();
   }
 
   ngOnDestroy(): void {
+    this.thumbnailUrls.forEach(url => URL.revokeObjectURL(url));
+    this.thumbnailUrls.clear();
+
     if (this.resizeObserver) {
       this.resizeObserver.disconnect();
     }
@@ -39,14 +45,18 @@ export class MapComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   private fixLeafletIconPaths(): void {
-    const iconRetinaUrl = '/marker-icon-2x.png';
-    const iconUrl = '/marker-icon.png';
-    const shadowUrl = '/marker-shadow.png';
+    const iconRetinaUrl = 'marker-icon-2x.png';
+    const iconUrl = 'marker-icon.png';
+    const shadowUrl = 'marker-shadow.png';
 
     L.Icon.Default.mergeOptions({
       iconRetinaUrl,
       iconUrl,
-      shadowUrl
+      shadowUrl,
+      iconSize: [25, 41],
+      iconAnchor: [12, 41],
+      popupAnchor: [1, -34],
+      shadowSize: [41, 41]
     });
   }
 
@@ -71,16 +81,60 @@ export class MapComponent implements OnInit, AfterViewInit, OnDestroy {
     this.photoService.getAllPhotos(filters).subscribe({
       next: (response) => {
         this.photos.set(response.content);
-        this.loading.set(false);
-        if (this.map) {
-          this.updateMarkers();
-        }
+        this.loadThumbnails();
       },
       error: (error) => {
         console.error('Error loading photos:', error);
         this.errorMessage.set('Failed to load photos. Please try again.');
         this.loading.set(false);
       }
+    });
+  }
+
+  private loadThumbnails(): void {
+    this.thumbnailUrls.forEach(url => URL.revokeObjectURL(url));
+    this.thumbnailUrls.clear();
+
+    const photos = this.photos();
+    if (photos.length === 0) {
+      this.loading.set(false);
+      if (this.map) {
+        this.updateMarkers();
+      }
+      return;
+    }
+
+    let loadedCount = 0;
+    const totalCount = photos.length;
+
+    photos.forEach(photo => {
+      this.http.get(`/api/photos/${photo.id}/thumbnail`, {
+        responseType: 'blob'
+      }).subscribe({
+        next: (blob) => {
+          const objectUrl = URL.createObjectURL(blob);
+          this.thumbnailUrls.set(photo.id, objectUrl);
+          loadedCount++;
+
+          if (loadedCount === totalCount) {
+            this.loading.set(false);
+            if (this.map) {
+              this.updateMarkers();
+            }
+          }
+        },
+        error: (error) => {
+          console.error(`Error loading thumbnail for photo ${photo.id}:`, error);
+          loadedCount++;
+
+          if (loadedCount === totalCount) {
+            this.loading.set(false);
+            if (this.map) {
+              this.updateMarkers();
+            }
+          }
+        }
+      });
     });
   }
 
@@ -131,14 +185,14 @@ export class MapComponent implements OnInit, AfterViewInit, OnDestroy {
     photosWithGps.forEach(photo => {
       const marker = L.marker([photo.gpsLatitude!, photo.gpsLongitude!]);
 
-      const thumbnailUrl = `/api/photos/${photo.id}/thumbnail`;
+      const thumbnailUrl = this.thumbnailUrls.get(photo.id) || '';
       const ratingDisplay = photo.averageRating
         ? `⭐ ${photo.averageRating.toFixed(1)} (${photo.totalRatings})`
         : 'No rating yet';
 
       const popupContent = `
         <div style="text-align: center; min-width: 150px;">
-          <img src="${thumbnailUrl}" alt="${photo.originalFilename}" style="width: 128px; height: 96px; object-fit: cover; border-radius: 4px;" />
+          ${thumbnailUrl ? `<img src="${thumbnailUrl}" alt="${photo.originalFilename}" style="width: 128px; height: 96px; object-fit: cover; border-radius: 4px;" />` : '<div style="width: 128px; height: 96px; background: #e5e7eb; border-radius: 4px;"></div>'}
           <div style="margin-top: 8px; font-weight: 600;">${photo.originalFilename}</div>
           <div style="margin-top: 4px; color: #666;">${ratingDisplay}</div>
           <a href="/gallery" style="display: inline-block; margin-top: 8px; color: #3b82f6; text-decoration: none;">View in Gallery</a>

@@ -42,18 +42,23 @@ Photo Map MVP to full-stack aplikacja (Angular 18 + Spring Boot 3 + PostgreSQL) 
 ### 2.2. Upload Zdjęć
 
 **Wymagania:**
-- Upload pojedynczych plików (JPEG, PNG)
+- Upload pojedynczych plików (JPEG, PNG) przez interfejs web
+- **Batch upload** - możliwość wrzucenia wielu zdjęć bezpośrednio do folderu `input/` (scp/ftp)
+- Asynchroniczne przetwarzanie - upload i przetwarzanie oddzielone
 - Automatyczna ekstrakcja EXIF (GPS, data, rozmiar)
-- Automatyczne generowanie miniatur (400x300px)
+- Automatyczne generowanie miniatur (3 rozmiary: 150px, 400px, 800px)
 - Walidacja formatu i rozmiaru (max 10MB)
-- Przechowywanie na serwerze w strukturze folderów
+- Struktura folderów: `input/`, `original/`, `small/`, `medium/`, `large/`, `failed/`
+- Error handling - błędne zdjęcia w `failed/` + error log
 
 > **Note:** HEIC/HEIF support excluded from MVP scope (see tech-stack.md for rationale)
 
 **User Stories:**
-- **US-UPLOAD-001:** Jako użytkownik mogę uploadować zdjęcia (JPEG, PNG)
-- **US-UPLOAD-002:** System automatycznie ekstraktuje dane GPS i datę
-- **US-UPLOAD-003:** System generuje miniatury dla wydajności
+- **US-UPLOAD-001:** Jako użytkownik mogę uploadować zdjęcia przez web (202 Accepted - kolejkowane)
+- **US-UPLOAD-002:** Jako użytkownik mogę wrzucić wiele zdjęć bezpośrednio do `input/` (batch)
+- **US-UPLOAD-003:** System automatycznie ekstraktuje dane GPS i datę w tle
+- **US-UPLOAD-004:** System generuje 3 rozmiary miniatur (150px, 400px, 800px)
+- **US-UPLOAD-005:** System przenosi błędne zdjęcia do `failed/` z opisem błędu
 
 ### 2.3. Galeria Zdjęć
 

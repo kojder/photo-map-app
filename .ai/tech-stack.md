@@ -83,7 +83,7 @@ Stack for MVP:
 ### Spring Boot 3.2.11 (Java 17 LTS)
 - **Embedded Tomcat** - JAR deployment
 - **Auto-configuration** - minimal setup
-- **Modules:** Spring Data JPA, Spring Security, Spring Boot Actuator
+- **Modules:** Spring Data JPA, Spring Security, Spring Boot Actuator, Spring Integration
 
 ### PostgreSQL 15
 - **Schema:**
@@ -127,6 +127,31 @@ Stack for MVP:
   - Large: 800x800px (detailed view)
 - **Quality:** preserve image quality
 - **Formats:** JPEG, PNG
+
+### Spring Integration File
+
+#### Asynchronous Photo Processing
+- **File Inbound Channel Adapter** - monitors `input/` directory
+- **Scheduled Poller** - checks for new files every 10 seconds (configurable)
+- **Service Activator** - triggers PhotoProcessingService for each file
+- **Error Channel** - handles processing failures, moves files to `failed/`
+
+#### Folder Structure
+```
+uploads/
+├── input/      # Drop zone for new photos (web upload or scp/ftp)
+├── original/   # Processed originals
+├── small/      # 150px thumbnails
+├── medium/     # 400px thumbnails
+├── large/      # 800px thumbnails
+└── failed/     # Failed processing + error logs
+```
+
+#### Benefits
+- **Decoupled upload & processing** - fast web response (202 Accepted)
+- **Batch upload support** - easy scp/ftp for large photo collections
+- **Error resilience** - one failed photo doesn't block others
+- **Scalability** - processing can be tuned independently
 
 #### HEIC/HEIF Support
 

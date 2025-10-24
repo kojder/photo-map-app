@@ -108,9 +108,15 @@ nginx-error.log
 # Photo uploads (don't commit user uploads)
 /storage/
 /uploads/
+backend/uploads/
 
 # Thumbnails
 /thumbnails/
+
+# Test photos (don't commit test images)
+*.jpg
+*.jpeg
+test_photos/
 
 # ============================================
 # LOGS

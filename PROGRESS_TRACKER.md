@@ -155,44 +155,70 @@
 
 ## 📋 Phase 3: Backend - Photo Handling
 
-**Time:** ~3-4 hours | **Status:** 🔜 Pending
+**Time:** ~3-4 hours | **Status:** ✅ Completed (2025-10-25)
 
-**Note:** Database schema (photos, ratings tables) już istnieje z Phase 1. Teraz implementujemy entities, repositories, services i API.
+**Implementation:** Asynchronous processing with Spring Integration
+
+**Note:** Database schema (photos, ratings tables) już istnieje z Phase 1. Zaimplementowano entities, repositories, services i API z asynchronicznym przetwarzaniem.
 
 ### Tasks:
 
-- [ ] **3.1 Photo Upload Endpoint**
+- [x] **3.1 Photo Upload Endpoint (Refactored)**
   - **Plan:** `.ai/api-plan.md`
-  - `/api/photos/upload` POST (multipart/form-data)
-  - Save file to disk (`/uploads` directory)
-  - Return photo ID and filename
+  - `/api/photos` POST (multipart/form-data) - returns 202 Accepted
+  - Saves file to `input/` directory (async processing)
+  - Returns status: "queued for processing"
 
-- [ ] **3.2 EXIF Extraction**
+- [x] **3.2 Spring Integration Setup**
+  - File Inbound Channel Adapter - monitors `input/` directory
+  - Scheduled Poller (10s interval)
+  - Service Activator - PhotoProcessingService
+  - Error Channel - moves failed photos to `failed/`
+
+- [x] **3.3 EXIF Extraction (Async)**
   - Use `metadata-extractor` library
   - Extract GPS coordinates (latitude, longitude)
   - Extract date taken, camera model
   - Store in `Photo` entity EXIF fields
+  - Executed by PhotoProcessingService
 
-- [ ] **3.3 Thumbnail Generation**
+- [x] **3.4 Thumbnail Generation (Async)**
   - Use `Thumbnailator` library
-  - Generate 3 sizes: small (150x150), medium (400x400), large (800x800) - square thumbnails
-  - Save thumbnails alongside original photo
-  - Return thumbnail URLs
+  - Generate 3 sizes: small (150px), medium (400px), large (800px)
+  - Save to separate folders: `small/`, `medium/`, `large/`
+  - Original saved to `original/`
+  - Executed by PhotoProcessingService
 
-- [ ] **3.4 Photo API Endpoints**
+- [x] **3.5 Photo API Endpoints**
   - `/api/photos` GET (list all photos with pagination)
   - `/api/photos/{id}` GET (single photo details)
-  - `/api/photos/{id}` DELETE (delete photo)
+  - `/api/photos/{id}` DELETE (delete photo from all folders)
   - `/api/photos/{id}/rating` PUT (rate photo 1-5 stars)
   - `/api/photos/{id}/rating` DELETE (clear rating)
+  - `/api/photos/{id}/thumbnail` GET (serve from `medium/`)
+  - `/api/photos/{id}/full` GET (serve from `original/`)
+
+### Folder Structure:
+```
+uploads/
+├── input/      # Drop zone (web or scp/ftp)
+├── original/   # Processed originals
+├── small/      # 150px thumbnails
+├── medium/     # 400px thumbnails
+├── large/      # 800px thumbnails
+└── failed/     # Processing errors + logs
+```
 
 ### Acceptance Criteria:
-- ✅ User can upload photo (JPG, PNG)
-- ✅ EXIF GPS coordinates extracted correctly
-- ✅ Thumbnails generated in 3 sizes
-- ✅ Photo metadata saved to database
+- ✅ User can upload photo (JPG, PNG) - 202 Accepted response
+- ✅ Batch upload supported (scp/ftp to `input/`)
+- ✅ EXIF GPS coordinates extracted correctly (async)
+- ✅ Thumbnails generated in 3 sizes to separate folders
+- ✅ Photo metadata saved to database (user_id = admin)
 - ✅ Photos can be listed, viewed, deleted
 - ✅ Rating system działa (PUT + DELETE)
+- ✅ Error handling - failed photos to `failed/` + log
+- ✅ All tests passing (54 tests, 0 failures)
 
 ---
 

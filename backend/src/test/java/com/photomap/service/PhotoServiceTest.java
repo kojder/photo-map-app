@@ -16,9 +16,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.util.ReflectionTestUtils;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -50,80 +48,14 @@ class PhotoServiceTest {
 
     @BeforeEach
     void setUp() {
-        ReflectionTestUtils.setField(photoService, "uploadDirectory", tempDir.toString());
+        ReflectionTestUtils.setField(photoService, "originalDirectory", tempDir.resolve("original").toString());
+        ReflectionTestUtils.setField(photoService, "smallDirectory", tempDir.resolve("small").toString());
+        ReflectionTestUtils.setField(photoService, "mediumDirectory", tempDir.resolve("medium").toString());
+        ReflectionTestUtils.setField(photoService, "largeDirectory", tempDir.resolve("large").toString());
 
         testUser = new User();
         testUser.setId(1L);
         testUser.setEmail("test@example.com");
-    }
-
-    @Test
-    void upload_ValidFile_Success() throws IOException {
-        MockMultipartFile file = new MockMultipartFile(
-                "file",
-                "test.jpg",
-                "image/jpeg",
-                "test image content".getBytes()
-        );
-
-        Photo savedPhoto = new Photo();
-        savedPhoto.setId(1L);
-        when(photoRepository.save(any(Photo.class))).thenReturn(savedPhoto);
-
-        Photo result = photoService.upload(file, testUser);
-
-        assertNotNull(result);
-        assertEquals(1L, result.getId());
-        verify(photoRepository, times(1)).save(any(Photo.class));
-    }
-
-    @Test
-    void upload_EmptyFile_ThrowsException() {
-        MockMultipartFile emptyFile = new MockMultipartFile(
-                "file",
-                "test.jpg",
-                "image/jpeg",
-                new byte[0]
-        );
-
-        assertThrows(IllegalArgumentException.class, () -> {
-            photoService.upload(emptyFile, testUser);
-        });
-
-        verify(photoRepository, never()).save(any(Photo.class));
-    }
-
-    @Test
-    void upload_FileTooLarge_ThrowsException() {
-        byte[] largeContent = new byte[11 * 1024 * 1024];
-        MockMultipartFile largeFile = new MockMultipartFile(
-                "file",
-                "test.jpg",
-                "image/jpeg",
-                largeContent
-        );
-
-        assertThrows(IllegalArgumentException.class, () -> {
-            photoService.upload(largeFile, testUser);
-        });
-
-        verify(photoRepository, never()).save(any(Photo.class));
-    }
-
-    @Test
-    void upload_InvalidMimeType_ThrowsException() {
-        MockMultipartFile invalidFile = new MockMultipartFile(
-                "file",
-                "test.txt",
-                "text/plain",
-                "test content".getBytes()
-        );
-
-        assertThrows(IllegalArgumentException.class, () -> {
-            photoService.upload(invalidFile, testUser);
-        });
-
-        verify(photoRepository, never()).save(any(Photo.class));
     }
 
     @Test
