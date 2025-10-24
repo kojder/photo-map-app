@@ -6,6 +6,7 @@ import com.photomap.dto.RatingResponse;
 import com.photomap.model.Photo;
 import com.photomap.model.Rating;
 import com.photomap.model.User;
+import com.photomap.repository.UserRepository;
 import com.photomap.service.PhotoService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -36,6 +37,7 @@ import java.nio.file.Paths;
 public class PhotoController {
 
     private final PhotoService photoService;
+    private final UserRepository userRepository;
 
     @Value("${photo.upload.directory}")
     private String uploadDirectory;
@@ -45,7 +47,7 @@ public class PhotoController {
             @RequestParam("file") MultipartFile file,
             Authentication authentication) throws IOException {
 
-        User currentUser = (User) authentication.getPrincipal();
+        User currentUser = getCurrentUser(authentication);
         Photo photo = photoService.upload(file, currentUser);
 
         return ResponseEntity.status(HttpStatus.CREATED)
@@ -57,7 +59,7 @@ public class PhotoController {
             @PageableDefault(size = 20, sort = "uploadedAt", direction = Sort.Direction.DESC) Pageable pageable,
             Authentication authentication) {
 
-        User currentUser = (User) authentication.getPrincipal();
+        User currentUser = getCurrentUser(authentication);
         Page<Photo> photos = photoService.getPhotos(currentUser.getId(), pageable);
 
         Page<PhotoResponse> response = photos.map(photo -> mapToPhotoResponse(photo, currentUser.getId()));
@@ -69,7 +71,7 @@ public class PhotoController {
             @PathVariable Long id,
             Authentication authentication) {
 
-        User currentUser = (User) authentication.getPrincipal();
+        User currentUser = getCurrentUser(authentication);
         Photo photo = photoService.getPhotoById(id, currentUser.getId())
                 .orElseThrow(() -> new IllegalArgumentException("Photo not found or access denied"));
 
@@ -78,7 +80,7 @@ public class PhotoController {
 
     @GetMapping("/{id}/thumbnail")
     public ResponseEntity<Resource> getThumbnail(@PathVariable Long id, Authentication authentication) throws IOException {
-        User currentUser = (User) authentication.getPrincipal();
+        User currentUser = getCurrentUser(authentication);
         Photo photo = photoService.getPhotoById(id, currentUser.getId())
                 .orElseThrow(() -> new IllegalArgumentException("Photo not found or access denied"));
 
@@ -106,7 +108,7 @@ public class PhotoController {
 
     @GetMapping("/{id}/full")
     public ResponseEntity<Resource> getFullImage(@PathVariable Long id, Authentication authentication) throws IOException {
-        User currentUser = (User) authentication.getPrincipal();
+        User currentUser = getCurrentUser(authentication);
         Photo photo = photoService.getPhotoById(id, currentUser.getId())
                 .orElseThrow(() -> new IllegalArgumentException("Photo not found or access denied"));
 
@@ -128,7 +130,7 @@ public class PhotoController {
             @Valid @RequestBody RatingRequest request,
             Authentication authentication) {
 
-        User currentUser = (User) authentication.getPrincipal();
+        User currentUser = getCurrentUser(authentication);
         Rating rating = photoService.ratePhoto(id, currentUser.getId(), request.rating());
 
         return ResponseEntity.ok(mapToRatingResponse(rating));
@@ -139,7 +141,7 @@ public class PhotoController {
             @PathVariable Long id,
             Authentication authentication) {
 
-        User currentUser = (User) authentication.getPrincipal();
+        User currentUser = getCurrentUser(authentication);
         photoService.clearRating(id, currentUser.getId());
 
         return ResponseEntity.noContent().build();
@@ -150,10 +152,16 @@ public class PhotoController {
             @PathVariable Long id,
             Authentication authentication) throws IOException {
 
-        User currentUser = (User) authentication.getPrincipal();
+        User currentUser = getCurrentUser(authentication);
         photoService.deletePhoto(id, currentUser.getId());
 
         return ResponseEntity.noContent().build();
+    }
+
+    private User getCurrentUser(Authentication authentication) {
+        String email = authentication.getName();
+        return userRepository.findByEmail(email)
+                .orElseThrow(() -> new IllegalArgumentException("User not found"));
     }
 
     private PhotoResponse mapToPhotoResponse(Photo photo, Long currentUserId) {
