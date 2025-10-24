@@ -236,6 +236,44 @@ Wszystko potrzebne jest w:
 
 ## 🚀 Implementation Workflow
 
+### Step 0: Development Environment
+
+**Available development scripts** (in `scripts/` directory):
+
+#### Start Development Environment
+```bash
+# Uruchom backend + frontend (PostgreSQL musi być uruchomiony wcześniej)
+./scripts/start-dev.sh
+
+# Uruchom wszystko włącznie z PostgreSQL
+./scripts/start-dev.sh --with-db
+```
+
+#### Stop Development Environment
+```bash
+# Zatrzymaj backend + frontend
+./scripts/stop-dev.sh
+
+# Zatrzymaj wszystko włącznie z PostgreSQL
+./scripts/stop-dev.sh --with-db
+```
+
+**Features:**
+- ✅ Automatyczne sprawdzanie czy procesy już działają
+- ✅ Zapisywanie PID do `scripts/.pid/`
+- ✅ Graceful shutdown z timeoutem
+- ✅ Logi w `scripts/.pid/backend.log` i `frontend.log`
+- ✅ Weryfikacja portów przed startem
+
+**Recommended workflow:**
+1. Uruchom PostgreSQL raz: `docker-compose up -d`
+2. Używaj `start-dev.sh` / `stop-dev.sh` wielokrotnie w sesji
+3. PostgreSQL może zostać włączony cały czas (niskie zużycie zasobów)
+
+**Documentation:** `scripts/README.md`
+
+---
+
 ### Step 1: Read Core Context
 
 Before starting implementation **ALWAYS**:
@@ -401,6 +439,7 @@ Details: See `.ai/tech-stack.md`
 ## 📋 Implementation Checklist
 
 **Before starting phase:**
+- [ ] Development environment ready (use `./scripts/start-dev.sh` if needed)
 - [ ] Read core docs (PRD, tech-stack, PROGRESS_TRACKER)
 - [ ] Know which phase I'm implementing (check PROGRESS_TRACKER.md)
 - [ ] Know which `.ai/` plan to use (db-plan? api-plan? ui-plan?)

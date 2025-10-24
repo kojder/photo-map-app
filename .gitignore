@@ -160,3 +160,10 @@ $RECYCLE.BIN/
 # Linux
 *~
 .directory
+
+# ============================================
+# DEVELOPMENT SCRIPTS
+# ============================================
+
+# PID files from start-dev.sh
+scripts/.pid/
