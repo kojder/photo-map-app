@@ -1,0 +1,87 @@
+<div data-testid="photo-card" class="bg-white shadow-lg rounded-lg overflow-hidden hover:shadow-xl transition-shadow duration-300">
+  @if (thumbnailUrl()) {
+    <img
+      [src]="thumbnailUrl()"
+      [alt]="photo.originalFilename"
+      class="w-full h-48 object-cover"
+    />
+  } @else {
+    <div class="w-full h-48 bg-gray-200 flex items-center justify-center">
+      <span class="text-gray-400">Loading...</span>
+    </div>
+  }
+
+  <div class="p-4">
+    <h3 class="font-semibold text-gray-800 truncate mb-2">{{ photo.originalFilename }}</h3>
+
+    <p class="text-sm text-gray-600 mb-2">
+      {{ photo.takenAt ? (photo.takenAt | date: 'short') : (photo.uploadedAt | date: 'short') }}
+    </p>
+
+    @if (!showRatingInput()) {
+      <div class="flex items-center gap-2 mb-4">
+        @if (photo.averageRating && photo.averageRating > 0) {
+          <span class="text-yellow-500">{{ getStars(photo.averageRating) }}</span>
+          <span class="text-sm text-gray-600">
+            {{ photo.averageRating.toFixed(1) }} ({{ photo.totalRatings }})
+          </span>
+        } @else {
+          <span class="text-sm text-gray-500 italic">No rating yet</span>
+        }
+      </div>
+
+      <div class="flex justify-between items-center gap-2">
+        <button
+          data-testid="photo-card-rate-button"
+          (click)="onRate()"
+          [disabled]="loading()"
+          class="px-3 py-1 text-sm bg-blue-500 text-white rounded hover:bg-blue-600 disabled:bg-gray-300 transition-colors"
+        >
+          Rate
+        </button>
+
+        @if (photo.userRating) {
+          <button
+            data-testid="photo-card-clear-rating-button"
+            (click)="onClearRating()"
+            [disabled]="loading()"
+            class="px-3 py-1 text-sm bg-orange-500 text-white rounded hover:bg-orange-600 disabled:bg-gray-300 transition-colors"
+          >
+            Clear Rating
+          </button>
+        }
+
+        <button
+          data-testid="photo-card-delete-button"
+          (click)="onDelete()"
+          [disabled]="loading()"
+          class="px-3 py-1 text-sm bg-red-500 text-white rounded hover:bg-red-600 disabled:bg-gray-300 transition-colors"
+        >
+          Delete
+        </button>
+      </div>
+    } @else {
+      <div class="mb-4">
+        <p class="text-sm text-gray-700 mb-2">Select rating (1-5):</p>
+        <div class="flex gap-2">
+          @for (rating of [1, 2, 3, 4, 5]; track rating) {
+            <button
+              (click)="onSelectRating(rating)"
+              [disabled]="loading()"
+              class="px-4 py-2 text-lg bg-yellow-100 hover:bg-yellow-200 rounded disabled:bg-gray-200 transition-colors"
+            >
+              {{ rating }}⭐
+            </button>
+          }
+        </div>
+        <button
+          (click)="cancelRating()"
+          [disabled]="loading()"
+          class="mt-2 px-3 py-1 text-sm bg-gray-300 text-gray-700 rounded hover:bg-gray-400 disabled:bg-gray-200 transition-colors"
+        >
+          Cancel
+        </button>
+      </div>
+    }
+  </div>
+</div>

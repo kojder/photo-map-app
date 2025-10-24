@@ -1,0 +1,99 @@
+import { TestBed } from '@angular/core/testing';
+import { FilterService } from './filter.service';
+import { PhotoFilters } from '../models/photo.model';
+
+describe('FilterService', () => {
+  let service: FilterService;
+
+  beforeEach(() => {
+    TestBed.configureTestingModule({});
+    service = TestBed.inject(FilterService);
+  });
+
+  it('should be created', () => {
+    expect(service).toBeTruthy();
+  });
+
+  it('should initialize with default filters', (done) => {
+    service.filters$.subscribe(filters => {
+      expect(filters.page).toBe(0);
+      expect(filters.size).toBe(20);
+      expect(filters.sort).toBe('uploadedAt,desc');
+      done();
+    });
+  });
+
+  describe('applyFilters', () => {
+    it('should apply partial filters and reset page to 0', (done) => {
+      const newFilters: Partial<PhotoFilters> = {
+        minRating: 8,
+        dateFrom: '2024-01-01'
+      };
+
+      service.applyFilters(newFilters);
+
+      service.filters$.subscribe(filters => {
+        expect(filters.minRating).toBe(8);
+        expect(filters.dateFrom).toBe('2024-01-01');
+        expect(filters.page).toBe(0);
+        expect(filters.size).toBe(20);
+        done();
+      });
+    });
+
+    it('should merge with existing filters', (done) => {
+      service.applyFilters({ minRating: 7 });
+      service.applyFilters({ dateFrom: '2024-01-01' });
+
+      service.filters$.subscribe(filters => {
+        expect(filters.minRating).toBe(7);
+        expect(filters.dateFrom).toBe('2024-01-01');
+        done();
+      });
+    });
+  });
+
+  describe('clearFilters', () => {
+    it('should reset to default filters', (done) => {
+      service.applyFilters({ minRating: 8, dateFrom: '2024-01-01' });
+      service.clearFilters();
+
+      service.filters$.subscribe(filters => {
+        expect(filters.minRating).toBeUndefined();
+        expect(filters.dateFrom).toBeUndefined();
+        expect(filters.page).toBe(0);
+        expect(filters.size).toBe(20);
+        expect(filters.sort).toBe('uploadedAt,desc');
+        done();
+      });
+    });
+  });
+
+  describe('currentFilters', () => {
+    it('should return current filter values', () => {
+      const testFilters: Partial<PhotoFilters> = {
+        minRating: 9,
+        hasGps: true
+      };
+
+      service.applyFilters(testFilters);
+
+      const current = service.currentFilters();
+      expect(current.minRating).toBe(9);
+      expect(current.hasGps).toBe(true);
+    });
+  });
+
+  describe('setPage', () => {
+    it('should update only page number', (done) => {
+      service.applyFilters({ minRating: 7 });
+      service.setPage(2);
+
+      service.filters$.subscribe(filters => {
+        expect(filters.page).toBe(2);
+        expect(filters.minRating).toBe(7);
+        done();
+      });
+    });
+  });
+});

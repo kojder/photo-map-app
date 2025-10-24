@@ -1,0 +1,99 @@
+<div data-testid="upload-dialog" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4">
+  <div class="bg-white rounded-lg shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+    <div class="p-6">
+      <div class="flex justify-between items-center mb-6">
+        <h2 class="text-2xl font-bold text-gray-900">Upload Photo</h2>
+        <button
+          (click)="onCancel()"
+          [disabled]="uploading()"
+          class="text-gray-500 hover:text-gray-700 text-2xl font-bold disabled:opacity-50"
+        >
+          ×
+        </button>
+      </div>
+
+      @if (errorMessage()) {
+        <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+          {{ errorMessage() }}
+        </div>
+      }
+
+      @if (!selectedFile()) {
+        <div
+          data-testid="upload-dropzone"
+          (drop)="onDrop($event)"
+          (dragover)="onDragOver($event)"
+          (dragleave)="onDragLeave()"
+          [class.border-blue-500]="dragOver()"
+          [class.bg-blue-50]="dragOver()"
+          class="border-2 border-dashed border-gray-300 rounded-lg p-12 text-center cursor-pointer hover:border-gray-400 transition-colors"
+        >
+          <input
+            type="file"
+            id="fileInput"
+            accept="image/jpeg,image/png,image/heic"
+            (change)="onFileSelected($event)"
+            class="hidden"
+          />
+          <label for="fileInput" class="cursor-pointer">
+            <div class="text-6xl mb-4">📸</div>
+            <p class="text-lg text-gray-700 mb-2">Drag and drop your photo here</p>
+            <p class="text-sm text-gray-500 mb-4">or click to browse</p>
+            <p class="text-xs text-gray-400">Supported formats: JPEG, PNG, HEIC (max 10MB)</p>
+          </label>
+        </div>
+      } @else {
+        <div class="space-y-4">
+          <div class="relative">
+            <img
+              [src]="preview()"
+              alt="Preview"
+              class="w-full h-64 object-cover rounded-lg"
+            />
+          </div>
+
+          <div class="bg-gray-50 p-4 rounded-lg">
+            <div class="flex justify-between items-center mb-2">
+              <span class="font-medium text-gray-700">{{ selectedFile()!.name }}</span>
+              <span class="text-sm text-gray-500">{{ formatFileSize(selectedFile()!.size) }}</span>
+            </div>
+
+            @if (uploading()) {
+              <div class="mt-4">
+                <div class="flex justify-between items-center mb-2">
+                  <span class="text-sm text-gray-600">Uploading...</span>
+                  <span class="text-sm text-gray-600">{{ uploadProgress() }}%</span>
+                </div>
+                <div class="w-full bg-gray-200 rounded-full h-2">
+                  <div
+                    class="bg-blue-500 h-2 rounded-full transition-all duration-300"
+                    [style.width.%]="uploadProgress()"
+                  ></div>
+                </div>
+              </div>
+            }
+          </div>
+
+          <div class="flex justify-end gap-3 pt-4">
+            <button
+              data-testid="upload-cancel-button"
+              (click)="onCancel()"
+              [disabled]="uploading()"
+              class="px-6 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            >
+              Cancel
+            </button>
+            <button
+              data-testid="upload-submit-button"
+              (click)="onUpload()"
+              [disabled]="uploading()"
+              class="px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            >
+              {{ uploading() ? 'Uploading...' : 'Upload' }}
+            </button>
+          </div>
+        </div>
+      }
+    </div>
+  </div>
+</div>
