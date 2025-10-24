@@ -9,25 +9,24 @@
 
 **Last Updated:** 2025-10-24
 
-**Phase:** 2. Frontend - Setup & Auth (⏳ In Progress)
+**Phase:** 2. Frontend - Setup & Auth (✅ Completed)
 
 **Last Completed:**
-- ✅ Task 2.3: Login/Register Pages (2025-10-24)
-  - Commit: [`fce43d0`](https://github.com/kojder/photo-map-app/commit/fce43d0) - feat(frontend): implement Login and Register components with Tailwind styling
-  - ✅ LoginComponent (ReactiveFormsModule, email/password validation)
-  - ✅ RegisterComponent (password match validator, auto-login)
-  - ✅ Tailwind CSS styling (responsive forms, error messages)
-  - ✅ Routing: /login and /register
-  - ✅ Unit tests: 33 test cases (15 for Login, 18 for Register)
-  - ✅ All 55 tests passing (100% component coverage)
+- ✅ Task 2.4: Auth Guards (2025-10-24)
+  - Commit: [`c5683b8`](https://github.com/kojder/photo-map-app/commit/c5683b8) - feat(frontend): implement auth and admin guards with route protection
+  - ✅ authGuard (functional guard) - protects routes requiring login
+  - ✅ adminGuard (functional guard) - protects admin-only routes
+  - ✅ Updated app.routes.ts with authGuard on /gallery
+  - ✅ Unit tests: 5 test cases (2 for authGuard, 3 for adminGuard)
+  - ✅ All 60 tests passing (100% coverage)
+  - ✅ E2E verification: Login flow working, authGuard redirects correctly
 
 **Currently Working On:**
-- 🎯 Task 2.4: Auth Guards (authGuard, adminGuard, route protection)
+- 🎉 Phase 2 completed! Ready for Phase 3.
 
 **Next Action:**
-1. Create authGuard (protect routes requiring login)
-2. Create adminGuard (protect admin-only routes)
-3. Update routing with guards
+1. Review Phase 2 achievements
+2. Prepare for Phase 3: Backend - Photo Handling
 
 **Blocked By:** None
 
@@ -35,12 +34,12 @@
 
 ## 📊 Project Status
 
-**Overall Progress:** 1/6 phases (17%)
+**Overall Progress:** 2/6 phases (33%)
 
 | Phase | Status | Description |
 |------|--------|------|
 | 1. Backend - Setup & Auth | ✅ | Spring Boot, PostgreSQL (full schema), JWT, Admin API |
-| 2. Frontend - Setup & Auth | ⏳ | Angular, Login/Register, Guards (auth end-to-end!) |
+| 2. Frontend - Setup & Auth | ✅ | Angular, Login/Register, Guards (auth end-to-end!) |
 | 3. Backend - Photo Handling | 🔜 | Upload, EXIF, thumbnails, Photo API |
 | 4. Frontend - Gallery & Map | 🔜 | Gallery view, Map Leaflet, Rating, Upload form |
 | 5. Admin Panel | 🔜 | Admin API, Admin UI |
@@ -114,7 +113,7 @@
 
 ## 📋 Phase 2: Frontend - Setup & Auth
 
-**Time:** ~2-3 hours | **Status:** ⏳ In Progress
+**Time:** ~2-3 hours | **Status:** ✅ Completed
 
 **🎯 MILESTONE:** Działający auth flow end-to-end! Po tej fazie użytkownik może rejestrować się i logować przez przeglądarkę.
 
@@ -136,7 +135,7 @@
   - Register form component (email, password, confirm)
   - Tailwind CSS styling (utility-first)
 
-- [ ] **2.4 Auth Guards**
+- [x] **2.4 Auth Guards**
   - `authGuard` - protect routes requiring login
   - `adminGuard` - protect admin-only routes
   - Redirect to login if not authenticated
