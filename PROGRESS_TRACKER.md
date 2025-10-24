@@ -9,24 +9,26 @@
 
 **Last Updated:** 2025-10-24
 
-**Phase:** 2. Frontend - Setup & Auth (✅ Completed)
+**Phase:** 3. Backend - Photo Handling (✅ Completed)
 
 **Last Completed:**
-- ✅ Task 2.4: Auth Guards (2025-10-24)
-  - Commit: [`c5683b8`](https://github.com/kojder/photo-map-app/commit/c5683b8) - feat(frontend): implement auth and admin guards with route protection
-  - ✅ authGuard (functional guard) - protects routes requiring login
-  - ✅ adminGuard (functional guard) - protects admin-only routes
-  - ✅ Updated app.routes.ts with authGuard on /gallery
-  - ✅ Unit tests: 5 test cases (2 for authGuard, 3 for adminGuard)
-  - ✅ All 60 tests passing (100% coverage)
-  - ✅ E2E verification: Login flow working, authGuard redirects correctly
+- ✅ Phase 3: Backend - Photo Handling (2025-10-24)
+  - Commit: [`3de44f4`](https://github.com/kojder/photo-map-app/commit/3de44f4) - feat(backend): implement photo upload, EXIF extraction, and rating system
+  - Commit: [`e3d10f0`](https://github.com/kojder/photo-map-app/commit/e3d10f0) - fix(backend): resolve ClassCastException in PhotoController and add error logging
+  - ✅ Dependencies: metadata-extractor 2.19.0, Thumbnailator 0.4.20
+  - ✅ PhotoService: upload with EXIF extraction (GPS, takenAt) + 3-size thumbnails (150, 400, 800)
+  - ✅ PhotoController: 8 REST endpoints (upload, list, get, delete, rating CRUD)
+  - ✅ DTOs: PhotoResponse, RatingRequest, RatingResponse
+  - ✅ Unit tests: 15 test cases for PhotoService (coverage >70%)
+  - ✅ All tests passing (15/15)
+  - ✅ Manual testing: all endpoints verified with curl (upload, list, delete, rating validation)
 
 **Currently Working On:**
-- 🎉 Phase 2 completed! Ready for Phase 3.
+- 🎉 Phase 3 completed! Ready for Phase 4.
 
 **Next Action:**
-1. Review Phase 2 achievements
-2. Prepare for Phase 3: Backend - Photo Handling
+1. Review Phase 3 achievements
+2. Prepare for Phase 4: Frontend - Gallery & Map
 
 **Blocked By:** None
 
@@ -34,13 +36,13 @@
 
 ## 📊 Project Status
 
-**Overall Progress:** 2/6 phases (33%)
+**Overall Progress:** 3/6 phases (50%)
 
 | Phase | Status | Description |
 |------|--------|------|
 | 1. Backend - Setup & Auth | ✅ | Spring Boot, PostgreSQL (full schema), JWT, Admin API |
 | 2. Frontend - Setup & Auth | ✅ | Angular, Login/Register, Guards (auth end-to-end!) |
-| 3. Backend - Photo Handling | 🔜 | Upload, EXIF, thumbnails, Photo API |
+| 3. Backend - Photo Handling | ✅ | Upload, EXIF, thumbnails (3 sizes), Photo API, Rating system |
 | 4. Frontend - Gallery & Map | 🔜 | Gallery view, Map Leaflet, Rating, Upload form |
 | 5. Admin Panel | 🔜 | Admin API, Admin UI |
 | 6. Deployment | 🔜 | Mikrus config, Nginx, SSL, Monitoring |
