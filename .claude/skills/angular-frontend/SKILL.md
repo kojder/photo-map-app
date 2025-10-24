@@ -1262,6 +1262,40 @@ In `styling/` directory:
 
 ---
 
+## Frontend Verification
+
+Po zaimplementowaniu większych feature'ów lub przy naprawie błędów UI rozważ użycie **frontend-verification** skill dla automatycznej weryfikacji:
+
+**Kiedy używać:**
+- ✅ Po ukończeniu implementacji taska (np. Gallery Component, Login Form)
+- ✅ Przy wątpliwościach czy feature działa poprawnie
+- ✅ Przy naprawie błędów wizualnych (iteracyjnie: sprawdź → napraw → sprawdź)
+- ✅ Na wyraźne żądanie użytkownika
+
+**Co weryfikuje:**
+- Console errors & warnings (błędy JavaScript/TypeScript)
+- Network requests & API calls (status codes, payloads, headers)
+- Visual rendering (snapshots, screenshots, responsive layout)
+- Interactive flows (login, upload, navigation)
+
+**Przykład użycia:**
+```
+Po zaimplementowaniu LoginComponent:
+1. Weryfikacja konsoli → brak błędów ✅
+2. Test API call → POST /api/auth/login → 200 OK ✅
+3. Visual check → formularz poprawnie wyrenderowany ✅
+4. Redirect → po loginie przekierowanie do /gallery ✅
+```
+
+**Helper scripts** (zarządzanie dev servers):
+- `.claude/skills/frontend-verification/scripts/check-servers.sh` - sprawdź status
+- `.claude/skills/frontend-verification/scripts/start-dev-servers.sh` - uruchom backend + frontend
+- `.claude/skills/frontend-verification/scripts/stop-dev-servers.sh` - zatrzymaj serwery
+
+Zobacz: `.claude/skills/frontend-verification/SKILL.md` dla pełnej dokumentacji.
+
+---
+
 ## Key Reminders
 
 **Standalone Components:**
