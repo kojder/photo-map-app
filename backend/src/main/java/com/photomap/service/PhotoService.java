@@ -44,8 +44,7 @@ public class PhotoService {
     }
 
     public Optional<Photo> getPhotoById(Long photoId, Long userId) {
-        return photoRepository.findById(photoId)
-                .filter(photo -> photo.getUser().getId().equals(userId));
+        return photoRepository.findById(photoId);
     }
 
     @Transactional
@@ -66,10 +65,6 @@ public class PhotoService {
     public Rating ratePhoto(Long photoId, Long userId, Integer ratingValue) {
         Photo photo = photoRepository.findById(photoId)
                 .orElseThrow(() -> new IllegalArgumentException("Photo not found"));
-
-        if (photo.getUser().getId().equals(userId)) {
-            throw new IllegalArgumentException("Cannot rate own photo");
-        }
 
         if (ratingValue < 1 || ratingValue > 5) {
             throw new IllegalArgumentException("Rating must be between 1 and 5");

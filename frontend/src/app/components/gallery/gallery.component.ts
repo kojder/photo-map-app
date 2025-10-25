@@ -1,5 +1,6 @@
 import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Observable } from 'rxjs';
 import { Photo } from '../../models/photo.model';
 import { PhotoService } from '../../services/photo.service';
 import { FilterService } from '../../services/filter.service';
@@ -15,7 +16,7 @@ import { UploadDialogComponent } from '../upload-dialog/upload-dialog.component'
   styleUrl: './gallery.component.css'
 })
 export class GalleryComponent implements OnInit {
-  photos = signal<Photo[]>([]);
+  photos$: Observable<Photo[]>;
   loading = signal(false);
   showUploadDialog = signal(false);
   errorMessage = signal<string | null>(null);
@@ -23,7 +24,9 @@ export class GalleryComponent implements OnInit {
   constructor(
     private photoService: PhotoService,
     private filterService: FilterService
-  ) {}
+  ) {
+    this.photos$ = this.photoService.photos$;
+  }
 
   ngOnInit(): void {
     this.loadPhotos();
@@ -40,8 +43,7 @@ export class GalleryComponent implements OnInit {
     const filters = this.filterService.currentFilters();
 
     this.photoService.getAllPhotos(filters).subscribe({
-      next: (response) => {
-        this.photos.set(response.content);
+      next: () => {
         this.loading.set(false);
       },
       error: (error) => {
@@ -66,7 +68,6 @@ export class GalleryComponent implements OnInit {
   }
 
   onPhotoDeleted(photoId: number): void {
-    const currentPhotos = this.photos().filter(p => p.id !== photoId);
-    this.photos.set(currentPhotos);
+    this.loadPhotos();
   }
 }

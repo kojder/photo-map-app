@@ -23,27 +23,31 @@
       <div class="flex justify-center items-center py-20">
         <div class="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-blue-500"></div>
       </div>
-    } @else if (photos().length === 0) {
-      <div class="text-center py-20">
-        <p class="text-2xl text-gray-500 mb-4">No photos yet</p>
-        <p class="text-gray-400 mb-6">Upload your first photo to get started!</p>
-        <button
-          (click)="onUploadClick()"
-          class="px-6 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
-        >
-          Upload Photo
-        </button>
-      </div>
     } @else {
-      <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-        @for (photo of photos(); track photo.id) {
-          <app-photo-card
-            data-testid="gallery-photo-card"
-            [photo]="photo"
-            (photoDeleted)="onPhotoDeleted($event)"
-          ></app-photo-card>
+      @if (photos$ | async; as photos) {
+        @if (photos.length === 0) {
+          <div class="text-center py-20">
+            <p class="text-2xl text-gray-500 mb-4">No photos yet</p>
+            <p class="text-gray-400 mb-6">Upload your first photo to get started!</p>
+            <button
+              (click)="onUploadClick()"
+              class="px-6 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
+            >
+              Upload Photo
+            </button>
+          </div>
+        } @else {
+          <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+            @for (photo of photos; track photo.id) {
+              <app-photo-card
+                data-testid="gallery-photo-card"
+                [photo]="photo"
+                (photoDeleted)="onPhotoDeleted($event)"
+              ></app-photo-card>
+            }
+          </div>
         }
-      </div>
+      }
     }
 
     @if (showUploadDialog()) {
