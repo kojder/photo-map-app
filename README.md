@@ -29,6 +29,16 @@ photo-map-app/
 ├── CLAUDE.md                  # Instrukcje dla AI (workflow)
 ├── PROGRESS_TRACKER.md        # Tracker statusu implementacji
 │
+├── .github/                   # 🤖 GitHub Copilot configuration
+│   ├── copilot-instructions.md      # Main instructions
+│   ├── backend.instructions.md      # Backend-specific (auto-apply)
+│   ├── frontend.instructions.md     # Frontend-specific (auto-apply)
+│   └── prompts/                     # Reusable commands
+│       ├── update-docs.prompt.md    # /update-docs
+│       ├── generate-tests.prompt.md # /generate-tests
+│       ├── commit-message.prompt.md # /commit-message
+│       └── review-code.prompt.md    # /review-code
+│
 ├── .ai/                       # 🤖 Core context (for Claude Code)
 │   ├── prd.md                 # MVP requirements
 │   ├── tech-stack.md          # Technology specs
@@ -36,9 +46,22 @@ photo-map-app/
 │   ├── api-plan.md            # REST API spec
 │   └── ui-plan.md             # Frontend architecture
 │
-└── .decisions/                # 👥 Decision context (for humans + optional)
-    ├── prd-context.md         # Business rationale
-    └── tech-decisions.md      # Technology comparisons
+├── .decisions/                # 👥 Decision context (for humans + optional)
+│   ├── prd-context.md         # Business rationale
+│   └── tech-decisions.md      # Technology comparisons
+│
+├── backend/                   # Spring Boot 3 backend
+│   ├── src/
+│   ├── pom.xml
+│   └── uploads/               # Photo storage (6 folders)
+│
+├── frontend/                  # Angular 18 frontend
+│   ├── src/
+│   └── package.json
+│
+└── scripts/                   # Development scripts
+    ├── start-dev.sh           # Start backend + frontend
+    └── stop-dev.sh            # Stop all processes
 ```
 
 **Separacja kontekstu:**
@@ -68,17 +91,18 @@ photo-map-app/
 
 **Co zostało zrobione:**
 - ✅ Pełna dokumentacja MVP (PRD, tech stack, architecture plans)
-- ✅ Database schema specification
-- ✅ REST API specification
-- ✅ UI architecture specification
-- ✅ Decision context
+- ✅ Phase 1: Backend - Setup & Auth (Spring Boot 3 + PostgreSQL + JWT)
+- ✅ Phase 2: Frontend - Setup & Auth (Angular 18 + Tailwind CSS 3)
+- ✅ Phase 3: Backend - Photo Handling (Upload, EXIF, thumbnails, Rating API)
+- ✅ Phase 4: Frontend - Gallery & Map (Leaflet.js, rating stars, filtering)
+- ✅ GitHub Copilot Configuration (instructions + prompts for AI-assisted development)
+- ✅ **MVP funkcjonalny end-to-end** (auth → upload → gallery → rating → map)
 
 **Co dalej:**
-- 🔜 Implementacja backendu (Spring Boot 3 + PostgreSQL)
-- 🔜 Implementacja frontendu (Angular 18 + Tailwind CSS 3)
-- 🔜 Deployment na Mikrus VPS
+- 🔜 (Optional) Phase 5: Admin Panel
+- 🔜 (Optional) Phase 6: Deployment na Mikrus VPS
 
-**Szacowany czas:** 2-3 tygodnie (16-22h pracy efektywnej)
+**Aktualny status:** 4/6 faz core MVP ukończone (67%) + GitHub Copilot setup
 
 ## 🚀 Jak Zacząć
 

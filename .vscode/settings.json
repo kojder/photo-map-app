@@ -1,0 +1,19 @@
+{
+  "github.copilot.chat.codeGeneration.useInstructionFiles": true,
+  "chat.promptFiles": true,
+  "github.copilot.chat.commitMessageGeneration.instructions": [
+    {
+      "text": "Follow Conventional Commits format: <type>[scope]: <description>. Types: feat, fix, docs, style, refactor, perf, test, chore. Scopes: auth, photos, rating, gallery, map, admin, frontend, backend. Keep under 72 chars. Polish or English OK. Examples: 'feat(auth): implement JWT validation', 'fix(photos): resolve EXIF error for PNG'."
+    }
+  ],
+  "github.copilot.chat.pullRequestDescriptionGeneration.instructions": [
+    {
+      "text": "Include: 1) Summary of changes, 2) Phase/task reference from PROGRESS_TRACKER.md, 3) Key changes bullet list, 4) Testing done, 5) Breaking changes (if any). Format in Polish. Example: 'Implementacja Phase 4: Gallery & Map. Kluczowe zmiany: - Dodano GalleryComponent z filtrowaniem, - MapComponent z Leaflet.js, - PhotoService z BehaviorSubject. Testy: 54 passing.'"
+    }
+  ],
+  "github.copilot.chat.reviewSelection.instructions": [
+    {
+      "file": ".github/prompts/review-code.prompt.md"
+    }
+  ]
+}

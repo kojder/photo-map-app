@@ -7,11 +7,17 @@
 
 ## 🔄 Current Status
 
-**Last Updated:** 2025-10-24
+**Last Updated:** 2025-10-25
 
-**Phase:** 4. Frontend - Gallery & Map (✅ Completed)
+**Phase:** Documentation & Tooling (✅ Completed)
 
 **Last Completed:**
+- ✅ GitHub Copilot Configuration (2025-10-25)
+  - ✅ Main instructions: `.github/copilot-instructions.md` (~350 lines)
+  - ✅ Backend-specific: `.github/backend.instructions.md` (~240 lines with applyTo patterns)
+  - ✅ Frontend-specific: `.github/frontend.instructions.md` (~280 lines with applyTo patterns)
+  - ✅ Prompts library: `/update-docs`, `/generate-tests`, `/commit-message`, `/review-code`
+  - ✅ VS Code settings: commit message generation, PR descriptions
 - ✅ Phase 4: Frontend - Gallery & Map (2025-10-24)
   - ✅ Photo model (Photo, PageResponse, RatingResponse, PhotoFilters)
   - ✅ PhotoService: CRUD + rating with BehaviorSubject pattern
@@ -24,13 +30,17 @@
   - ✅ Routing: /gallery i /map z authGuard
   - ✅ Leaflet dependencies: leaflet 1.9.4 + leaflet.markercluster
   - ✅ Build passing (no errors)
+- ✅ Refactoring (2025-10-25)
+  - ✅ Removed user ownership restrictions (all photos public for now)
+  - ✅ Fixed rating scale validation (1-5 everywhere)
+  - ✅ Fixed photo aspect ratio in thumbnails and gallery
 
 **Currently Working On:**
-- 🎉 Phase 4 completed! Pełny MVP działa end-to-end (auth + gallery + map + upload + rating)!
+- 🎉 MVP funkcjonalny end-to-end! GitHub Copilot skonfigurowany dla AI-assisted development.
 
 **Next Action:**
-1. Testy manualne - sprawdzenie całego flow (login → upload → gallery → rating → map)
-2. (Optional) Phase 5: Admin Panel
+1. (Optional) Phase 5: Admin Panel
+2. (Optional) Phase 6: Deployment na Mikrus VPS
 
 **Blocked By:** None
 
@@ -38,7 +48,7 @@
 
 ## 📊 Project Status
 
-**Overall Progress:** 4/6 phases (67%)
+**Overall Progress:** 4/6 phases (67% core MVP) + GitHub Copilot setup
 
 | Phase | Status | Description |
 |------|--------|------|
@@ -46,6 +56,7 @@
 | 2. Frontend - Setup & Auth | ✅ | Angular, Login/Register, Guards (auth end-to-end!) |
 | 3. Backend - Photo Handling | ✅ | Upload, EXIF, thumbnails (3 sizes), Photo API, Rating system |
 | 4. Frontend - Gallery & Map | ✅ | Gallery grid, Leaflet Map, Rating (stars), Upload (drag-and-drop), Filters |
+| 🤖 GitHub Copilot Setup | ✅ | Instructions, prompts, VS Code integration |
 | 5. Admin Panel | 🔜 | Admin API, Admin UI |
 | 6. Deployment | 🔜 | Mikrus config, Nginx, SSL, Monitoring |
 
@@ -224,45 +235,50 @@ uploads/
 
 ## 📋 Phase 4: Frontend - Gallery & Map
 
-**Time:** ~4-5 hours | **Status:** 🔜 Pending
+**Time:** ~4-5 hours | **Status:** ✅ Completed (2025-10-24)
 
 ### Tasks:
 
-- [ ] **4.1 Photo Service**
+- [x] **4.1 Photo Service**
   - `PhotoService` with API methods (list, get, upload, delete, rate, clearRating)
   - RxJS BehaviorSubject for photo state
   - Error handling
 
-- [ ] **4.2 Gallery View**
+- [x] **4.2 Gallery View**
   - **Plan:** `.ai/ui-plan.md` (GalleryComponent section)
   - Photo grid component (Tailwind grid)
   - Display thumbnails (medium size)
-  - Click photo → open modal with full image
+  - PhotoCardComponent with thumbnail + rating stars + actions
 
-- [ ] **4.3 Map View (Leaflet.js)**
+- [x] **4.3 Map View (Leaflet.js)**
   - Map component with Leaflet
   - Display markers for photos with GPS
-  - Click marker → show photo preview
-  - Filter photos by date range
+  - MarkerCluster for grouped markers
+  - Click marker → show photo preview popup
 
-- [ ] **4.4 Photo Rating**
+- [x] **4.4 Photo Rating**
   - Star rating component (1-5 stars)
   - Click star → call API PUT `/api/photos/{id}/rating`
   - Clear rating button → call API DELETE `/api/photos/{id}/rating`
-  - Display average rating lub "No rating yet"
+  - Display user's rating
 
-- [ ] **4.5 Photo Upload Form**
-  - Upload form component (file input, drag-and-drop)
-  - Preview before upload
+- [x] **4.5 Photo Upload Form**
+  - UploadDialogComponent (file input, drag-and-drop)
+  - File validation (JPG/PNG only)
   - Progress bar during upload
 
+- [x] **4.6 Filtering & Navigation**
+  - FilterBarComponent (date range + min rating)
+  - FilterService with filters$ Observable
+  - Navbar with Gallery/Map navigation and Logout
+
 ### Acceptance Criteria:
-- ✅ Gallery displays all photos in grid
-- ✅ Map shows photos with GPS coordinates
+- ✅ Gallery displays all photos in responsive grid (1-4 columns)
+- ✅ Map shows photos with GPS coordinates using MarkerCluster
 - ✅ User can rate photos (1-5 stars)
 - ✅ User can clear rating ze zdjęcia
-- ✅ User can upload new photos
-- ✅ Photos filterable by date
+- ✅ User can upload new photos via drag-and-drop
+- ✅ Photos filterable by date range and min rating
 - ✅ **Pełny MVP działa end-to-end!**
 
 ---
@@ -393,5 +409,5 @@ After completing MVP (6 phases above), possible feature enhancements:
 
 ---
 
-**Last Updated:** 2025-10-19
-**Next Step:** Start Phase 1 - Backend Setup & Auth
+**Last Updated:** 2025-10-25
+**Next Step:** Optional enhancements (Admin Panel or Deployment)

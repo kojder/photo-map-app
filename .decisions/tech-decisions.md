@@ -244,6 +244,77 @@ Ten dokument wyjaśnia **DLACZEGO** wybraliśmy każdą technologię w stacku Ph
 
 ---
 
+## Development Tooling Decisions
+
+### GitHub Copilot Configuration - Dlaczego?
+
+**Date:** 2025-10-25
+
+**Uzasadnienie:**
+- **AI-assisted development** - faster coding with context-aware suggestions
+- **Project-specific patterns** - enforce conventions (Conventional Commits, testing >70%, security patterns)
+- **Automated workflows** - documentation sync, test generation, code reviews
+- **Consistency** - all AI agents (Copilot, Claude) follow same rules
+
+**Struktura:**
+1. **`.github/copilot-instructions.md`** - Main instructions (~350 lines)
+   - Architecture patterns (Spring Integration, BehaviorSubject, JWT)
+   - Git workflow (commit review, NEVER auto-push)
+   - Testing requirements (>70% coverage, JUnit/Jasmine patterns)
+   
+2. **`.github/backend.instructions.md`** - Backend-specific (~240 lines)
+   - User scoping security pattern (CRITICAL)
+   - DTOs always (never expose entities)
+   - @Transactional on services
+   - Auto-applies when editing `.java`, `.xml`, `.properties`, `.sql`
+   
+3. **`.github/frontend.instructions.md`** - Frontend-specific (~280 lines)
+   - Standalone components ONLY (no NgModules)
+   - inject() function (not constructor injection)
+   - BehaviorSubject vs signals pattern
+   - Tailwind 3.4.17 constraint
+   - Auto-applies when editing `.ts`, `.html`, `.css`
+   
+4. **`.github/prompts/`** - Reusable commands
+   - `/update-docs` - sync PROGRESS_TRACKER, .ai/, .decisions/, README
+   - `/generate-tests` - JUnit 5 + Mockito (backend), Jasmine + Karma (frontend)
+   - `/commit-message` - Conventional Commits with project scopes
+   - `/review-code` - security + quality checklist
+
+**Dlaczego NIE samo README.md?**
+- GitHub Copilot nie czyta README.md automatycznie
+- `.instructions.md` files są dodawane do kontekstu automatycznie przy edycji plików
+- Prompts są reusable commands (nie trzeba powtarzać kontekstu)
+
+**Dlaczego applyTo patterns?**
+- Backend instructions tylko przy edycji backend files (oszczędność kontekstu)
+- Frontend instructions tylko przy edycji frontend files
+- Mniej tokensów zużytych = lepsza wydajność
+
+**Dlaczego oddzielne prompts?**
+- `/update-docs` - dokumentacja może się rozjechać, potrzeba automatyzacji
+- `/generate-tests` - >70% coverage requirement, szablony dla JUnit/Jasmine
+- `/commit-message` - Conventional Commits format enforcement
+- `/review-code` - security checklist (user scoping, validation, SQL injection)
+
+**Trade-offs:**
+- ✅ Pros: Consistency, automation, context-aware AI suggestions
+- ⚠️ Cons: Może być overwhelming na początku (3 instruction files + 4 prompts)
+- ⚠️ Maintenance: Trzeba updatować instructions gdy zmienia się architektura
+
+**Alternatives considered:**
+- **Single copilot-instructions.md** - za długi (~850 linii), za dużo kontekstu
+- **No instructions** - AI nie zna project-specific patterns (security, testing)
+- **Comments in code** - nie skaluje się, trudno utrzymać
+
+**Best practices followed:**
+- YAML frontmatter z `description` i `applyTo` (oficjalny format VS Code)
+- .instructions.md dla auto-apply rules (200-300 linii max)
+- .prompt.md dla reusable commands
+- Bez `tools` field w YAML (VS Code nie wspiera)
+
+---
+
 ## Technology Decisions Summary
 
 ### ✅ CO INCLUDUJEMY:
@@ -292,4 +363,4 @@ Po stabilizacji MVP można rozważyć:
 
 **Document Purpose:** Decision rationale for humans + optional reference for Claude Code
 **Related:** `.ai/tech-stack.md` (implementation specs)
-**Last Updated:** 2025-10-19
+**Last Updated:** 2025-10-25
