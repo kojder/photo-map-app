@@ -67,6 +67,57 @@
   }
 }
 
+/* Error message */
+.error-message {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background-color: rgba(255, 255, 255, 0.98);
+  border-radius: 12px;
+  padding: 32px;
+  z-index: 2;
+  max-width: 90%;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+}
+
+.error-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+}
+
+.error-text {
+  color: #e53e3e;
+  font-size: 16px;
+  font-weight: 500;
+  margin: 0;
+  text-align: center;
+  line-height: 1.5;
+}
+
+.error-close-button {
+  padding: 12px 32px;
+  background-color: #e53e3e;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  min-width: 120px;
+}
+
+.error-close-button:hover {
+  background-color: #c53030;
+}
+
+.error-close-button:active {
+  background-color: #9b2c2c;
+}
+
 .photo-viewer-controls {
   position: absolute;
   top: 0;

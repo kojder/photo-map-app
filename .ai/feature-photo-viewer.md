@@ -74,8 +74,9 @@ Router.navigate('/gallery') ← Returns to source
 
 **Photo Size:**
 - Load from `/api/photos/{id}/full` endpoint
-- Returns `large` size (800px) from backend
-- Good balance: quality vs loading time
+- Returns `original` size (full resolution) from backend
+- Ensures best quality for fullscreen viewing on high-DPI displays
+- Trade-off: larger file size for better user experience
 
 **State Management:**
 - PhotoViewerService with BehaviorSubject pattern
@@ -113,9 +114,10 @@ Router.navigate('/gallery') ← Returns to source
   - [x] Boundary checks (first/last photo)
   
 - [x] Backend: Updated `/api/photos/{id}/full` endpoint
-  - [x] Changed from `originalDirectory` to `largeDirectory` (800px)
+  - [x] Uses `originalDirectory` for full resolution photos
   - [x] Added proper content-type detection via `Files.probeContentType()`
   - [x] Error handling (404 if file not found)
+  - [x] Decision: original quality needed for fullscreen viewer on high-DPI displays
   
 - [x] Unit Tests
   - [x] `PhotoViewerComponent.spec.ts` (36 tests total passing)
@@ -347,12 +349,14 @@ Router.navigate('/gallery') ← Returns to source
 - Avoids browser chrome differences
 
 ### Decision 2: Photo Size to Load
-**Choice:** Load from `large/` directory (800px)  
+**Choice:** Load from `original/` directory (full resolution)  
 **Reasoning:**
-- Good balance between quality and file size
-- Fast loading even on mobile networks
-- Original files can be very large (5-10MB)
-- Can add "view original" button in future if needed
+- Initial attempt with `large/` (800px) resulted in blurry/pixelated images on high-DPI displays
+- Photos were scaled incorrectly, not filling the screen properly
+- Fullscreen viewer demands highest quality for best user experience
+- Modern browsers handle large images efficiently with hardware acceleration
+- Users expect full quality when viewing photos in fullscreen mode
+- File size trade-off acceptable for better visual quality (async loading with spinner)
 
 ### Decision 3: State Management Pattern
 **Choice:** BehaviorSubject in PhotoViewerService  
@@ -377,6 +381,26 @@ Router.navigate('/gallery') ← Returns to source
 - Removed fade-in animation to eliminate mobile flickering
 - Instant photo display provides better UX than animated transitions
 - Simpler implementation, less CPU usage on mobile
+
+### Decision 8: Original Quality for Fullscreen Viewer
+**Choice:** Use `originalDirectory` in `/full` endpoint instead of `largeDirectory`  
+**Reasoning:**
+- Initial implementation used `large/` (800px) but resulted in quality issues:
+  - Blurry/pixelated appearance on high-DPI displays (Retina, 4K monitors)
+  - Photos not filling screen properly, unexpected scaling artifacts
+  - Poor user experience when viewing photos fullscreen
+- Switched to `original/` directory for best quality:
+  - Sharp, clear images on all display types
+  - Proper fullscreen coverage with `object-fit: contain`
+  - Better user satisfaction despite larger file sizes
+- Trade-offs accepted:
+  - Larger downloads (2-10MB per photo) mitigated by:
+    - Loading spinner with 200ms delay (smooth UX)
+    - Async loading doesn't block UI
+    - Modern browsers handle large images efficiently
+  - Slower loading on mobile networks acceptable for fullscreen context
+  - Users expect high quality when viewing photos in dedicated viewer
+- Future optimization: Can implement adaptive quality based on screen size/network speed
 
 ### Decision 7: Mobile Button Tap Handling
 **Choice:** Separate touch target detection + stopPropagation on buttons  

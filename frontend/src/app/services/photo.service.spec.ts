@@ -215,4 +215,85 @@ describe('PhotoService', () => {
       req.flush(null);
     });
   });
+
+  describe('rating with filters', () => {
+    it('should remove photo from list when rating drops below minRating filter', (done) => {
+      // Set up initial state with minRating filter
+      const filters = { minRating: 3, page: 0, size: 20 };
+      service.getAllPhotos(filters).subscribe();
+      const initialReq = httpMock.expectOne(req => req.url === baseUrl);
+      initialReq.flush(mockPageResponse);
+
+      // Now rate the photo with rating below filter threshold
+      const lowRatedPhoto = { ...mockPhoto, averageRating: 2, userRating: 2 };
+
+      service.photos$.subscribe(photos => {
+        if (photos.length === 0) {
+          // Photo should be removed from list
+          done();
+        }
+      });
+
+      service.ratePhoto(1, 2).subscribe();
+
+      const rateReq = httpMock.expectOne(`${baseUrl}/1/rating`);
+      rateReq.flush({ id: 1, photoId: 1, userId: 1, rating: 2, createdAt: '2024-01-01T00:00:00Z' });
+
+      const refreshReq = httpMock.expectOne(`${baseUrl}/1`);
+      refreshReq.flush(lowRatedPhoto);
+    });
+
+    it('should keep photo in list when rating still meets minRating filter', (done) => {
+      // Set up initial state with minRating filter
+      const filters = { minRating: 3, page: 0, size: 20 };
+      service.getAllPhotos(filters).subscribe();
+      const initialReq = httpMock.expectOne(req => req.url === baseUrl);
+      initialReq.flush(mockPageResponse);
+
+      // Rate with rating that still meets filter
+      const updatedPhoto = { ...mockPhoto, averageRating: 4, userRating: 4 };
+
+      service.photos$.subscribe(photos => {
+        if (photos.length === 1 && photos[0].averageRating === 4) {
+          // Photo should still be in list with updated rating
+          expect(photos[0]).toEqual(updatedPhoto);
+          done();
+        }
+      });
+
+      service.ratePhoto(1, 4).subscribe();
+
+      const rateReq = httpMock.expectOne(`${baseUrl}/1/rating`);
+      rateReq.flush({ id: 1, photoId: 1, userId: 1, rating: 4, createdAt: '2024-01-01T00:00:00Z' });
+
+      const refreshReq = httpMock.expectOne(`${baseUrl}/1`);
+      refreshReq.flush(updatedPhoto);
+    });
+
+    it('should remove photo from list when clearing rating below minRating filter', (done) => {
+      // Set up initial state with minRating filter
+      const filters = { minRating: 3, page: 0, size: 20 };
+      service.getAllPhotos(filters).subscribe();
+      const initialReq = httpMock.expectOne(req => req.url === baseUrl);
+      initialReq.flush(mockPageResponse);
+
+      // Clear rating - photo now has no rating (0)
+      const noRatingPhoto = { ...mockPhoto, averageRating: 0, userRating: undefined };
+
+      service.photos$.subscribe(photos => {
+        if (photos.length === 0) {
+          // Photo should be removed because rating (0) < minRating (3)
+          done();
+        }
+      });
+
+      service.clearRating(1).subscribe();
+
+      const deleteReq = httpMock.expectOne(`${baseUrl}/1/rating`);
+      deleteReq.flush(null);
+
+      const refreshReq = httpMock.expectOne(`${baseUrl}/1`);
+      refreshReq.flush(noRatingPhoto);
+    });
+  });
 });

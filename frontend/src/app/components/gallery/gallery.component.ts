@@ -1,6 +1,6 @@
 import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Observable } from 'rxjs';
+import { Observable, take } from 'rxjs';
 import { Photo } from '../../models/photo.model';
 import { PhotoService } from '../../services/photo.service';
 import { FilterService } from '../../services/filter.service';
@@ -75,8 +75,10 @@ export class GalleryComponent implements OnInit {
 
   onPhotoClick(photoId: number): void {
     // Get current photos array from the observable
-    this.photoService.photos$.subscribe(photos => {
-      this.photoViewerService.openViewer(photos, photoId, '/gallery');
-    }).unsubscribe();
+    this.photoService.photos$
+      .pipe(take(1))
+      .subscribe(photos => {
+        this.photoViewerService.openViewer(photos, photoId, '/gallery');
+      });
   }
 }

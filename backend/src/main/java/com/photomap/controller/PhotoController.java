@@ -242,9 +242,9 @@ public class PhotoController {
                 ? "/api/photos/" + photo.getId() + "/thumbnail"
                 : null;
 
-        final Double averageRating = calculateAverageRating(photo);
-        final Integer totalRatings = photo.getRatings() != null ? photo.getRatings().size() : 0;
         final Integer userRating = currentUserId != null ? getUserRating(photo, currentUserId) : null;
+        final Double displayRating = calculateDisplayRating(photo, currentUserId, userRating);
+        final Integer totalRatings = photo.getRatings() != null ? photo.getRatings().size() : 0;
 
         return new PhotoResponse(
                 photo.getId(),
@@ -257,7 +257,7 @@ public class PhotoController {
                 photo.getGpsLongitude(),
                 photo.getTakenAt(),
                 photo.getUploadedAt(),
-                averageRating,
+                displayRating,
                 totalRatings,
                 userRating
         );
@@ -282,6 +282,35 @@ public class PhotoController {
                 .mapToInt(Rating::getRating)
                 .average()
                 .orElse(0.0);
+    }
+
+    /**
+     * Calculates personalized rating display:
+     * - If user has rated the photo → show user's rating
+     * - If user hasn't rated but others have → show average of others' ratings
+     * - If no ratings exist → return null
+     */
+    private Double calculateDisplayRating(final Photo photo, final Long currentUserId, final Integer userRating) {
+        if (photo.getRatings() == null || photo.getRatings().isEmpty()) {
+            return null;
+        }
+
+        // If user has own rating, return it as display rating
+        if (userRating != null) {
+            return userRating.doubleValue();
+        }
+
+        // User hasn't rated - calculate average of OTHER users' ratings
+        if (currentUserId != null) {
+            return photo.getRatings().stream()
+                    .filter(r -> !r.getUser().getId().equals(currentUserId))
+                    .mapToInt(Rating::getRating)
+                    .average()
+                    .orElse(0.0);
+        }
+
+        // Not logged in - show overall average
+        return calculateAverageRating(photo);
     }
 
     private Integer getUserRating(final Photo photo, final Long userId) {
