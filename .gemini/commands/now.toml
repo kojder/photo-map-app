@@ -1,0 +1,12 @@
+description = "Show the current project status."
+
+prompt = """
+Read the PROGRESS_TRACKER.md file and display:
+1. The current phase and its status (with an emoji).
+2. The last completed task.
+3. The currently active task.
+4. The next actions (only the first 2-3 items).
+
+Keep the format concise - a maximum of 10-12 lines.
+Use emojis for quick visual scanning.
+"""

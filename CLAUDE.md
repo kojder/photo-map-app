@@ -340,6 +340,14 @@ Before starting implementation **ALWAYS**:
 - **Framework:** @SpringBootTest + MockMvc (backend), Playwright (frontend E2E)
 - **Example:** End of Phase 1 → test all /api/auth/* endpoints with real DB
 
+#### Frontend Manual Testing & Debugging
+- **Tool:** Use the `chrome-devtools` MCP for interacting with the running application's frontend.
+- **Purpose:**
+    - Manually test new implementations.
+    - Inspect the UI and component states.
+    - Check for console errors and network requests.
+    - Debug front-end issues in a live environment.
+
 #### i18n Policy
 - **Validation messages:** Use message codes from `ValidationMessages.properties`
   - Format: `{validation.field.rule}` (e.g., `{validation.email.required}`)

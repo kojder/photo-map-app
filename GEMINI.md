@@ -67,7 +67,7 @@ The project includes scripts to manage the development environment.
     ./scripts/stop-dev.sh
     ```
 *   **Database:** The PostgreSQL database is managed via `docker-compose.yml`. It should be started separately with `docker-compose up -d`. The dev scripts can also manage it if passed the `--with-db` flag.
-*   **Logs:** Logs are available in `scripts/.pid/backend.log` and `scripts/.pid/frontend.log`.
+*   **Logs:** Logs are available in `scripts/.pid/backend.log` and `scripts/.pid/frontend.log`. This is particularly useful for analyzing front-end and back-end errors.
 
 ## 4. Key Technical Guidelines
 
@@ -94,11 +94,11 @@ The project includes scripts to manage the development environment.
 *   **Commit Strategy**: Make small, focused commits. Test changes before committing.
 *   **Commit Messages**: Use the [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/) format.
     *   Example: `feat(auth): implement JWT token validation`
-*   **CRITICAL - Review Before Commit**:
-    1.  Make changes to files.
-    2.  Stage the changes (`git add <files>`).
-    3.  Use `git status` and `git diff --cached` to review the changes.
-    4.  Propose the commit to the user. The user will approve or deny the commit. **DO NOT** commit without user approval.
+*   **CRITICAL - User Approval Workflow**:
+    1.  **Review Changes**: Before proposing a commit, review all changes using `git status` and `git diff --cached`.
+    2.  **Propose Commit**: Propose a clear and conventional commit message to the user.
+    3.  **Await Approval**: **NEVER** run `git commit` without explicit approval from the user for the exact proposed message.
+    4.  **NEVER Push**: **NEVER** run `git push` unless explicitly instructed to do so by the user.
 
 # Building and Running
 

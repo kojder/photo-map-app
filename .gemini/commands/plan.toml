@@ -1,0 +1,49 @@
+
+description = "Generuje szczegółowy plan implementacji dla nowego zadania w oparciu o bieżący stan projektu."
+
+prompt = """
+Twoim zadaniem jest stworzenie szczegółowego planu wdrożenia nowego zadania lub zmiany w projekcie, bazując na jego aktualnej dokumentacji i strukturze. Użytkownik dostarczy opis zadania jako '{{args}}'.
+
+Oto Twój proces postępowania:
+
+1.  **ZROZUMIENIE CELU:** Przeanalizuj prośbę użytkownika zawartą w `{{args}}`.
+
+2.  **ANALIZA KONTEKSTU PROJEKTU:** Przeczytaj i zrozum następujące pliki, aby uzyskać pełen obraz projektu:
+    *   `PROGRESS_TRACKER.md`: Aby zrozumieć aktualny status, ostatnio wykonane zadania i co jest w planach.
+    *   `./.ai/prd.md`: Aby zrozumieć wymagania produktu (CO budujemy).
+    *   `./.ai/tech-stack.md`: Aby zrozumieć stos technologiczny (JAK budujemy).
+    *   `./.ai/api-plan.md`: Aby zrozumieć architekturę API.
+    *   `./.ai/db-plan.md`: Aby zrozumieć schemat bazy danych.
+    *   `./.ai/ui-plan.md`: Aby zrozumieć architekturę frontendową.
+    *   `./.decisions/prd-context.md`: Aby zrozumieć kontekst biznesowy.
+    *   `./.decisions/tech-decisions.md`: Aby zrozumieć uzasadnienie wyborów technologicznych.
+
+3.  **STWORZENIE PLANU WDROŻENIA:** Na podstawie celu i kontekstu projektu, stwórz szczegółowy, wieloetapowy plan. Plan powinien być zorganizowany w następujący sposób:
+
+    ### Plan wdrożenia: {{args}}
+
+    #### 1. Analiza Wpływu
+    *   **Backend:** (Opisz, które moduły, serwisy, encje zostaną zmienione).
+    *   **Frontend:** (Opisz, które komponenty, serwisy, widoki zostaną zmienione).
+    *   **Baza Danych:** (Opisz, czy schemat bazy danych wymaga zmian, np. nowe tabele, kolumny, migracje).
+    *   **Dokumentacja:** (Wymień wszystkie pliki dokumentacji, które będą wymagały aktualizacji).
+
+    #### 2. Kroki Implementacyjne (Backend)
+    *   (Wypunktowana lista zadań do wykonania w backendzie, np. "Zaktualizuj `pom.xml` o nową zależność", "Stwórz nową migrację Flyway `V...`", "Zmodyfikuj `PhotoService` dodając metodę `...`").
+
+    #### 3. Kroki Implementacyjne (Frontend)
+    *   (Wypunktowana lista zadań do wykonania w frontendzie, np. "Dodaj nową metodę do `PhotoService`", "Stwórz nowy komponent `...`", "Zaktualizuj routing w `app.routes.ts`").
+
+    #### 4. Aktualizacja Dokumentacji
+    *   (Wypunktowana lista plików dokumentacji do zaktualizowania wraz z krótkim opisem, co należy w nich zmienić, np. "Zaktualizuj `PROGRESS_TRACKER.md` o nowy status zadania", "Zaktualizuj `.ai/tech-stack.md` o nową bibliotekę").
+
+    #### 5. Strategia Testowania
+    *   **Testy jednostkowe:** (Opisz, co należy przetestować jednostkowo w backendzie i frontendzie).
+    *   **Testy integracyjne:** (Opisz scenariusze testów integracyjnych).
+    *   **Testy manualne (E2E):** (Opisz krytyczne ścieżki do ręcznego przeklikania).
+
+    #### 6. Proponowane Commity
+    *   (Zaproponuj serię commitów zgodnych z konwencją Conventional Commits, np. `feat(db): add support for mssql`, `docs(tech-stack): update database technology`).
+
+Inspiruj się strukturą i szczegółowością planowania z pliku `@.claude/skills/project-planning/SKILL.md`, ale nie kopiuj go. Twój plan musi być unikalnie dopasowany do zadania z `{{args}}` i aktualnego stanu projektu.
+"""
