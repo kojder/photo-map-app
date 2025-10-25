@@ -1,4 +1,4 @@
-import { Component, HostListener, OnDestroy, OnInit } from '@angular/core';
+import { Component, HostListener, OnDestroy, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Subject, takeUntil } from 'rxjs';
 import { PhotoViewerService, ViewerState } from '../../services/photo-viewer.service';
@@ -20,6 +20,7 @@ export class PhotoViewerComponent implements OnInit, OnDestroy {
   isFullscreen: boolean = false;
   isImageLoading: boolean = false;
   showSpinner: boolean = false; // Only show spinner after delay
+  errorMessage = signal<string | null>(null);
 
   // Touch event tracking
   private touchStartX: number = 0;
@@ -41,9 +42,13 @@ export class PhotoViewerComponent implements OnInit, OnDestroy {
       .subscribe(state => {
         this.viewerState = state;
         if (state.isOpen && state.currentIndex >= 0) {
+          // Clear previous timeout before setting new one
+          this.clearSpinnerTimeout();
+          
           this.currentPhoto = state.photos[state.currentIndex];
           // Set loading state before loading image
           this.isImageLoading = true;
+          this.errorMessage.set(null); // Clear any previous error
           // Show spinner only if loading takes longer than SPINNER_DELAY
           this.spinnerTimeout = setTimeout(() => {
             if (this.isImageLoading) {
@@ -63,10 +68,7 @@ export class PhotoViewerComponent implements OnInit, OnDestroy {
           this.isImageLoading = false;
           this.showSpinner = false;
           // Clear spinner timeout if exists
-          if (this.spinnerTimeout) {
-            clearTimeout(this.spinnerTimeout);
-            this.spinnerTimeout = null;
-          }
+          this.clearSpinnerTimeout();
           // Restore body scroll when viewer is closed
           document.body.style.overflow = '';
           // Exit fullscreen when closing viewer
@@ -84,14 +86,21 @@ export class PhotoViewerComponent implements OnInit, OnDestroy {
     // Restore body scroll on component destroy
     document.body.style.overflow = '';
     // Clear spinner timeout if exists
-    if (this.spinnerTimeout) {
-      clearTimeout(this.spinnerTimeout);
-      this.spinnerTimeout = null;
-    }
+    this.clearSpinnerTimeout();
     // Exit fullscreen on component destroy
     this.exitFullscreen();
     this.destroy$.next();
     this.destroy$.complete();
+  }
+
+  /**
+   * Clear spinner timeout to prevent memory leaks
+   */
+  private clearSpinnerTimeout(): void {
+    if (this.spinnerTimeout) {
+      clearTimeout(this.spinnerTimeout);
+      this.spinnerTimeout = null;
+    }
   }
 
   @HostListener('document:keydown', ['$event'])
@@ -320,11 +329,9 @@ export class PhotoViewerComponent implements OnInit, OnDestroy {
   onImageLoad(): void {
     this.isImageLoading = false;
     this.showSpinner = false;
+    this.errorMessage.set(null); // Clear error on successful load
     // Clear spinner timeout if exists
-    if (this.spinnerTimeout) {
-      clearTimeout(this.spinnerTimeout);
-      this.spinnerTimeout = null;
-    }
+    this.clearSpinnerTimeout();
   }
 
   /**
@@ -333,11 +340,9 @@ export class PhotoViewerComponent implements OnInit, OnDestroy {
   onImageError(): void {
     this.isImageLoading = false;
     this.showSpinner = false;
+    this.errorMessage.set('Failed to load photo. The image may be missing or corrupted.');
     // Clear spinner timeout if exists
-    if (this.spinnerTimeout) {
-      clearTimeout(this.spinnerTimeout);
-      this.spinnerTimeout = null;
-    }
+    this.clearSpinnerTimeout();
     console.error('Failed to load photo:', this.imageUrl);
   }
 }

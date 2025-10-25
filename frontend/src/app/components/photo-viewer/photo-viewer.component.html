@@ -16,6 +16,22 @@
           </div>
         }
         
+        <!-- Error message -->
+        @if (errorMessage()) {
+          <div class="error-message" data-testid="viewer-error">
+            <div class="error-content">
+              <p class="error-text">{{ errorMessage() }}</p>
+              <button 
+                (click)="close(); $event.stopPropagation()" 
+                class="error-close-button"
+                data-testid="viewer-error-close"
+              >
+                Close Viewer
+              </button>
+            </div>
+          </div>
+        }
+        
         <!-- Photo image -->
         <img 
           [src]="imageUrl" 
@@ -29,25 +45,27 @@
 
       <!-- Navigation buttons -->
       <div class="photo-viewer-controls">
-        <button 
-          *ngIf="!isFirstPhoto()"
-          (click)="previous(); $event.stopPropagation()" 
-          class="nav-button nav-button-left"
-          aria-label="Previous photo"
-          data-testid="viewer-prev-button"
-        >
-          ‹
-        </button>
+        @if (!isFirstPhoto()) {
+          <button 
+            (click)="previous(); $event.stopPropagation()" 
+            class="nav-button nav-button-left"
+            aria-label="Previous photo"
+            data-testid="viewer-prev-button"
+          >
+            ‹
+          </button>
+        }
 
-        <button 
-          *ngIf="!isLastPhoto()"
-          (click)="next(); $event.stopPropagation()" 
-          class="nav-button nav-button-right"
-          aria-label="Next photo"
-          data-testid="viewer-next-button"
-        >
-          ›
-        </button>
+        @if (!isLastPhoto()) {
+          <button 
+            (click)="next(); $event.stopPropagation()" 
+            class="nav-button nav-button-right"
+            aria-label="Next photo"
+            data-testid="viewer-next-button"
+          >
+            ›
+          </button>
+        }
       </div>
 
       <!-- Footer with counter and fullscreen toggle -->

@@ -11,7 +11,7 @@
 
 ### 🎯 Currently Working On
 
-**No active tasks** - Photo Viewer Phase 4 complete, awaiting manual testing or next feature selection.
+**No active tasks** - Ready for commit and deployment.
 
 <!-- Use template below when starting new task -->
 <!--
@@ -22,6 +22,17 @@
 -->
 
 ### ✅ Last Completed
+
+**Rating System Improvements** (2025-10-25)
+- ✅ Fixed rating range display (1-5 stars with flex-wrap for mobile)
+- ✅ Implemented personalized rating display:
+  - Shows user's own rating when set
+  - Shows average of others' ratings when user hasn't rated
+- ✅ Auto-remove photos from gallery when rating drops below active filter
+- ✅ Backend: `calculateDisplayRating()` method for personalized ratings
+- ✅ Frontend: `photoMatchesFilters()` method validates against all filters
+- ✅ Tests: Backend 61/61 ✅, Frontend 148/148 ✅ (added 3 new filter tests)
+- 📝 Changes: PhotoController.java, PhotoService.ts, PhotoCardComponent.html, MapComponent.ts
 
 **Photo Viewer - Phase 1-4 Complete** (2025-10-25)
 - ✅ Phase 1: Core viewer with keyboard navigation (ESC, arrows)

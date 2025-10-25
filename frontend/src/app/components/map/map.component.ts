@@ -188,9 +188,18 @@ export class MapComponent implements OnInit, AfterViewInit, OnDestroy {
       const marker = L.marker([photo.gpsLatitude!, photo.gpsLongitude!]);
 
       const thumbnailUrl = this.thumbnailUrls.get(photo.id) || '';
-      const ratingDisplay = photo.averageRating
-        ? `⭐ ${photo.averageRating.toFixed(1)} (${photo.totalRatings})`
-        : 'No rating yet';
+      
+      let ratingDisplay = 'No rating yet';
+      if (photo.averageRating && photo.averageRating > 0) {
+        const ratingValue = `⭐ ${photo.averageRating.toFixed(1)}`;
+        if (photo.userRating) {
+          ratingDisplay = `${ratingValue} (your rating)`;
+        } else if (photo.totalRatings > 0) {
+          ratingDisplay = `${ratingValue} (${photo.totalRatings} ${photo.totalRatings === 1 ? 'rating' : 'ratings'})`;
+        } else {
+          ratingDisplay = ratingValue;
+        }
+      }
 
       const popupContent = `
         <div style="text-align: center; min-width: 150px;">
@@ -202,7 +211,7 @@ export class MapComponent implements OnInit, AfterViewInit, OnDestroy {
             style="width: 128px; height: 96px; object-fit: cover; border-radius: 4px; cursor: pointer;" 
           />` : '<div style="width: 128px; height: 96px; background: #e5e7eb; border-radius: 4px;"></div>'}
           <div style="margin-top: 8px; font-weight: 600;">${photo.originalFilename}</div>
-          <div style="margin-top: 4px; color: #666;">${ratingDisplay}</div>
+          <div style="margin-top: 4px; color: #666; font-size: 14px;">${ratingDisplay}</div>
         </div>
       `;
 

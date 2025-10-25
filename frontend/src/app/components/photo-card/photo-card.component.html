@@ -29,7 +29,12 @@
         @if (photo.averageRating && photo.averageRating > 0) {
           <span class="text-yellow-500">{{ getStars(photo.averageRating) }}</span>
           <span class="text-sm text-gray-600">
-            {{ photo.averageRating.toFixed(1) }} ({{ photo.totalRatings }})
+            {{ photo.averageRating.toFixed(1) }}
+            @if (photo.userRating) {
+              <span class="text-xs text-blue-600">(your rating)</span>
+            } @else if (photo.totalRatings > 0) {
+              <span class="text-xs text-gray-500">({{ photo.totalRatings }} {{ photo.totalRatings === 1 ? 'rating' : 'ratings' }})</span>
+            }
           </span>
         } @else {
           <span class="text-sm text-gray-500 italic">No rating yet</span>
@@ -69,7 +74,7 @@
     } @else {
       <div class="mb-4">
         <p class="text-sm text-gray-700 mb-2">Select rating (1-5):</p>
-        <div class="flex gap-2">
+        <div class="flex flex-wrap gap-2">
           @for (rating of [1, 2, 3, 4, 5]; track rating) {
             <button
               (click)="onSelectRating(rating)"
