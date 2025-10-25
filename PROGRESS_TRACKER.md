@@ -11,7 +11,19 @@
 
 ### 🎯 Currently Working On
 
-**Status:** 🎉 All tasks completed - ready for next phase
+**Status:** ⏳ In Progress
+
+**Active Tasks:**
+- [ ] **Photo Viewer Feature** (fullscreen photo browser with keyboard/touch navigation)
+  - [ ] Phase 1: Core viewer component + service + backend endpoint
+  - [ ] Phase 2: Gallery integration
+  - [ ] Phase 3: Map integration
+  - [ ] Phase 4: Mobile touch support
+  - [ ] Phase 5: UX enhancements (loading, preloading, animations)
+
+**Details & Progress:** See `.ai/feature-photo-viewer.md`  
+**Branch:** `feature/photo-viewer`  
+**Estimated:** 8-10h  
 
 <!--
 **Working Session Template** (usuń po zakończeniu zadania):
