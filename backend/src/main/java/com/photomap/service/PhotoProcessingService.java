@@ -143,7 +143,7 @@ public class PhotoProcessingService {
 
         Thumbnails.of(originalFile)
                 .size(size, size)
-                .keepAspectRatio(false)
+                .keepAspectRatio(true)
                 .toFile(thumbnailPath.toFile());
 
         log.info("Generated thumbnail: {}x{} -> {}", size, size, thumbnailPath);
