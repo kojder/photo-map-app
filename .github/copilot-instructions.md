@@ -6,6 +6,12 @@ Full-stack photo geolocation app: Angular 18 (standalone) + Spring Boot 3 + Post
 
 **Current Status:** Phase 4 complete (MVP functional end-to-end: auth → upload → gallery → rating → map)
 
+**⚠️ IMPORTANT - PostgreSQL Workflow:**
+- `./scripts/start-dev.sh --with-db` - TYLKO przy pierwszym starcie po włączeniu środowiska
+- `./scripts/start-dev.sh` - wszystkie kolejne starty (PostgreSQL już działa w Dockerze)
+- `./scripts/stop-dev.sh` - zatrzymuje backend + frontend, ALE NIE PostgreSQL (to zamierzone!)
+- PostgreSQL w Dockerze działa w tle przez całą sesję - nie trzeba go restartować
+
 ## Architecture & Key Patterns
 
 ### Backend (Spring Boot 3 + Java 17)
@@ -84,7 +90,10 @@ Full-stack photo geolocation app: Angular 18 (standalone) + Spring Boot 3 + Post
 tail -n 20 scripts/.pid/backend.log
 tail -n 20 scripts/.pid/frontend.log
 
-# Start if not running
+# Start if not running (PostgreSQL już działa? Użyj bez --with-db)
+./scripts/start-dev.sh
+
+# Pierwszy start po włączeniu środowiska? Dodaj --with-db
 ./scripts/start-dev.sh --with-db
 ```
 
@@ -99,14 +108,21 @@ tail -n 20 scripts/.pid/frontend.log
 
 **Via Development Scripts (Recommended):**
 ```bash
-# Start everything (backend + frontend)
-./scripts/start-dev.sh
-
-# With PostgreSQL
+# PIERWSZY START po włączeniu środowiska (uruchamia PostgreSQL + backend + frontend):
 ./scripts/start-dev.sh --with-db
 
-# Stop everything
-./scripts/stop-dev.sh [--with-db]
+# KOLEJNE STARTY w tej samej sesji (PostgreSQL już działa w Dockerze):
+./scripts/start-dev.sh
+
+# WAŻNE: PostgreSQL pozostaje włączony w tle po ./scripts/stop-dev.sh
+# To normalne i zamierzone - stop-dev.sh zatrzymuje TYLKO backend + frontend
+# PostgreSQL wyłączy się dopiero po docker-compose down lub restarcie systemu
+
+# Stop everything (backend + frontend, PostgreSQL zostaje w Dockerze)
+./scripts/stop-dev.sh
+
+# Stop everything INCLUDING PostgreSQL (rzadko potrzebne):
+./scripts/stop-dev.sh --with-db
 ```
 - Auto-detects running processes (safe to re-run)
 - PID tracking in `scripts/.pid/`

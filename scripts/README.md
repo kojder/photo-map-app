@@ -6,17 +6,28 @@ Skrypty do zarządzania środowiskiem deweloperskim Photo Map MVP.
 
 ### 1. Uruchom PostgreSQL (raz na początek sesji)
 ```bash
-docker-compose up -d
-```
+# Przy PIERWSZYM uruchomieniu po starcie środowiska:
+./scripts/start-dev.sh --with-db
 
-### 2. Uruchom aplikację (backend + frontend)
-```bash
+# Kolejne uruchomienia (PostgreSQL już działa w Dockerze):
 ./scripts/start-dev.sh
 ```
 
-### 3. Zatrzymaj aplikację
+**WAŻNE:** 
+- `--with-db` uruchamia PostgreSQL w Dockerze
+- `./scripts/stop-dev.sh` **NIE zatrzymuje PostgreSQL** - działa w tle dalej
+- PostgreSQL wyłączy się dopiero po `docker-compose down` lub restarcie systemu
+
+### 2. Zatrzymaj aplikację (backend + frontend)
 ```bash
 ./scripts/stop-dev.sh
+# PostgreSQL nadal działa - to normalne!
+```
+
+### 3. Całkowite zatrzymanie (rzadko potrzebne)
+```bash
+./scripts/stop-dev.sh --with-db
+# Zatrzymuje backend + frontend + PostgreSQL
 ```
 
 ---
@@ -207,9 +218,35 @@ DEBUG=true ./scripts/stop-dev.sh
 ## 💡 Wskazówki
 
 **Zalecany workflow:**
-1. Uruchom PostgreSQL raz na początek: `docker-compose up -d`
-2. Używaj `start-dev.sh` / `stop-dev.sh` wielokrotnie w sesji
-3. PostgreSQL może zostać włączony cały czas (niskie zużycie zasobów)
+1. **Pierwszy start po włączeniu komputera:**
+   ```bash
+   ./scripts/start-dev.sh --with-db
+   ```
+   
+2. **Kolejne starty (w tej samej sesji):**
+   ```bash
+   # PostgreSQL już działa w Dockerze, więc:
+   ./scripts/start-dev.sh
+   ```
+
+3. **Restart backend/frontend bez DB:**
+   ```bash
+   ./scripts/stop-dev.sh      # Zatrzymuje tylko backend + frontend
+   ./scripts/start-dev.sh     # PostgreSQL nadal działa!
+   ```
+
+4. **Całkowite wyczyszczenie (koniec dnia):**
+   ```bash
+   ./scripts/stop-dev.sh --with-db
+   # Lub ręcznie:
+   docker-compose down
+   ```
+
+**PostgreSQL w tle:**
+- `start-dev.sh --with-db` uruchamia PostgreSQL jako kontener Docker
+- `stop-dev.sh` **NIE zatrzymuje** PostgreSQL - zostaje w tle
+- `stop-dev.sh --with-db` zatrzymuje PostgreSQL (docker-compose down)
+- PostgreSQL jest lekki - można zostawić włączony cały dzień
 
 **Wielokrotne uruchomienie:**
 - Skrypt `start-dev.sh` wykrywa już działające procesy

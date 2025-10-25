@@ -6,6 +6,7 @@ import 'leaflet.markercluster';
 import { Photo } from '../../models/photo.model';
 import { PhotoService } from '../../services/photo.service';
 import { FilterService } from '../../services/filter.service';
+import { PhotoViewerService } from '../../services/photo-viewer.service';
 
 @Component({
   selector: 'app-map',
@@ -27,6 +28,7 @@ export class MapComponent implements OnInit, AfterViewInit, OnDestroy {
   constructor(
     private photoService: PhotoService,
     private filterService: FilterService,
+    private photoViewerService: PhotoViewerService,
     private http: HttpClient
   ) {
     this.fixLeafletIconPaths();
@@ -192,18 +194,46 @@ export class MapComponent implements OnInit, AfterViewInit, OnDestroy {
 
       const popupContent = `
         <div style="text-align: center; min-width: 150px;">
-          ${thumbnailUrl ? `<img src="${thumbnailUrl}" alt="${photo.originalFilename}" style="width: 128px; height: 96px; object-fit: cover; border-radius: 4px;" />` : '<div style="width: 128px; height: 96px; background: #e5e7eb; border-radius: 4px;"></div>'}
+          ${thumbnailUrl ? `<img 
+            src="${thumbnailUrl}" 
+            alt="${photo.originalFilename}" 
+            data-photo-id="${photo.id}"
+            data-testid="map-popup-thumbnail"
+            style="width: 128px; height: 96px; object-fit: cover; border-radius: 4px; cursor: pointer;" 
+          />` : '<div style="width: 128px; height: 96px; background: #e5e7eb; border-radius: 4px;"></div>'}
           <div style="margin-top: 8px; font-weight: 600;">${photo.originalFilename}</div>
           <div style="margin-top: 4px; color: #666;">${ratingDisplay}</div>
-          <a href="/gallery" style="display: inline-block; margin-top: 8px; color: #3b82f6; text-decoration: none;">View in Gallery</a>
         </div>
       `;
 
-      marker.bindPopup(popupContent);
+      const popup = L.popup().setContent(popupContent);
+      
+      popup.on('add', () => {
+        const popupElement = popup.getElement();
+        if (popupElement) {
+          const img = popupElement.querySelector('img[data-photo-id]');
+          if (img) {
+            img.addEventListener('click', (e: Event) => {
+              const target = e.target as HTMLImageElement;
+              const photoId = parseInt(target.getAttribute('data-photo-id') || '0', 10);
+              if (photoId) {
+                this.onPhotoClick(photoId);
+              }
+            });
+          }
+        }
+      });
+
+      marker.bindPopup(popup);
       this.markerClusterGroup!.addLayer(marker);
     });
 
     const bounds = L.latLngBounds(photosWithGps.map(p => [p.gpsLatitude!, p.gpsLongitude!]));
     this.map.fitBounds(bounds, { padding: [50, 50] });
+  }
+
+  onPhotoClick(photoId: number): void {
+    const photos = this.photos();
+    this.photoViewerService.openViewer(photos, photoId, '/map');
   }
 }

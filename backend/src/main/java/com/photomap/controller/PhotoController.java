@@ -57,6 +57,9 @@ public class PhotoController {
     @Value("${photo.upload.directory.medium}")
     private String mediumDirectory;
 
+    @Value("${photo.upload.directory.large}")
+    private String largeDirectory;
+
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<Map<String, String>> uploadPhoto(
             @RequestParam("file") final MultipartFile file,
@@ -180,8 +183,13 @@ public class PhotoController {
             return ResponseEntity.notFound().build();
         }
 
+        String contentType = Files.probeContentType(filePath);
+        if (contentType == null) {
+            contentType = MediaType.IMAGE_JPEG_VALUE;
+        }
+
         return ResponseEntity.ok()
-                .contentType(MediaType.parseMediaType(photo.getMimeType()))
+                .contentType(MediaType.parseMediaType(contentType))
                 .body(resource);
     }
 
