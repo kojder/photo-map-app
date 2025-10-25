@@ -90,49 +90,50 @@ Router.navigate('/gallery') ← Returns to source
 
 ## 📋 Implementation Phases
 
-### Phase 1: Core Viewer Component ⏳
+### Phase 1: Core Viewer Component ✅
 
-**Status:** 🔜 Not started  
-**Time:** ~3h  
+**Status:** ✅ Completed (2025-10-25)  
+**Time:** ~1.5h  
 
 **Tasks:**
-- [ ] Create `PhotoViewerComponent` (standalone)
-  - [ ] Template: fullscreen overlay with image element
-  - [ ] CSS: `position: fixed`, `object-fit: contain`, black background
-  - [ ] Keyboard listeners: ESC (close), ArrowLeft (prev), ArrowRight (next)
-  - [ ] Navigation buttons (‹ › arrows) - visible only on hover
-  - [ ] Footer with counter (e.g., "3 / 24")
+- [x] Create `PhotoViewerComponent` (standalone)
+  - [x] Template: fullscreen overlay with image element
+  - [x] CSS: `position: fixed`, `object-fit: contain`, black background
+  - [x] Keyboard listeners: ESC (close), ArrowLeft (prev), ArrowRight (next)
+  - [x] Navigation buttons (‹ › arrows) - visible only on hover
+  - [x] Footer with counter (e.g., "3 / 24")
   
-- [ ] Create `PhotoViewerService`
-  - [ ] `ViewerState` interface (isOpen, photos, currentIndex, sourceRoute)
-  - [ ] BehaviorSubject for state management
-  - [ ] `openViewer(photos, photoId, sourceRoute)` method
-  - [ ] `closeViewer()` method → Router.navigate(sourceRoute)
-  - [ ] `nextPhoto()` / `previousPhoto()` methods
-  - [ ] Boundary checks (first/last photo)
+- [x] Create `PhotoViewerService`
+  - [x] `ViewerState` interface (isOpen, photos, currentIndex, sourceRoute)
+  - [x] BehaviorSubject for state management
+  - [x] `openViewer(photos, photoId, sourceRoute)` method
+  - [x] `closeViewer()` method → Router.navigate(sourceRoute)
+  - [x] `nextPhoto()` / `previousPhoto()` methods
+  - [x] Boundary checks (first/last photo)
   
-- [ ] Backend: Add `/api/photos/{id}/full` endpoint
-  - [ ] `PhotoController.getFullPhoto(id)` method
-  - [ ] Return file from `uploads/large/` directory
-  - [ ] Content-Type header based on file extension
-  - [ ] Error handling (404 if file not found)
+- [x] Backend: Updated `/api/photos/{id}/full` endpoint
+  - [x] Changed from `originalDirectory` to `largeDirectory` (800px)
+  - [x] Added proper content-type detection via `Files.probeContentType()`
+  - [x] Error handling (404 if file not found)
   
-- [ ] Unit Tests
-  - [ ] `PhotoViewerComponent.spec.ts`
-    - [ ] Test keyboard navigation (arrows, ESC)
-    - [ ] Test boundary conditions (first/last photo)
-    - [ ] Test navigation button clicks
-  - [ ] `PhotoViewerService.spec.ts`
-    - [ ] Test state management (BehaviorSubject emissions)
-    - [ ] Test openViewer/closeViewer flow
-    - [ ] Test nextPhoto/previousPhoto logic
+- [x] Unit Tests
+  - [x] `PhotoViewerComponent.spec.ts` (36 tests total passing)
+    - [x] Test keyboard navigation (arrows, ESC)
+    - [x] Test boundary conditions (first/last photo)
+    - [x] Test navigation button clicks
+    - [x] Test template rendering
+  - [x] `PhotoViewerService.spec.ts`
+    - [x] Test state management (BehaviorSubject emissions)
+    - [x] Test openViewer/closeViewer flow
+    - [x] Test nextPhoto/previousPhoto logic
+  - [x] Backend tests (61 tests total passing)
 
 **Acceptance Criteria:**
 - ✅ Viewer opens and displays photo fullscreen
 - ✅ ESC key closes viewer and navigates to sourceRoute
 - ✅ Arrow keys navigate between photos
 - ✅ Navigation respects boundaries (can't go before first or after last)
-- ✅ All unit tests passing
+- ✅ All unit tests passing (36 frontend + 61 backend)
 
 ---
 

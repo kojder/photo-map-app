@@ -1,0 +1,53 @@
+@if (viewerState?.isOpen) {
+  <div class="photo-viewer-overlay" (click)="close()">
+    <div class="photo-viewer-content" (click)="$event.stopPropagation()">
+      <!-- Photo image -->
+      <img 
+        [src]="imageUrl" 
+        [alt]="currentPhoto?.originalFilename || 'Photo'"
+        class="photo-viewer-image"
+        data-testid="viewer-image"
+      />
+
+      <!-- Navigation buttons -->
+      <div class="photo-viewer-controls">
+        <button 
+          *ngIf="!isFirstPhoto()"
+          (click)="previous()" 
+          class="nav-button nav-button-left"
+          aria-label="Previous photo"
+          data-testid="viewer-prev-button"
+        >
+          ‹
+        </button>
+
+        <button 
+          *ngIf="!isLastPhoto()"
+          (click)="next()" 
+          class="nav-button nav-button-right"
+          aria-label="Next photo"
+          data-testid="viewer-next-button"
+        >
+          ›
+        </button>
+      </div>
+
+      <!-- Footer with counter -->
+      <div class="photo-viewer-footer">
+        <span class="photo-counter" data-testid="viewer-counter">
+          {{ photoCounter }}
+        </span>
+      </div>
+
+      <!-- Close button -->
+      <button 
+        (click)="close()" 
+        class="close-button"
+        aria-label="Close viewer"
+        data-testid="viewer-close-button"
+      >
+        ✕
+      </button>
+    </div>
+  </div>
+}

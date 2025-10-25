@@ -43,6 +43,7 @@
                 data-testid="gallery-photo-card"
                 [photo]="photo"
                 (photoDeleted)="onPhotoDeleted($event)"
+                (photoClick)="onPhotoClick($event)"
               ></app-photo-card>
             }
           </div>

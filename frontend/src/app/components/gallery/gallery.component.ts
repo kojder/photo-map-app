@@ -4,6 +4,7 @@ import { Observable } from 'rxjs';
 import { Photo } from '../../models/photo.model';
 import { PhotoService } from '../../services/photo.service';
 import { FilterService } from '../../services/filter.service';
+import { PhotoViewerService } from '../../services/photo-viewer.service';
 import { PhotoCardComponent } from '../photo-card/photo-card.component';
 import { FilterBarComponent } from '../filter-bar/filter-bar.component';
 import { UploadDialogComponent } from '../upload-dialog/upload-dialog.component';
@@ -23,7 +24,8 @@ export class GalleryComponent implements OnInit {
 
   constructor(
     private photoService: PhotoService,
-    private filterService: FilterService
+    private filterService: FilterService,
+    private photoViewerService: PhotoViewerService
   ) {
     this.photos$ = this.photoService.photos$;
   }
@@ -69,5 +71,12 @@ export class GalleryComponent implements OnInit {
 
   onPhotoDeleted(photoId: number): void {
     this.loadPhotos();
+  }
+
+  onPhotoClick(photoId: number): void {
+    // Get current photos array from the observable
+    this.photoService.photos$.subscribe(photos => {
+      this.photoViewerService.openViewer(photos, photoId, '/gallery');
+    }).unsubscribe();
   }
 }

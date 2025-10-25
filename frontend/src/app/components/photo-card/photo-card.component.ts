@@ -15,6 +15,7 @@ import { PhotoService } from '../../services/photo.service';
 export class PhotoCardComponent implements OnInit, OnDestroy {
   @Input({ required: true }) photo!: Photo;
   @Output() photoDeleted = new EventEmitter<number>();
+  @Output() photoClick = new EventEmitter<number>();
 
   showRatingInput = signal(false);
   selectedRating = signal(0);
@@ -120,5 +121,9 @@ export class PhotoCardComponent implements OnInit, OnDestroy {
   cancelRating(): void {
     this.showRatingInput.set(false);
     this.selectedRating.set(0);
+  }
+
+  onPhotoClick(): void {
+    this.photoClick.emit(this.photo.id);
   }
 }
