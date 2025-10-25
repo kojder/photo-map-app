@@ -296,4 +296,135 @@ describe('PhotoViewerComponent', () => {
       expect(nextButton).toBeFalsy();
     });
   });
+
+  describe('touch event handlers', () => {
+    beforeEach(() => {
+      const openState: ViewerState = {
+        isOpen: true,
+        photos: mockPhotos,
+        currentIndex: 0,
+        sourceRoute: '/gallery'
+      };
+      viewerStateSubject.next(openState);
+      fixture.detectChanges();
+    });
+
+    // Helper function to create mock TouchEvent
+    function createMockTouchEvent(screenX: number, screenY: number): any {
+      return {
+        changedTouches: [{
+          screenX,
+          screenY,
+          clientX: screenX,
+          clientY: screenY
+        }]
+      };
+    }
+
+    it('should navigate to next photo on swipe left', () => {
+      // Simulate swipe left (start at 200, end at 100 = -100 delta)
+      const touchStartEvent = createMockTouchEvent(200, 100);
+      const touchEndEvent = createMockTouchEvent(100, 100);
+
+      component.onTouchStart(touchStartEvent as TouchEvent);
+      component.onTouchEnd(touchEndEvent as TouchEvent);
+
+      expect(photoViewerService.nextPhoto).toHaveBeenCalled();
+    });
+
+    it('should navigate to previous photo on swipe right', () => {
+      // Simulate swipe right (start at 100, end at 200 = +100 delta)
+      const touchStartEvent = createMockTouchEvent(100, 100);
+      const touchEndEvent = createMockTouchEvent(200, 100);
+
+      component.onTouchStart(touchStartEvent as TouchEvent);
+      component.onTouchEnd(touchEndEvent as TouchEvent);
+
+      expect(photoViewerService.previousPhoto).toHaveBeenCalled();
+    });
+
+    it('should close viewer on tap (small movement)', () => {
+      // Simulate tap (start at 100, end at 105 = 5px delta < TAP_THRESHOLD)
+      const touchStartEvent = createMockTouchEvent(100, 100);
+      const touchEndEvent = createMockTouchEvent(105, 103);
+
+      component.onTouchStart(touchStartEvent as TouchEvent);
+      component.onTouchEnd(touchEndEvent as TouchEvent);
+
+      expect(photoViewerService.closeViewer).toHaveBeenCalled();
+    });
+
+    it('should not navigate on small swipe (below threshold)', () => {
+      // Simulate small swipe (30px < SWIPE_THRESHOLD 50px but > TAP_THRESHOLD 10px)
+      const touchStartEvent = createMockTouchEvent(100, 100);
+      const touchEndEvent = createMockTouchEvent(130, 100);
+
+      component.onTouchStart(touchStartEvent as TouchEvent);
+      component.onTouchEnd(touchEndEvent as TouchEvent);
+
+      // Small swipe that's neither swipe nor tap - no action taken
+      expect(photoViewerService.nextPhoto).not.toHaveBeenCalled();
+      expect(photoViewerService.previousPhoto).not.toHaveBeenCalled();
+      expect(photoViewerService.closeViewer).not.toHaveBeenCalled();
+    });
+
+    it('should not navigate on vertical swipe', () => {
+      // Simulate vertical swipe (up/down)
+      const touchStartEvent = createMockTouchEvent(100, 100);
+      const touchEndEvent = createMockTouchEvent(100, 200);
+
+      component.onTouchStart(touchStartEvent as TouchEvent);
+      component.onTouchEnd(touchEndEvent as TouchEvent);
+
+      expect(photoViewerService.nextPhoto).not.toHaveBeenCalled();
+      expect(photoViewerService.previousPhoto).not.toHaveBeenCalled();
+    });
+
+    it('should track touch movement in onTouchMove', () => {
+      const touchStartEvent = createMockTouchEvent(100, 100);
+      const touchMoveEvent = createMockTouchEvent(150, 105);
+      const touchEndEvent = createMockTouchEvent(200, 110);
+
+      component.onTouchStart(touchStartEvent as TouchEvent);
+      component.onTouchMove(touchMoveEvent as TouchEvent);
+      component.onTouchEnd(touchEndEvent as TouchEvent);
+
+      // Should use touchEnd position (200, 110)
+      expect(photoViewerService.previousPhoto).toHaveBeenCalled();
+    });
+
+    it('should ignore touch events when viewer is closed', () => {
+      const closedState: ViewerState = {
+        isOpen: false,
+        photos: [],
+        currentIndex: -1,
+        sourceRoute: '/'
+      };
+      viewerStateSubject.next(closedState);
+      fixture.detectChanges();
+
+      const touchStartEvent = createMockTouchEvent(100, 100);
+      const touchEndEvent = createMockTouchEvent(200, 100);
+
+      component.onTouchStart(touchStartEvent as TouchEvent);
+      component.onTouchEnd(touchEndEvent as TouchEvent);
+
+      expect(photoViewerService.previousPhoto).not.toHaveBeenCalled();
+      expect(photoViewerService.closeViewer).not.toHaveBeenCalled();
+    });
+
+    it('should reset touch positions after gesture handling', () => {
+      const touchStartEvent = createMockTouchEvent(100, 100);
+      const touchEndEvent = createMockTouchEvent(200, 100);
+
+      component.onTouchStart(touchStartEvent as TouchEvent);
+      component.onTouchEnd(touchEndEvent as TouchEvent);
+
+      // After gesture, positions should be reset to 0
+      expect(component['touchStartX']).toBe(0);
+      expect(component['touchStartY']).toBe(0);
+      expect(component['touchEndX']).toBe(0);
+      expect(component['touchEndY']).toBe(0);
+    });
+  });
 });

@@ -19,6 +19,14 @@ export class PhotoViewerComponent implements OnInit, OnDestroy {
   imageUrl: string = '';
   isFullscreen: boolean = false;
 
+  // Touch event tracking
+  private touchStartX: number = 0;
+  private touchStartY: number = 0;
+  private touchEndX: number = 0;
+  private touchEndY: number = 0;
+  private readonly SWIPE_THRESHOLD: number = 50; // Minimum distance for swipe (px)
+  private readonly TAP_THRESHOLD: number = 10; // Maximum movement for tap (px)
+
   constructor(private photoViewerService: PhotoViewerService) {}
 
   ngOnInit(): void {
@@ -185,5 +193,74 @@ export class PhotoViewerComponent implements OnInit, OnDestroy {
         window.scrollTo(0, 1);
       }, 100);
     }
+  }
+
+  /**
+   * Touch event handlers for mobile swipe gestures
+   */
+  onTouchStart(event: TouchEvent): void {
+    if (!this.viewerState?.isOpen) {
+      return;
+    }
+
+    // Record starting position
+    this.touchStartX = event.changedTouches[0].screenX;
+    this.touchStartY = event.changedTouches[0].screenY;
+  }
+
+  onTouchMove(event: TouchEvent): void {
+    if (!this.viewerState?.isOpen) {
+      return;
+    }
+
+    // Update current position during move
+    this.touchEndX = event.changedTouches[0].screenX;
+    this.touchEndY = event.changedTouches[0].screenY;
+  }
+
+  onTouchEnd(event: TouchEvent): void {
+    if (!this.viewerState?.isOpen) {
+      return;
+    }
+
+    // Final position
+    this.touchEndX = event.changedTouches[0].screenX;
+    this.touchEndY = event.changedTouches[0].screenY;
+
+    this.handleGesture();
+  }
+
+  /**
+   * Analyze touch gesture and perform action
+   */
+  private handleGesture(): void {
+    const deltaX = this.touchEndX - this.touchStartX;
+    const deltaY = this.touchEndY - this.touchStartY;
+    const absDeltaX = Math.abs(deltaX);
+    const absDeltaY = Math.abs(deltaY);
+
+    // Check if it's a tap (very small movement)
+    if (absDeltaX < this.TAP_THRESHOLD && absDeltaY < this.TAP_THRESHOLD) {
+      // Tap detected - close viewer
+      this.close();
+      return;
+    }
+
+    // Horizontal swipe detection
+    if (absDeltaX > absDeltaY && absDeltaX > this.SWIPE_THRESHOLD) {
+      if (deltaX > 0) {
+        // Swipe right → previous photo
+        this.previous();
+      } else {
+        // Swipe left → next photo
+        this.next();
+      }
+    }
+
+    // Reset touch positions
+    this.touchStartX = 0;
+    this.touchStartY = 0;
+    this.touchEndX = 0;
+    this.touchEndY = 0;
   }
 }

@@ -95,14 +95,17 @@ photo-map-app/
 - ✅ Phase 2: Frontend - Setup & Auth (Angular 18 + Tailwind CSS 3)
 - ✅ Phase 3: Backend - Photo Handling (Upload, EXIF, thumbnails, Rating API)
 - ✅ Phase 4: Frontend - Gallery & Map (Leaflet.js, rating stars, filtering)
+- ✅ Photo Viewer Feature (fullscreen browsing, keyboard + mobile touch navigation)
 - ✅ GitHub Copilot Configuration (instructions + prompts for AI-assisted development)
-- ✅ **MVP funkcjonalny end-to-end** (auth → upload → gallery → rating → map)
+- ✅ Chrome DevTools MCP Integration (AI-powered frontend verification)
+- ✅ **MVP funkcjonalny end-to-end** (auth → upload → gallery → rating → map → viewer)
 
 **Co dalej:**
+- 🔜 (Optional) Photo Viewer Phase 5: UX Enhancements (loading states, preloading)
 - 🔜 (Optional) Phase 5: Admin Panel
 - 🔜 (Optional) Phase 6: Deployment na Mikrus VPS
 
-**Aktualny status:** 4/6 faz core MVP ukończone (67%) + GitHub Copilot setup
+**Aktualny status:** 4/6 faz core MVP + Photo Viewer Feature complete (~75% total)
 
 ## 🚀 Jak Zacząć
 

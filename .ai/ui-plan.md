@@ -232,17 +232,18 @@ Frontend Photo Map MVP to Single Page Application (SPA) zbudowana z Angular 18 (
 **File:** `components/photo-card/photo-card.component.ts`
 
 **Input:** `@Input() photo: Photo`
+**Output:** `@Output() photoClick = new EventEmitter<number>()`
 
 **Features:**
-- Thumbnail image (w-full h-48 object-cover)
+- Thumbnail image (w-full h-48 object-cover) - clickable
 - Original filename (truncate)
 - Date taken (or uploaded, Angular date pipe: 'short')
 - Average rating (⭐ 1-5 stars + average + total count)
 - Actions: Rate button, Clear rating button, Delete button
 
 **Template Structure:**
-- Card container (bg-white, shadow-lg, rounded-lg, hover:shadow-xl)
-- Image (thumbnail)
+- Card container (bg-white, shadow-lg, rounded-lg, hover:shadow-xl, cursor-pointer)
+- Image (thumbnail) - click emits `photoClick` event
 - Content (p-4):
   - Filename (font-semibold, truncate)
   - Date (text-sm, gray-600)
@@ -250,6 +251,7 @@ Frontend Photo Map MVP to Single Page Application (SPA) zbudowana z Angular 18 (
   - Actions (flex justify-between): Rate | Clear Rating | Delete buttons
 
 **Methods:**
+- `onClick()` - Emit `photoClick` event with photo.id
 - `onRate()` - Open rating dialog or inline rating input (1-5 stars)
 - `onClearRating()` - Call `PhotoService.clearRating()` (DELETE endpoint) + confirmation
 - `onDelete()` - Call `PhotoService.deletePhoto()` + confirm dialog (optional)
@@ -258,7 +260,61 @@ Frontend Photo Map MVP to Single Page Application (SPA) zbudowana z Angular 18 (
 
 ---
 
-### 6. UploadDialogComponent
+### 6. PhotoViewerComponent
+
+**File:** `components/photo-viewer/photo-viewer.component.ts`
+**Status:** ✅ Implemented (Phase 1-4 complete)
+
+**Features:**
+- Fullscreen photo overlay (position: fixed, z-index: 9999)
+- Photo display with `object-fit: contain` (preserves aspect ratio)
+- Keyboard navigation (← → arrows, ESC to close)
+- Mobile touch navigation (swipe left/right, tap-to-close)
+- Navigation buttons (‹ › arrows) - always visible on mobile, hover on desktop
+- Footer with counter (e.g., "3 / 24")
+- Returns to source route (/gallery or /map) on close
+
+**Template Structure:**
+- Overlay container (position: fixed, inset-0, bg-black, z-50)
+- Image element (max-w-full, max-h-full, object-contain)
+- Navigation buttons (absolute positioning, 48px touch targets on mobile)
+- Footer (absolute bottom, text-white, text-center)
+- Close button (ESC hint)
+
+**State:**
+- `viewerState$: Observable<ViewerState>` - from PhotoViewerService
+- `currentPhoto: Signal<Photo | null>`
+- `isOpen: Signal<boolean>`
+- Touch state: touchStartX, touchMoveX for swipe detection
+
+**Methods:**
+- `@HostListener('document:keydown')` - Handle keyboard events (ESC, arrows)
+- `@HostListener('touchstart')` - Record touch start position
+- `@HostListener('touchmove')` - Track touch movement
+- `@HostListener('touchend')` - Detect swipe (50px threshold) or tap-to-close (<10px)
+- `onPrevious()` - Call `viewerService.previousPhoto()`
+- `onNext()` - Call `viewerService.nextPhoto()`
+- `onClose()` - Call `viewerService.closeViewer()` → Router.navigate(sourceRoute)
+
+**Integration:**
+- Used in GalleryComponent and MapComponent
+- Triggered by clicking photo thumbnail
+- Navigates through filtered photos only
+- Source route tracking for proper return navigation
+
+**Mobile Touch Behavior:**
+- Swipe left (≥50px) → next photo
+- Swipe right (≥50px) → previous photo
+- Tap center (<10px movement) → close viewer
+- Touch targets: 48px minimum for accessibility
+
+**Test IDs:** `photo-viewer`, `photo-viewer-prev`, `photo-viewer-next`, `photo-viewer-close`
+
+**Tests:** 27/27 passing (keyboard nav + touch gestures + boundary conditions)
+
+---
+
+### 7. UploadDialogComponent
 
 **File:** `components/upload-dialog/upload-dialog.component.ts`
 
@@ -298,7 +354,7 @@ Frontend Photo Map MVP to Single Page Application (SPA) zbudowana z Angular 18 (
 
 ---
 
-### 7. FilterBarComponent
+### 8. FilterBarComponent
 
 **File:** `components/filter-bar/filter-bar.component.ts`
 
@@ -330,7 +386,7 @@ Frontend Photo Map MVP to Single Page Application (SPA) zbudowana z Angular 18 (
 
 ## Admin View
 
-### 8. AdminComponent
+### 9. AdminComponent
 
 **Path:** `/admin`
 **File:** `components/admin/admin.component.ts`
@@ -365,7 +421,7 @@ Frontend Photo Map MVP to Single Page Application (SPA) zbudowana z Angular 18 (
 
 ## Services
 
-### 9. AuthService
+### 10. AuthService
 
 **File:** `services/auth.service.ts`
 
@@ -411,7 +467,82 @@ Frontend Photo Map MVP to Single Page Application (SPA) zbudowana z Angular 18 (
 
 ---
 
-### 11. FilterService
+### 11. PhotoService
+
+**File:** `services/photo.service.ts`
+
+**Responsibilities:**
+- CRUD operations for photos + rating
+
+**State:**
+- `photos$: Observable<Photo[]>` (BehaviorSubject, optional cache)
+
+**Methods:**
+- `getAllPhotos(filters): Observable<PageResponse<Photo>>`
+- `getPhotoById(id): Observable<Photo>`
+- `uploadPhoto(file): Observable<Photo>` - multipart/form-data
+- `ratePhoto(photoId, rating): Observable<RatingResponse>` - rating 1-5
+- `clearRating(photoId): Observable<void>` - DELETE /api/photos/{id}/rating
+- `deletePhoto(id): Observable<void>`
+
+---
+
+### 12. PhotoViewerService
+
+**File:** `services/photo-viewer.service.ts`
+**Status:** ✅ Implemented
+
+**Responsibilities:**
+- Manage fullscreen photo viewer state
+- Handle navigation between photos (next/previous)
+- Track source route for proper return navigation
+- Provide centralized state for PhotoViewerComponent
+
+**State:**
+- `viewerState$: Observable<ViewerState>` (BehaviorSubject)
+
+**ViewerState:**
+- `{ isOpen: boolean, photos: Photo[], currentIndex: number, sourceRoute: string }`
+
+**Methods:**
+- `openViewer(photos: Photo[], photoId: number, sourceRoute: string): void`
+  - Sets isOpen=true
+  - Finds currentIndex from photoId
+  - Stores photos array and sourceRoute
+- `closeViewer(): void`
+  - Sets isOpen=false
+  - Navigates back to sourceRoute via Router
+- `nextPhoto(): void`
+  - Increments currentIndex (with boundary check)
+  - Wraps to 0 if at end (circular navigation)
+- `previousPhoto(): void`
+  - Decrements currentIndex (with boundary check)
+  - Wraps to last photo if at start (circular navigation)
+
+**Usage Example:**
+```typescript
+// In GalleryComponent
+onPhotoClick(photoId: number) {
+  this.viewerService.openViewer(
+    this.photos(), // filtered photos
+    photoId,
+    '/gallery'
+  );
+}
+
+// In PhotoViewerComponent
+this.viewerService.viewerState$.subscribe(state => {
+  this.isOpen.set(state.isOpen);
+  this.photos = state.photos;
+  this.currentIndex = state.currentIndex;
+});
+```
+
+**Design Pattern:** BehaviorSubject (consistent with PhotoService, FilterService)
+
+---
+
+### 13. FilterService
 
 **File:** `services/filter.service.ts`
 
@@ -432,7 +563,7 @@ Frontend Photo Map MVP to Single Page Application (SPA) zbudowana z Angular 18 (
 
 ---
 
-### 12. MapService (Optional)
+### 14. MapService (Optional)
 
 **Note:** Most map logic in MapComponent. Service only if reusable map utilities needed.
 
@@ -440,7 +571,7 @@ Frontend Photo Map MVP to Single Page Application (SPA) zbudowana z Angular 18 (
 
 ## Guards
 
-### 13. AuthGuard
+### 15. AuthGuard
 
 **File:** `guards/auth.guard.ts`
 **Type:** `CanActivateFn` (functional guard)
@@ -454,7 +585,7 @@ Frontend Photo Map MVP to Single Page Application (SPA) zbudowana z Angular 18 (
 
 ---
 
-### 14. AdminGuard
+### 16. AdminGuard
 
 **File:** `guards/admin.guard.ts`
 **Type:** `CanActivateFn`
@@ -493,7 +624,7 @@ Frontend Photo Map MVP to Single Page Application (SPA) zbudowana z Angular 18 (
 
 ## HTTP Interceptors
 
-### 15. JwtInterceptor
+### 17. JwtInterceptor
 
 **File:** `interceptors/jwt.interceptor.ts`
 **Type:** `HttpInterceptorFn` (functional interceptor)

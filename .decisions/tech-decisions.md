@@ -313,6 +313,77 @@ Ten dokument wyjaśnia **DLACZEGO** wybraliśmy każdą technologię w stacku Ph
 - .prompt.md dla reusable commands
 - Bez `tools` field w YAML (VS Code nie wspiera)
 
+### Photo Viewer - Fullscreen Photo Browser
+
+**Date:** 2025-10-25
+**Status:** ✅ Implemented (Phase 1-4 Complete)
+
+**Uzasadnienie:**
+- **Immersive photo viewing** - users can browse photos without UI clutter
+- **Keyboard navigation** - arrows for next/prev, ESC to close (desktop standard)
+- **Mobile touch gestures** - swipe left/right for navigation, tap-to-close
+- **Context-aware** - navigates only through filtered photos from gallery or map
+- **Returns to source** - maintains user context (gallery vs map route)
+- **Simple implementation** - CSS position: fixed, no browser fullscreen API complexity
+
+**Technical decisions:**
+1. **CSS Fixed Position vs Browser Fullscreen API**
+   - CSS `position: fixed` + `z-index: 9999` chosen for simplicity
+   - Avoids browser compatibility issues
+   - Better control over UI elements
+   - Consistent experience across browsers
+
+2. **Photo Size: Large (800px) vs Original**
+   - Initially used `originalDirectory` (blurry on small screens)
+   - Changed to `largeDirectory` (800px) for optimal quality/performance
+   - Original files can be 5-10MB (slow on mobile networks)
+   - 800px is sweet spot for most screens
+
+3. **State Management: PhotoViewerService**
+   - BehaviorSubject pattern consistent with PhotoService, FilterService
+   - Stores: photos array, currentIndex, sourceRoute
+   - Components subscribe to `viewerState$`
+   - Simple to test and maintain
+
+4. **Source Route Tracking**
+   - Service stores `/gallery` or `/map` when opening viewer
+   - `Router.navigate(sourceRoute)` when closing
+   - Preserves filter state and scroll position
+   - Better UX than always returning to gallery
+
+5. **Mobile Touch Gestures**
+   - 50px swipe threshold (industry standard, prevents accidental triggers)
+   - Tap-to-close: movement <10px = tap, ≥10px = ignored
+   - Touch targets: 48px minimum (WCAG accessibility guidelines)
+   - Always visible controls on mobile (no hover state)
+
+**Implementation phases:**
+- ✅ Phase 1: Core viewer component with keyboard navigation (~1.5h)
+- ✅ Phase 2: Gallery integration - click photo → fullscreen (~1h)
+- ✅ Phase 3: Map integration - click popup thumbnail → fullscreen (~1h)
+- ✅ Phase 4: Mobile touch support (swipe gestures, tap-to-close) (~1.5h)
+- 🔜 Phase 5: UX enhancements (loading, preloading, animations) (~2h) - optional
+
+**Trade-offs:**
+- ✅ Pros: Simple, fast, works everywhere, keyboard+touch friendly
+- ⚠️ Cons: Not native fullscreen (browser chrome still visible)
+- ✅ Benefit: Mobile-first design with touch gesture support
+
+**Alternatives considered:**
+- **Browser Fullscreen API** - more complex, browser compatibility issues, rejected
+- **Lightbox library (ng-gallery)** - adds dependency, less control, rejected
+- **Modal dialog** - less immersive, not truly fullscreen, rejected
+
+**Future enhancements (optional):**
+- Phase 5: Preloading (next/prev photos), loading states, fade animations
+- Image zoom/pan functionality
+- Photo metadata display (filename, date, rating in footer)
+
+**Testing:**
+- ✅ Unit tests: 27/27 passing (keyboard nav + touch gestures + boundaries)
+- ✅ Backend tests: 61/61 passing
+- 📝 Manual testing recommended: Chrome DevTools MCP on mobile viewport
+
 ### Chrome DevTools MCP - Dlaczego?
 
 **Date:** 2025-10-25
