@@ -313,6 +313,61 @@ Ten dokument wyjaśnia **DLACZEGO** wybraliśmy każdą technologię w stacku Ph
 - .prompt.md dla reusable commands
 - Bez `tools` field w YAML (VS Code nie wspiera)
 
+### Chrome DevTools MCP - Dlaczego?
+
+**Date:** 2025-10-25
+
+**Uzasadnienie:**
+- **Frontend verification** - AI może "zobaczyć" co dzieje się w przeglądarce
+- **Real-time debugging** - inspect console errors, network failures, DOM state
+- **Performance analysis** - measure LCP, TBT, FCP with real traces
+- **Integration testing** - simulate user flows (login → upload → gallery → map)
+
+**Capabilities:**
+1. **Verify code changes** - AI can test its changes in real browser
+2. **Diagnose errors** - console.log, network 404/500, CORS issues visible
+3. **Performance audits** - run traces, analyze metrics, suggest optimizations
+4. **DOM inspection** - check layout, CSS, element states
+5. **User simulation** - fill forms, click buttons, upload files
+
+**Integration with Photo Map MVP:**
+- **After frontend implementation** - verify login, gallery, map work correctly
+- **Bug diagnosis** - "photos not loading" → check console + network
+- **Before deployment** - performance audit, responsive design check
+- **CRITICAL step** - always verify app is running first (check logs, start with `./scripts/start-dev.sh`)
+
+**Tools used:**
+- `navigate_page` - open localhost:4200
+- `list_console_messages` - check JS errors
+- `list_network_requests` - verify API calls to localhost:8080
+- `performance_start_trace` / `performance_analyze_insight` - performance metrics
+- `take_snapshot` / `take_screenshot` - DOM/visual inspection
+- `click` / `fill_form` / `upload_file` - user interaction simulation
+
+**Dlaczego Chrome DevTools MCP a nie tylko manual testing?**
+- **Automated verification** - AI can test immediately after implementation
+- **Evidence-based debugging** - real console errors, not guesswork
+- **Performance data** - actual LCP/TBT metrics, not assumptions
+- **Repeatable** - same test scenario every time
+
+**Dlaczego NIE Playwright/Cypress dla MVP?**
+- Chrome DevTools MCP integrates with AI workflow (no separate test files)
+- Faster feedback loop (AI verifies inline)
+- Can add Playwright E2E later for CI/CD
+
+**Trade-offs:**
+- ✅ Pros: AI gets real browser feedback, faster debugging, performance insights
+- ⚠️ Cons: Requires app to be running, adds MCP server dependency
+- ⚠️ Limitation: Public preview (active development, API may change)
+
+**Best practices:**
+- Always check app status first (`scripts/.pid/backend.log`, `frontend.log`)
+- Start app if needed (`./scripts/start-dev.sh --with-db`)
+- Use for verification AFTER implementation (not during)
+- Check console + network together (root cause often in network)
+
+**Documentation:** `.github/chrome-devtools.instructions.md` (~350 lines)
+
 ---
 
 ## Technology Decisions Summary

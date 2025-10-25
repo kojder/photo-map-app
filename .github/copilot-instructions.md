@@ -67,6 +67,32 @@ Full-stack photo geolocation app: Angular 18 (standalone) + Spring Boot 3 + Post
 - Test IDs for E2E: `data-testid="component-element"` on all interactive elements
 - Leaflet.js for maps with `leaflet.markercluster` plugin
 
+## Chrome DevTools MCP Integration
+
+**For frontend verification and debugging**, use Chrome DevTools MCP to give AI "eyes" in the browser.
+
+**See:** `.github/chrome-devtools.instructions.md` for comprehensive guide on:
+- Verifying frontend changes after implementation
+- Diagnosing bugs (console errors, network failures, layout issues)
+- Performance analysis and optimization
+- Cross-feature integration testing
+- Responsive design verification
+
+**CRITICAL:** Always check if app is running before using Chrome DevTools MCP:
+```bash
+# Check logs
+tail -n 20 scripts/.pid/backend.log
+tail -n 20 scripts/.pid/frontend.log
+
+# Start if not running
+./scripts/start-dev.sh --with-db
+```
+
+**Common use cases:**
+- After implementing feature: "Verify login form works on localhost:4200"
+- When bug reported: "Gallery photos not loading - diagnose the issue"
+- Before deployment: "Analyze gallery performance and suggest optimizations"
+
 ## Development Workflows
 
 ### Build & Run
@@ -248,13 +274,14 @@ app/
 ❌ **DON'T delete from one folder only** - orphaned files in other sizes
 ✅ **DO delete from all folders** - original, small, medium, large when deleting photo
 
-## Key Files for Reference
+**Key Files for Reference
 
 **Must-read for context:**
 - `CLAUDE.md` - Full AI workflow instructions
 - `PROGRESS_TRACKER.md` - Project roadmap and status
 - `.ai/tech-stack.md` - Technology decisions and patterns
 - `scripts/README.md` - Development scripts documentation
+- `.github/chrome-devtools.instructions.md` - Chrome DevTools MCP usage for frontend verification
 
 **Architecture examples:**
 - Backend async processing: `backend/src/main/java/com/photomap/config/PhotoIntegrationConfig.java`
