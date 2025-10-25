@@ -17,6 +17,7 @@ export class PhotoViewerComponent implements OnInit, OnDestroy {
   viewerState: ViewerState | null = null;
   currentPhoto: Photo | null = null;
   imageUrl: string = '';
+  isFullscreen: boolean = false;
 
   constructor(private photoViewerService: PhotoViewerService) {}
 
@@ -30,18 +31,31 @@ export class PhotoViewerComponent implements OnInit, OnDestroy {
           this.imageUrl = `/api/photos/${this.currentPhoto.id}/full`;
           // Prevent body scroll when viewer is open
           document.body.style.overflow = 'hidden';
+          // Auto-enter fullscreen on mobile
+          this.attemptFullscreen();
+          // iOS Safari - scroll to hide address bar
+          this.hideAddressBarOnIOS();
         } else {
           this.currentPhoto = null;
           this.imageUrl = '';
           // Restore body scroll when viewer is closed
           document.body.style.overflow = '';
+          // Exit fullscreen when closing viewer
+          this.exitFullscreen();
         }
       });
+
+    // Listen for fullscreen changes
+    document.addEventListener('fullscreenchange', () => {
+      this.isFullscreen = !!document.fullscreenElement;
+    });
   }
 
   ngOnDestroy(): void {
     // Restore body scroll on component destroy
     document.body.style.overflow = '';
+    // Exit fullscreen on component destroy
+    this.exitFullscreen();
     this.destroy$.next();
     this.destroy$.complete();
   }
@@ -90,5 +104,86 @@ export class PhotoViewerComponent implements OnInit, OnDestroy {
       return '';
     }
     return `${this.viewerState.currentIndex + 1} / ${this.viewerState.photos.length}`;
+  }
+
+  /**
+   * Attempt to enter fullscreen mode
+   * Works on mobile and desktop browsers
+   */
+  async attemptFullscreen(): Promise<void> {
+    try {
+      // Check if already in fullscreen
+      if (document.fullscreenElement) {
+        return;
+      }
+
+      // Try to enter fullscreen on the document element
+      const elem = document.documentElement;
+      
+      if (elem.requestFullscreen) {
+        await elem.requestFullscreen();
+      } else if ((elem as any).webkitRequestFullscreen) {
+        // Safari
+        await (elem as any).webkitRequestFullscreen();
+      } else if ((elem as any).mozRequestFullScreen) {
+        // Firefox
+        await (elem as any).mozRequestFullScreen();
+      } else if ((elem as any).msRequestFullscreen) {
+        // IE/Edge
+        await (elem as any).msRequestFullscreen();
+      }
+    } catch (error) {
+      // Fullscreen request failed (user denied or browser doesn't support)
+      // This is not critical, so we just silently fail
+      console.debug('Fullscreen request failed:', error);
+    }
+  }
+
+  /**
+   * Exit fullscreen mode
+   */
+  exitFullscreen(): void {
+    try {
+      if (document.fullscreenElement) {
+        if (document.exitFullscreen) {
+          document.exitFullscreen();
+        } else if ((document as any).webkitExitFullscreen) {
+          (document as any).webkitExitFullscreen();
+        } else if ((document as any).mozCancelFullScreen) {
+          (document as any).mozCancelFullScreen();
+        } else if ((document as any).msExitFullscreen) {
+          (document as any).msExitFullscreen();
+        }
+      }
+    } catch (error) {
+      console.debug('Exit fullscreen failed:', error);
+    }
+  }
+
+  /**
+   * Toggle fullscreen mode manually
+   */
+  toggleFullscreen(): void {
+    if (this.isFullscreen) {
+      this.exitFullscreen();
+    } else {
+      this.attemptFullscreen();
+    }
+  }
+
+  /**
+   * iOS Safari specific - scroll to hide address bar
+   * This provides a better fullscreen-like experience on iOS
+   */
+  private hideAddressBarOnIOS(): void {
+    // Detect iOS
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as any).MSStream;
+    
+    if (isIOS) {
+      // Small delay to ensure DOM is ready
+      setTimeout(() => {
+        window.scrollTo(0, 1);
+      }, 100);
+    }
   }
 }

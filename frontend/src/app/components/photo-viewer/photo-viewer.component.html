@@ -32,11 +32,25 @@
         </button>
       </div>
 
-      <!-- Footer with counter -->
+      <!-- Footer with counter and fullscreen toggle -->
       <div class="photo-viewer-footer">
         <span class="photo-counter" data-testid="viewer-counter">
           {{ photoCounter }}
         </span>
+        
+        <button 
+          (click)="toggleFullscreen()" 
+          class="fullscreen-button"
+          [attr.aria-label]="isFullscreen ? 'Exit fullscreen' : 'Enter fullscreen'"
+          data-testid="viewer-fullscreen-button"
+          title="{{ isFullscreen ? 'Exit fullscreen' : 'Enter fullscreen' }}"
+        >
+          @if (isFullscreen) {
+            <span>⛶</span>
+          } @else {
+            <span>⛶</span>
+          }
+        </button>
       </div>
 
       <!-- Close button -->
