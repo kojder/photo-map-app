@@ -154,10 +154,43 @@ docker-compose up -d
 5. If approved → commit with Conventional Commits message
 6. **NEVER auto-push - ALWAYS ask user first**
 
+### PROGRESS_TRACKER.md Workflow - CRITICAL
+
+**Structure (top to bottom):**
+1. **🎯 Currently Working On** (MOST IMPORTANT - always visible at top)
+2. **✅ Last Completed** (history below)
+3. Phase details (further down)
+
+**During active work:**
+1. **Uncomment Working Session Template** in "Currently Working On"
+2. **Fill in task name and subtasks** with specific details:
+   ```markdown
+   **Active Tasks:**
+   - [ ] **Fix photo upload error**
+     - [x] Update PhotoController - add file size validation
+     - [ ] Fix PhotoService - handle null EXIF gracefully
+     - [ ] Update GalleryComponent - show upload error message
+     - [ ] Write unit tests (PhotoServiceTest)
+     - [ ] Verify with Chrome DevTools MCP
+   ```
+3. **Check off subtasks** as you complete them (`[x]`)
+4. **Update in real-time** - AI and user can see exact progress
+
+**After completing task:**
+1. **Move summary to "Last Completed"** section with date
+2. **Delete Working Session details** (keep history clean)
+3. **Update "Last Updated"** timestamp
+
+**Why this matters:**
+- User sees exactly what AI is doing RIGHT NOW
+- Granular subtasks prevent "black box" implementation
+- Easy to resume if interrupted
+- Clean history after completion
+
 ### Documentation Updates - After Implementation
 
 **After completing a feature/phase, update project documentation:**
-- `PROGRESS_TRACKER.md` - mark completed tasks, update Current Status
+- `PROGRESS_TRACKER.md` - mark completed tasks, move from "Currently Working On" to "Last Completed"
 - `.ai/` files - update if implementation specs changed (e.g., new endpoints, changed architecture)
 - `.decisions/` files - document important tech/PRD decisions made during implementation
 - `README.md` - update if setup instructions or project status changed

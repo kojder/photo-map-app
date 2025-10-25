@@ -9,16 +9,55 @@
 
 **Last Updated:** 2025-10-25
 
-**Phase:** Documentation & Tooling (✅ Completed)
+### 🎯 Currently Working On
 
-**Last Completed:**
-- ✅ GitHub Copilot Configuration (2025-10-25)
+**Status:** 🎉 MVP funkcjonalny end-to-end! GitHub Copilot + Chrome DevTools MCP skonfigurowane.
+
+**Active Tasks:** None (MVP Phase 4 complete)
+
+<!--
+**Working Session Template** (usuń po zakończeniu zadania):
+- [ ] **Task Name** (np. "Fix photo upload error", "Add map filtering")
+  - [ ] Subtask 1 (np. "Update PhotoController - add validation")
+  - [ ] Subtask 2 (np. "Fix PhotoService - handle null GPS")
+  - [ ] Subtask 3 (np. "Update GalleryComponent - show error message")
+  - [ ] Subtask 4 (np. "Write unit tests")
+  - [ ] Subtask 5 (np. "Verify with Chrome DevTools MCP")
+  
+**Example:**
+- [ ] **Fix rating not persisting after page refresh**
+  - [x] Check PhotoService - rating$ BehaviorSubject emission
+  - [x] Verify API call in network tab (Chrome DevTools MCP)
+  - [ ] Update PhotoCardComponent - refresh rating on init
+  - [ ] Test: rate photo → refresh page → verify rating persists
+  - [ ] Commit with message: "fix(gallery): persist rating after page refresh"
+-->
+
+**Next Planned Actions:**
+1. (Optional) Phase 5: Admin Panel
+2. (Optional) Phase 6: Deployment na Mikrus VPS
+
+**Blocked By:** None
+
+---
+
+### ✅ Last Completed
+
+**Most Recent:**
+- ✅ **Chrome DevTools MCP Configuration** (2025-10-25)
+  - ✅ Instructions: `.github/chrome-devtools.instructions.md` (~361 lines)
+  - ✅ Integration with copilot-instructions.md
+  - ✅ Decision rationale in tech-decisions.md
+  - ✅ 5 use cases: verify changes, diagnose bugs, performance, integration testing, responsive design
+
+- ✅ **GitHub Copilot Configuration** (2025-10-25)
   - ✅ Main instructions: `.github/copilot-instructions.md` (~350 lines)
   - ✅ Backend-specific: `.github/backend.instructions.md` (~240 lines with applyTo patterns)
   - ✅ Frontend-specific: `.github/frontend.instructions.md` (~280 lines with applyTo patterns)
   - ✅ Prompts library: `/update-docs`, `/generate-tests`, `/commit-message`, `/review-code`
   - ✅ VS Code settings: commit message generation, PR descriptions
-- ✅ Phase 4: Frontend - Gallery & Map (2025-10-24)
+
+- ✅ **Phase 4: Frontend - Gallery & Map** (2025-10-24)
   - ✅ Photo model (Photo, PageResponse, RatingResponse, PhotoFilters)
   - ✅ PhotoService: CRUD + rating with BehaviorSubject pattern
   - ✅ FilterService: filters$ Observable for reactive filtering
@@ -30,19 +69,11 @@
   - ✅ Routing: /gallery i /map z authGuard
   - ✅ Leaflet dependencies: leaflet 1.9.4 + leaflet.markercluster
   - ✅ Build passing (no errors)
-- ✅ Refactoring (2025-10-25)
+
+- ✅ **Refactoring** (2025-10-25)
   - ✅ Removed user ownership restrictions (all photos public for now)
   - ✅ Fixed rating scale validation (1-5 everywhere)
   - ✅ Fixed photo aspect ratio in thumbnails and gallery
-
-**Currently Working On:**
-- 🎉 MVP funkcjonalny end-to-end! GitHub Copilot skonfigurowany dla AI-assisted development.
-
-**Next Action:**
-1. (Optional) Phase 5: Admin Panel
-2. (Optional) Phase 6: Deployment na Mikrus VPS
-
-**Blocked By:** None
 
 ---
 
