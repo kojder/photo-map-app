@@ -7,13 +7,42 @@
 
 ## 🔄 Current Status
 
-**Last Updated:** 2025-10-25 18:45
+**Last Updated:** 2025-10-25
 
 ### 🎯 Currently Working On
 
-**Status:** ✅ All Features Complete - Ready for Next Phase
+**No active tasks** - Photo Viewer Phase 4 complete, awaiting manual testing or next feature selection.
+
+<!-- Use template below when starting new task -->
+<!--
+**Active Tasks:**
+- [ ] **Task Name** (e.g., "Manual Testing - Photo Viewer Mobile Touch")
+  - [ ] Subtask 1
+  - [ ] Subtask 2
+-->
 
 ### ✅ Last Completed
+
+**Photo Viewer - Phase 1-4 Complete** (2025-10-25)
+- ✅ Phase 1: Core viewer with keyboard navigation (ESC, arrows)
+- ✅ Phase 2: Gallery integration (click photo → fullscreen)
+- ✅ Phase 3: Map integration (click marker thumbnail → fullscreen)
+- ✅ Phase 4: Mobile touch support (swipe gestures, tap-to-close)
+- ✅ All unit tests passing (27/27 frontend, 61/61 backend)
+- ✅ Touch event handlers with 50px swipe threshold
+- ✅ CSS optimized for mobile (48px touch targets)
+- 📝 Status: Core feature complete, Phase 5 (UX enhancements) optional
+- 📝 Next: Manual testing recommended or move to Admin Panel/Deployment
+
+**Photo Viewer - Fullscreen Display Fixes** (2025-10-25)
+- ✅ Implemented fullscreen API support for better mobile experience
+- ✅ Fixed photo viewer CSS positioning (fullscreen overlay)
+- ✅ Fixed blurry images (changed endpoint to `originalDirectory`)
+- ✅ Phase 1-3 complete: Core viewer + Gallery integration + Map integration
+- ✅ PhotoViewerComponent with keyboard navigation (arrows, ESC)
+- ✅ PhotoViewerService manages state (photos, currentIndex, sourceRoute)
+- ✅ Tests: Backend 61/61 ✅, Frontend tests fixed (AppComponent)
+- 📝 Note: Mobile touch gestures (swipe) not yet implemented
 
 **Photo Viewer - Fullscreen Display Fixes** (2025-10-25)
 - ✅ Fixed photo viewer not taking full screen (CSS positioning issue)
@@ -49,8 +78,10 @@
 -->
 
 **Next Planned Actions:**
-1. (Optional) Phase 5: Admin Panel
-2. (Optional) Phase 6: Deployment na Mikrus VPS
+1. Manual testing: Photo Viewer on mobile viewport (Chrome DevTools MCP)
+2. (Optional) Phase 5: Photo Viewer UX Enhancements (loading states, preloading)
+3. (Optional) Phase 5: Admin Panel
+4. (Optional) Phase 6: Deployment na Mikrus VPS
 
 **Blocked By:** None
 
@@ -104,7 +135,7 @@
 
 ## 📊 Project Status
 
-**Overall Progress:** 4/6 phases (67% core MVP) + GitHub Copilot setup
+**Overall Progress:** 4/6 phases (67% core MVP) + Photo Viewer Feature + GitHub Copilot setup
 
 | Phase | Status | Description |
 |------|--------|------|
@@ -112,6 +143,7 @@
 | 2. Frontend - Setup & Auth | ✅ | Angular, Login/Register, Guards (auth end-to-end!) |
 | 3. Backend - Photo Handling | ✅ | Upload, EXIF, thumbnails (3 sizes), Photo API, Rating system |
 | 4. Frontend - Gallery & Map | ✅ | Gallery grid, Leaflet Map, Rating (stars), Upload (drag-and-drop), Filters |
+| 📸 Photo Viewer Feature | ✅ | Fullscreen viewer, keyboard nav, mobile touch (Phases 1-4 complete) |
 | 🤖 GitHub Copilot Setup | ✅ | Instructions, prompts, VS Code integration |
 | 5. Admin Panel | 🔜 | Admin API, Admin UI |
 | 6. Deployment | 🔜 | Mikrus config, Nginx, SSL, Monitoring |

@@ -1,6 +1,12 @@
 @if (viewerState?.isOpen) {
   <div class="photo-viewer-overlay" (click)="close()">
-    <div class="photo-viewer-content" (click)="$event.stopPropagation()">
+    <div 
+      class="photo-viewer-content" 
+      (click)="$event.stopPropagation()"
+      (touchstart)="onTouchStart($event)"
+      (touchmove)="onTouchMove($event)"
+      (touchend)="onTouchEnd($event)"
+    >
       <!-- Photo image -->
       <img 
         [src]="imageUrl" 
