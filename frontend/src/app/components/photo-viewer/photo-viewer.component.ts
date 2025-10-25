@@ -18,14 +18,20 @@ export class PhotoViewerComponent implements OnInit, OnDestroy {
   currentPhoto: Photo | null = null;
   imageUrl: string = '';
   isFullscreen: boolean = false;
+  isImageLoading: boolean = false;
+  showSpinner: boolean = false; // Only show spinner after delay
 
   // Touch event tracking
   private touchStartX: number = 0;
   private touchStartY: number = 0;
   private touchEndX: number = 0;
   private touchEndY: number = 0;
+  private touchStartTime: number = 0;
+  private touchStartTarget: EventTarget | null = null;
   private readonly SWIPE_THRESHOLD: number = 50; // Minimum distance for swipe (px)
   private readonly TAP_THRESHOLD: number = 10; // Maximum movement for tap (px)
+  private readonly SPINNER_DELAY: number = 200; // Show spinner only if loading takes > 200ms
+  private spinnerTimeout: any = null;
 
   constructor(private photoViewerService: PhotoViewerService) {}
 
@@ -36,6 +42,14 @@ export class PhotoViewerComponent implements OnInit, OnDestroy {
         this.viewerState = state;
         if (state.isOpen && state.currentIndex >= 0) {
           this.currentPhoto = state.photos[state.currentIndex];
+          // Set loading state before loading image
+          this.isImageLoading = true;
+          // Show spinner only if loading takes longer than SPINNER_DELAY
+          this.spinnerTimeout = setTimeout(() => {
+            if (this.isImageLoading) {
+              this.showSpinner = true;
+            }
+          }, this.SPINNER_DELAY);
           this.imageUrl = `/api/photos/${this.currentPhoto.id}/full`;
           // Prevent body scroll when viewer is open
           document.body.style.overflow = 'hidden';
@@ -46,6 +60,13 @@ export class PhotoViewerComponent implements OnInit, OnDestroy {
         } else {
           this.currentPhoto = null;
           this.imageUrl = '';
+          this.isImageLoading = false;
+          this.showSpinner = false;
+          // Clear spinner timeout if exists
+          if (this.spinnerTimeout) {
+            clearTimeout(this.spinnerTimeout);
+            this.spinnerTimeout = null;
+          }
           // Restore body scroll when viewer is closed
           document.body.style.overflow = '';
           // Exit fullscreen when closing viewer
@@ -62,6 +83,11 @@ export class PhotoViewerComponent implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     // Restore body scroll on component destroy
     document.body.style.overflow = '';
+    // Clear spinner timeout if exists
+    if (this.spinnerTimeout) {
+      clearTimeout(this.spinnerTimeout);
+      this.spinnerTimeout = null;
+    }
     // Exit fullscreen on component destroy
     this.exitFullscreen();
     this.destroy$.next();
@@ -203,9 +229,11 @@ export class PhotoViewerComponent implements OnInit, OnDestroy {
       return;
     }
 
-    // Record starting position
+    // Record starting position and target
     this.touchStartX = event.changedTouches[0].screenX;
     this.touchStartY = event.changedTouches[0].screenY;
+    this.touchStartTime = Date.now();
+    this.touchStartTarget = event.target;
   }
 
   onTouchMove(event: TouchEvent): void {
@@ -239,10 +267,24 @@ export class PhotoViewerComponent implements OnInit, OnDestroy {
     const absDeltaX = Math.abs(deltaX);
     const absDeltaY = Math.abs(deltaY);
 
+    // Check if touch started on a navigation button (don't close on button tap)
+    const targetElement = this.touchStartTarget as HTMLElement;
+    if (targetElement && (
+      targetElement.classList.contains('nav-button') ||
+      targetElement.classList.contains('close-button') ||
+      targetElement.closest('.nav-button') ||
+      targetElement.closest('.close-button')
+    )) {
+      // Let the button's click handler take care of it
+      this.resetTouchState();
+      return;
+    }
+
     // Check if it's a tap (very small movement)
     if (absDeltaX < this.TAP_THRESHOLD && absDeltaY < this.TAP_THRESHOLD) {
-      // Tap detected - close viewer
+      // Tap detected on image/background - close viewer
       this.close();
+      this.resetTouchState();
       return;
     }
 
@@ -257,10 +299,45 @@ export class PhotoViewerComponent implements OnInit, OnDestroy {
       }
     }
 
-    // Reset touch positions
+    this.resetTouchState();
+  }
+
+  /**
+   * Reset touch tracking state
+   */
+  private resetTouchState(): void {
     this.touchStartX = 0;
     this.touchStartY = 0;
     this.touchEndX = 0;
     this.touchEndY = 0;
+    this.touchStartTime = 0;
+    this.touchStartTarget = null;
+  }
+
+  /**
+   * Called when image finishes loading
+   */
+  onImageLoad(): void {
+    this.isImageLoading = false;
+    this.showSpinner = false;
+    // Clear spinner timeout if exists
+    if (this.spinnerTimeout) {
+      clearTimeout(this.spinnerTimeout);
+      this.spinnerTimeout = null;
+    }
+  }
+
+  /**
+   * Called when image fails to load
+   */
+  onImageError(): void {
+    this.isImageLoading = false;
+    this.showSpinner = false;
+    // Clear spinner timeout if exists
+    if (this.spinnerTimeout) {
+      clearTimeout(this.spinnerTimeout);
+      this.spinnerTimeout = null;
+    }
+    console.error('Failed to load photo:', this.imageUrl);
   }
 }

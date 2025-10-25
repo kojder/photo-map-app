@@ -8,18 +8,30 @@
       (touchend)="onTouchEnd($event)"
     >
       <!-- Photo image -->
-      <img 
-        [src]="imageUrl" 
-        [alt]="currentPhoto?.originalFilename || 'Photo'"
-        class="photo-viewer-image"
-        data-testid="viewer-image"
-      />
+      <div class="photo-container">
+        <!-- Loading spinner (only after delay) -->
+        @if (showSpinner) {
+          <div class="loading-spinner" data-testid="viewer-spinner">
+            <div class="spinner"></div>
+          </div>
+        }
+        
+        <!-- Photo image -->
+        <img 
+          [src]="imageUrl" 
+          [alt]="currentPhoto?.originalFilename || 'Photo'"
+          class="photo-viewer-image"
+          (load)="onImageLoad()"
+          (error)="onImageError()"
+          data-testid="viewer-image"
+        />
+      </div>
 
       <!-- Navigation buttons -->
       <div class="photo-viewer-controls">
         <button 
           *ngIf="!isFirstPhoto()"
-          (click)="previous()" 
+          (click)="previous(); $event.stopPropagation()" 
           class="nav-button nav-button-left"
           aria-label="Previous photo"
           data-testid="viewer-prev-button"
@@ -29,7 +41,7 @@
 
         <button 
           *ngIf="!isLastPhoto()"
-          (click)="next()" 
+          (click)="next(); $event.stopPropagation()" 
           class="nav-button nav-button-right"
           aria-label="Next photo"
           data-testid="viewer-next-button"
@@ -45,7 +57,7 @@
         </span>
         
         <button 
-          (click)="toggleFullscreen()" 
+          (click)="toggleFullscreen(); $event.stopPropagation()" 
           class="fullscreen-button"
           [attr.aria-label]="isFullscreen ? 'Exit fullscreen' : 'Enter fullscreen'"
           data-testid="viewer-fullscreen-button"
@@ -61,7 +73,7 @@
 
       <!-- Close button -->
       <button 
-        (click)="close()" 
+        (click)="close(); $event.stopPropagation()" 
         class="close-button"
         aria-label="Close viewer"
         data-testid="viewer-close-button"

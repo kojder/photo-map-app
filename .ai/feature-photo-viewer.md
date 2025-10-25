@@ -1,9 +1,9 @@
 # Photo Viewer Feature - Fullscreen Photo Browser
 
-**Status:** ✅ Phase 1-4 Complete (Core Feature Ready)  
+**Status:** ✅ Phase 1-5.1 Complete (Ready for Deployment)  
 **Branch:** `feature/photo-viewer`  
 **Created:** 2025-10-25  
-**Estimated Time:** 8-10h | **Time Spent:** ~5h  
+**Estimated Time:** 8-10h | **Time Spent:** ~6h  
 **Last Updated:** 2025-10-25  
 
 ---
@@ -240,56 +240,64 @@ Router.navigate('/gallery') ← Returns to source
 - ✅ Swipe right navigates to previous photo
 - ✅ Tap on center closes viewer
 - ✅ Touch targets are large enough (48px minimum)
-- ✅ All unit tests passing (27/27)
-- ⏳ Manual testing on mobile viewport pending (Chrome DevTools MCP)
+- ✅ All unit tests passing (145/145 frontend tests)
+- ✅ Navigation buttons work correctly on mobile (don't trigger tap-to-close)
+- ✅ No flickering during photo transitions (removed fade-in animation)
+- ⏸️ Manual testing on real mobile device pending (requires deployment to mikrus)
 
 ---
 
-### Phase 5: UX Enhancements 🔜
+### Phase 5: UX Enhancements ⏸️
 
-**Status:** 🔜 Optional (Not started)  
-**Time:** ~2h  
+**Status:** ⏸️ Postponed (Awaiting mobile deployment testing)  
+**Time:** ~2h estimated  
+**Note:** Phase 5.1 (Loading States) partially completed - spinner with delay and no fade-in implemented. Remaining tasks postponed until mobile testing on production server (mikrus) is possible.
 
 **Tasks:**
-- [ ] Loading States
-  - [ ] Show spinner while loading full-size photo
-  - [ ] Placeholder while image loads
-  - [ ] Smooth fade-in animation when loaded
+- [x] Loading States (Phase 5.1 - Completed)
+  - [x] Show spinner while loading full-size photo (200ms delay to prevent flicker)
+  - [x] Removed fade-in animation to fix mobile flickering
+  - [ ] ⏸️ Loading progress indicator (postponed)
   
-- [ ] Preloading Strategy
+- [ ] ⏸️ Preloading Strategy (Phase 5.2)
+  
+- [ ] ⏸️ Preloading Strategy (Phase 5.2)
   - [ ] Preload next photo when viewer opens
   - [ ] Preload previous photo after 1 second
   - [ ] Cache blob URLs in service
   - [ ] Clean up blob URLs on viewer close
   
-- [ ] Transition Animations
+- [ ] ⏸️ Transition Animations (Phase 5.3)
   - [ ] Fade in/out on open/close
   - [ ] Slide animation between photos (optional)
   - [ ] Smooth navigation button appearance
   
-- [ ] Error Handling
+- [ ] ⏸️ Error Handling (Phase 5.4)
   - [ ] Handle 404 when photo file missing
   - [ ] Show error message if load fails
   - [ ] Allow navigation even if current photo fails
   - [ ] Retry button for failed loads
   
-- [ ] Accessibility
+- [ ] ⏸️ Accessibility (Phase 5.5)
   - [ ] ARIA labels on navigation buttons
   - [ ] Keyboard focus management
   - [ ] Screen reader announcements
   
-- [ ] Polish
+- [ ] ⏸️ Polish (Phase 5.6)
   - [ ] Photo metadata in footer (filename, date, rating)
-  - [ ] Loading progress indicator
   - [ ] Smooth hover effects
-  - [ ] Dark mode support (already black background)
 
-**Acceptance Criteria:**
-- ✅ Loading spinner shows while photo loads
-- ✅ Next/prev photos preloaded for instant navigation
-- ✅ Smooth animations between states
-- ✅ Error states handled gracefully
-- ✅ Keyboard accessible (focus visible, logical tab order)
+**Postponement Reason:**
+- Mobile testing requires deployment to production server (mikrus)
+- Current testing limited to DevTools emulation (not representative of real mobile performance)
+- Will resume Phase 5 tasks after deployment when real mobile testing is possible
+
+**Acceptance Criteria (when resumed):**
+- ✅ Loading spinner shows while photo loads (completed)
+- ⏸️ Next/prev photos preloaded for instant navigation
+- ⏸️ Smooth animations between states
+- ⏸️ Error states handled gracefully
+- ⏸️ Keyboard accessible (focus visible, logical tab order)
 
 ---
 
@@ -362,12 +370,21 @@ Router.navigate('/gallery') ← Returns to source
 - Simple Router.navigate() on close
 - User-friendly experience
 
-### Decision 5: Mobile Gesture Threshold
-**Choice:** 50px minimum swipe distance  
+### Decision 6: Loading States Without Fade-in
+**Choice:** Spinner with 200ms delay, no fade-in animation  
 **Reasoning:**
-- Prevents accidental navigation
-- Industry standard (based on iOS/Android guidelines)
-- Tested in similar apps (Instagram, Google Photos)
+- 200ms delay prevents spinner flicker on fast connections
+- Removed fade-in animation to eliminate mobile flickering
+- Instant photo display provides better UX than animated transitions
+- Simpler implementation, less CPU usage on mobile
+
+### Decision 7: Mobile Button Tap Handling
+**Choice:** Separate touch target detection + stopPropagation on buttons  
+**Reasoning:**
+- Prevents navigation buttons from triggering tap-to-close
+- Uses `touchStartTarget` to identify button taps vs image taps
+- stopPropagation ensures button clicks work independently
+- Maintains swipe gesture functionality
 
 ---
 
@@ -394,23 +411,43 @@ Router.navigate('/gallery') ← Returns to source
 | Phase 1: Core Viewer | ✅ Completed | ~1.5h | PhotoViewerComponent + PhotoViewerService + Tests |
 | Phase 2: Gallery Integration | ✅ Completed | ~1h | GalleryComponent integration + click handling |
 | Phase 3: Map Integration | ✅ Completed | ~1h | MapComponent integration + popup handling |
-| Phase 4: Mobile Touch | ✅ Completed | ~1.5h | Swipe gestures + tap-to-close + tests (27/27 ✅) |
-| Phase 5: UX Enhancements | 🔜 Optional | - | Loading states, preloading pending |
-| **TOTAL** | **✅ 80% Complete** | **~5h / 8-10h** | Core features + mobile support complete, UX polish optional |
+| Phase 4: Mobile Touch | ✅ Completed | ~1.5h | Swipe gestures + tap-to-close + tests (145/145 ✅) |
+| Phase 5.1: Loading States | ✅ Completed | ~1h | Spinner with delay + removed fade-in animation |
+| Phase 5.2-5.6: UX Polish | ⏸️ Postponed | - | Awaiting mobile deployment for testing |
+| **TOTAL** | **✅ 85% Complete** | **~6h / 8-10h** | Core + mobile + loading ready, UX polish postponed |
 
-**Core Feature Status:** ✅ Ready for use
+**Core Feature Status:** ✅ Ready for deployment
 - All essential functionality implemented (fullscreen, keyboard, touch navigation)
-- All unit tests passing (27/27 frontend, 61/61 backend)
+- All unit tests passing (145/145 frontend, 61/61 backend)
 - Integrated with Gallery and Map views
 - Mobile-first design with touch gestures
+- Loading states implemented (spinner with anti-flicker delay)
+- Navigation buttons fixed for mobile (no tap-to-close conflict)
 
 **Next Steps:**
-- 📝 Manual testing recommended (Chrome DevTools MCP on mobile viewport)
-- 🔜 Phase 5 (UX enhancements) is optional - can be done later if needed
-- ✅ Feature ready to merge or proceed to Admin Panel/Deployment
+1. ✅ Commit and merge `feature/photo-viewer` to `master`
+2. 🚀 Deploy to production server (mikrus) for real mobile testing
+3. ⏸️ Resume Phase 5.2-5.6 (UX enhancements) after deployment if needed
+4. 📝 Consider i18n as separate feature (branch `feature/i18n`)
 
 ---
 
 **Last Updated:** 2025-10-25  
 **Branch:** `feature/photo-viewer`  
-**Status:** Core feature complete (Phases 1-4), Phase 5 optional
+**Status:** Ready for deployment (Phases 1-5.1 complete, 5.2-5.6 postponed until mobile testing possible)
+
+---
+
+## 🔜 Future Enhancements (Post-Deployment)
+
+**Phase 5.2-5.6 tasks postponed until:**
+- Deployment to production server (mikrus) completed
+- Real mobile device testing available
+- User feedback collected from production usage
+
+**Potential future improvements:**
+- Preloading next/previous photos for instant navigation
+- Enhanced error handling with retry mechanisms
+- Full accessibility support (ARIA, screen readers)
+- Photo metadata display in footer
+- Transition animations (if user feedback suggests need)

@@ -427,4 +427,165 @@ describe('PhotoViewerComponent', () => {
       expect(component['touchEndY']).toBe(0);
     });
   });
+
+  describe('Loading states', () => {
+    it('should set isImageLoading to true when viewer opens', () => {
+      fixture.detectChanges();
+
+      const newState: ViewerState = {
+        isOpen: true,
+        photos: mockPhotos,
+        currentIndex: 0,
+        sourceRoute: '/gallery'
+      };
+
+      viewerStateSubject.next(newState);
+      fixture.detectChanges();
+
+      expect(component.isImageLoading).toBe(true);
+    });
+
+    it('should not show spinner immediately (no flicker)', () => {
+      fixture.detectChanges();
+
+      const newState: ViewerState = {
+        isOpen: true,
+        photos: mockPhotos,
+        currentIndex: 0,
+        sourceRoute: '/gallery'
+      };
+
+      viewerStateSubject.next(newState);
+      fixture.detectChanges();
+
+      // Spinner should NOT be visible immediately
+      expect(component.showSpinner).toBe(false);
+    });
+
+    it('should show spinner after delay if still loading', (done) => {
+      fixture.detectChanges();
+
+      const newState: ViewerState = {
+        isOpen: true,
+        photos: mockPhotos,
+        currentIndex: 0,
+        sourceRoute: '/gallery'
+      };
+
+      viewerStateSubject.next(newState);
+      fixture.detectChanges();
+
+      // Wait for spinner delay (200ms)
+      setTimeout(() => {
+        // If still loading, spinner should be visible
+        if (component.isImageLoading) {
+          expect(component.showSpinner).toBe(true);
+        }
+        done();
+      }, 250);
+    });
+
+    it('should set isImageLoading to false when image loads', () => {
+      component.isImageLoading = true;
+      component.showSpinner = true;
+      
+      component.onImageLoad();
+      
+      expect(component.isImageLoading).toBe(false);
+      expect(component.showSpinner).toBe(false);
+    });
+
+    it('should set isImageLoading to false when image fails to load', () => {
+      component.isImageLoading = true;
+      component.showSpinner = true;
+      
+      component.onImageError();
+      
+      expect(component.isImageLoading).toBe(false);
+      expect(component.showSpinner).toBe(false);
+    });
+
+    it('should set isImageLoading to false when viewer closes', () => {
+      // First open the viewer
+      const openState: ViewerState = {
+        isOpen: true,
+        photos: mockPhotos,
+        currentIndex: 0,
+        sourceRoute: '/gallery'
+      };
+      viewerStateSubject.next(openState);
+      fixture.detectChanges();
+
+      expect(component.isImageLoading).toBe(true);
+
+      // Then close it
+      const closedState: ViewerState = {
+        isOpen: false,
+        photos: [],
+        currentIndex: -1,
+        sourceRoute: '/'
+      };
+      viewerStateSubject.next(closedState);
+      fixture.detectChanges();
+
+      expect(component.isImageLoading).toBe(false);
+      expect(component.showSpinner).toBe(false);
+    });
+
+    it('should reset isImageLoading when navigating to next photo', () => {
+      // Open viewer with first photo
+      const state1: ViewerState = {
+        isOpen: true,
+        photos: mockPhotos,
+        currentIndex: 0,
+        sourceRoute: '/gallery'
+      };
+      viewerStateSubject.next(state1);
+      fixture.detectChanges();
+
+      expect(component.isImageLoading).toBe(true);
+
+      // Simulate image loaded
+      component.onImageLoad();
+      expect(component.isImageLoading).toBe(false);
+
+      // Navigate to next photo
+      const state2: ViewerState = {
+        isOpen: true,
+        photos: mockPhotos,
+        currentIndex: 1,
+        sourceRoute: '/gallery'
+      };
+      viewerStateSubject.next(state2);
+      fixture.detectChanges();
+
+      // Loading state should be reset
+      expect(component.isImageLoading).toBe(true);
+    });
+
+    it('should not show spinner if image loads before delay', (done) => {
+      fixture.detectChanges();
+
+      const newState: ViewerState = {
+        isOpen: true,
+        photos: mockPhotos,
+        currentIndex: 0,
+        sourceRoute: '/gallery'
+      };
+
+      viewerStateSubject.next(newState);
+      fixture.detectChanges();
+
+      // Simulate fast image load (before 200ms delay)
+      setTimeout(() => {
+        component.onImageLoad();
+        
+        // Wait a bit more to ensure spinner timeout didn't trigger
+        setTimeout(() => {
+          expect(component.showSpinner).toBe(false);
+          done();
+        }, 100);
+      }, 50);
+    });
+  });
 });
