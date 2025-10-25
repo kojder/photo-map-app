@@ -4,18 +4,22 @@ import com.photomap.model.Photo;
 import com.photomap.model.Rating;
 import com.photomap.model.User;
 import com.photomap.repository.PhotoRepository;
+import com.photomap.repository.PhotoSpecification;
 import com.photomap.repository.RatingRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.LocalDateTime;
 import java.util.Optional;
 
 @Service
@@ -39,17 +43,37 @@ public class PhotoService {
     private String largeDirectory;
 
 
-    public Page<Photo> getPhotos(Long userId, Pageable pageable) {
-        return photoRepository.findAll(pageable);
+    @Transactional(readOnly = true)
+    public Page<Photo> getPhotos(final Long userId, final Pageable pageable, final LocalDateTime dateFrom, final LocalDateTime dateTo, final Integer minRating, final Boolean hasGps) {
+        Specification<Photo> spec = null;
+
+        if (dateFrom != null) {
+            spec = spec == null ? PhotoSpecification.takenAfter(dateFrom) : spec.and(PhotoSpecification.takenAfter(dateFrom));
+        }
+
+        if (dateTo != null) {
+            spec = spec == null ? PhotoSpecification.takenBefore(dateTo) : spec.and(PhotoSpecification.takenBefore(dateTo));
+        }
+
+        if (minRating != null) {
+            spec = spec == null ? PhotoSpecification.hasMinRating(minRating) : spec.and(PhotoSpecification.hasMinRating(minRating));
+        }
+
+        if (hasGps != null) {
+            spec = spec == null ? PhotoSpecification.hasGps(hasGps) : spec.and(PhotoSpecification.hasGps(hasGps));
+        }
+
+        return spec != null ? photoRepository.findAll(spec, pageable) : photoRepository.findAll(pageable);
     }
 
-    public Optional<Photo> getPhotoById(Long photoId, Long userId) {
+    @Transactional(readOnly = true)
+    public Optional<Photo> getPhotoById(final Long photoId, final Long userId) {
         return photoRepository.findById(photoId);
     }
 
     @Transactional
-    public void deletePhoto(Long photoId, Long userId) throws IOException {
-        Photo photo = photoRepository.findById(photoId)
+    public void deletePhoto(final Long photoId, final Long userId) throws IOException {
+        final Photo photo = photoRepository.findById(photoId)
                 .orElseThrow(() -> new IllegalArgumentException("Photo not found"));
 
         if (!photo.getUser().getId().equals(userId)) {
@@ -62,22 +86,22 @@ public class PhotoService {
     }
 
     @Transactional
-    public Rating ratePhoto(Long photoId, Long userId, Integer ratingValue) {
-        Photo photo = photoRepository.findById(photoId)
+    public Rating ratePhoto(final Long photoId, final Long userId, final Integer ratingValue) {
+        final Photo photo = photoRepository.findById(photoId)
                 .orElseThrow(() -> new IllegalArgumentException("Photo not found"));
 
         if (ratingValue < 1 || ratingValue > 5) {
             throw new IllegalArgumentException("Rating must be between 1 and 5");
         }
 
-        Optional<Rating> existingRating = ratingRepository.findByPhotoIdAndUserId(photoId, userId);
+        final Optional<Rating> existingRating = ratingRepository.findByPhotoIdAndUserId(photoId, userId);
 
         if (existingRating.isPresent()) {
-            Rating rating = existingRating.get();
+            final Rating rating = existingRating.get();
             rating.setRating(ratingValue);
             return ratingRepository.save(rating);
         } else {
-            Rating newRating = new Rating();
+            final Rating newRating = new Rating();
             newRating.setPhoto(photo);
             newRating.setUser(new User());
             newRating.getUser().setId(userId);
@@ -87,7 +111,7 @@ public class PhotoService {
     }
 
     @Transactional
-    public void clearRating(Long photoId, Long userId) {
+    public void clearRating(final Long photoId, final Long userId) {
         ratingRepository.findByPhotoIdAndUserId(photoId, userId)
                 .orElseThrow(() -> new IllegalArgumentException("Rating not found"));
 
@@ -96,29 +120,29 @@ public class PhotoService {
     }
 
 
-    private void deletePhotoFiles(Photo photo) throws IOException {
-        Path originalPath = Paths.get(originalDirectory, photo.getFilename());
+    private void deletePhotoFiles(final Photo photo) throws IOException {
+        final Path originalPath = Paths.get(originalDirectory, photo.getFilename());
         Files.deleteIfExists(originalPath);
         log.info("Deleted original: {}", originalPath);
 
         if (photo.getThumbnailFilename() != null) {
-            String filename = photo.getThumbnailFilename();
+            final String filename = photo.getThumbnailFilename();
 
-            Path smallPath = Paths.get(smallDirectory, filename);
+            final Path smallPath = Paths.get(smallDirectory, filename);
             Files.deleteIfExists(smallPath);
             log.info("Deleted small thumbnail: {}", smallPath);
 
-            Path mediumPath = Paths.get(mediumDirectory, filename);
+            final Path mediumPath = Paths.get(mediumDirectory, filename);
             Files.deleteIfExists(mediumPath);
             log.info("Deleted medium thumbnail: {}", mediumPath);
 
-            Path largePath = Paths.get(largeDirectory, filename);
+            final Path largePath = Paths.get(largeDirectory, filename);
             Files.deleteIfExists(largePath);
             log.info("Deleted large thumbnail: {}", largePath);
         }
     }
 
-    private String getFileExtension(String filename) {
+    private String getFileExtension(final String filename) {
         if (filename == null || !filename.contains(".")) {
             return "";
         }

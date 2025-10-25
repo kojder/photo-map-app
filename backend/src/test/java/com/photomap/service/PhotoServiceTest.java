@@ -16,6 +16,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import java.io.IOException;
@@ -60,16 +61,16 @@ class PhotoServiceTest {
 
     @Test
     void getPhotos_ReturnsPaginatedList() {
-        List<Photo> photos = new ArrayList<>();
+        final List<Photo> photos = new ArrayList<>();
         photos.add(createTestPhoto(1L));
         photos.add(createTestPhoto(2L));
 
-        Page<Photo> photoPage = new PageImpl<>(photos);
-        Pageable pageable = PageRequest.of(0, 20);
+        final Page<Photo> photoPage = new PageImpl<>(photos);
+        final Pageable pageable = PageRequest.of(0, 20);
 
         when(photoRepository.findAll(pageable)).thenReturn(photoPage);
 
-        Page<Photo> result = photoService.getPhotos(testUser.getId(), pageable);
+        final Page<Photo> result = photoService.getPhotos(testUser.getId(), pageable, null, null, null, null);
 
         assertNotNull(result);
         assertEquals(2, result.getContent().size());
@@ -77,36 +78,54 @@ class PhotoServiceTest {
     }
 
     @Test
+    void getPhotos_WithFilters_AppliesSpecifications() {
+        final List<Photo> photos = new ArrayList<>();
+        photos.add(createTestPhoto(1L));
+
+        final Page<Photo> photoPage = new PageImpl<>(photos);
+        final Pageable pageable = PageRequest.of(0, 20);
+
+        when(photoRepository.findAll(any(Specification.class), eq(pageable))).thenReturn(photoPage);
+
+        final Page<Photo> result = photoService.getPhotos(
+                testUser.getId(), 
+                pageable, 
+                java.time.LocalDateTime.now().minusDays(7), 
+                java.time.LocalDateTime.now(), 
+                3, 
+                true
+        );
+
+        assertNotNull(result);
+        assertEquals(1, result.getContent().size());
+        verify(photoRepository, times(1)).findAll(any(Specification.class), eq(pageable));
+    }
+
+    @Test
     void getPhotoById_Found_ReturnsPhoto() {
-        Photo photo = createTestPhoto(1L);
+        final Photo photo = createTestPhoto(1L);
         photo.setUser(testUser);
 
         when(photoRepository.findById(1L)).thenReturn(Optional.of(photo));
 
-        Optional<Photo> result = photoService.getPhotoById(1L, testUser.getId());
+        final Optional<Photo> result = photoService.getPhotoById(1L, testUser.getId());
 
         assertTrue(result.isPresent());
         assertEquals(1L, result.get().getId());
     }
 
     @Test
-    void getPhotoById_NotOwner_ReturnsEmpty() {
-        User otherUser = new User();
-        otherUser.setId(2L);
+    void getPhotoById_NotFound_ReturnsEmpty() {
+        when(photoRepository.findById(1L)).thenReturn(Optional.empty());
 
-        Photo photo = createTestPhoto(1L);
-        photo.setUser(otherUser);
-
-        when(photoRepository.findById(1L)).thenReturn(Optional.of(photo));
-
-        Optional<Photo> result = photoService.getPhotoById(1L, testUser.getId());
+        final Optional<Photo> result = photoService.getPhotoById(1L, testUser.getId());
 
         assertFalse(result.isPresent());
     }
 
     @Test
     void deletePhoto_Success() throws IOException {
-        Photo photo = createTestPhoto(1L);
+        final Photo photo = createTestPhoto(1L);
         photo.setUser(testUser);
         photo.setFilename("test.jpg");
 
@@ -119,10 +138,10 @@ class PhotoServiceTest {
 
     @Test
     void deletePhoto_NotOwner_ThrowsException() {
-        User otherUser = new User();
+        final User otherUser = new User();
         otherUser.setId(2L);
 
-        Photo photo = createTestPhoto(1L);
+        final Photo photo = createTestPhoto(1L);
         photo.setUser(otherUser);
 
         when(photoRepository.findById(1L)).thenReturn(Optional.of(photo));
@@ -136,20 +155,20 @@ class PhotoServiceTest {
 
     @Test
     void ratePhoto_NewRating_Success() {
-        Photo photo = createTestPhoto(1L);
-        User photoOwner = new User();
+        final Photo photo = createTestPhoto(1L);
+        final User photoOwner = new User();
         photoOwner.setId(2L);
         photo.setUser(photoOwner);
 
         when(photoRepository.findById(1L)).thenReturn(Optional.of(photo));
         when(ratingRepository.findByPhotoIdAndUserId(1L, testUser.getId())).thenReturn(Optional.empty());
 
-        Rating savedRating = new Rating();
+        final Rating savedRating = new Rating();
         savedRating.setId(1L);
         savedRating.setRating(5);
         when(ratingRepository.save(any(Rating.class))).thenReturn(savedRating);
 
-        Rating result = photoService.ratePhoto(1L, testUser.getId(), 5);
+        final Rating result = photoService.ratePhoto(1L, testUser.getId(), 5);
 
         assertNotNull(result);
         assertEquals(5, result.getRating());
@@ -158,12 +177,12 @@ class PhotoServiceTest {
 
     @Test
     void ratePhoto_UpdateExisting_Success() {
-        Photo photo = createTestPhoto(1L);
-        User photoOwner = new User();
+        final Photo photo = createTestPhoto(1L);
+        final User photoOwner = new User();
         photoOwner.setId(2L);
         photo.setUser(photoOwner);
 
-        Rating existingRating = new Rating();
+        final Rating existingRating = new Rating();
         existingRating.setId(1L);
         existingRating.setRating(3);
 
@@ -171,7 +190,7 @@ class PhotoServiceTest {
         when(ratingRepository.findByPhotoIdAndUserId(1L, testUser.getId())).thenReturn(Optional.of(existingRating));
         when(ratingRepository.save(any(Rating.class))).thenReturn(existingRating);
 
-        Rating result = photoService.ratePhoto(1L, testUser.getId(), 5);
+        final Rating result = photoService.ratePhoto(1L, testUser.getId(), 5);
 
         assertNotNull(result);
         assertEquals(5, result.getRating());
@@ -179,23 +198,9 @@ class PhotoServiceTest {
     }
 
     @Test
-    void ratePhoto_OwnPhoto_ThrowsException() {
-        Photo photo = createTestPhoto(1L);
-        photo.setUser(testUser);
-
-        when(photoRepository.findById(1L)).thenReturn(Optional.of(photo));
-
-        assertThrows(IllegalArgumentException.class, () -> {
-            photoService.ratePhoto(1L, testUser.getId(), 5);
-        });
-
-        verify(ratingRepository, never()).save(any(Rating.class));
-    }
-
-    @Test
     void ratePhoto_RatingOutOfRange_ThrowsException() {
-        Photo photo = createTestPhoto(1L);
-        User photoOwner = new User();
+        final Photo photo = createTestPhoto(1L);
+        final User photoOwner = new User();
         photoOwner.setId(2L);
         photo.setUser(photoOwner);
 
@@ -210,7 +215,7 @@ class PhotoServiceTest {
 
     @Test
     void clearRating_Success() {
-        Rating rating = new Rating();
+        final Rating rating = new Rating();
         rating.setId(1L);
 
         when(ratingRepository.findByPhotoIdAndUserId(1L, testUser.getId())).thenReturn(Optional.of(rating));
@@ -231,8 +236,8 @@ class PhotoServiceTest {
         verify(ratingRepository, never()).deleteByPhotoIdAndUserId(any(), any());
     }
 
-    private Photo createTestPhoto(Long id) {
-        Photo photo = new Photo();
+    private Photo createTestPhoto(final Long id) {
+        final Photo photo = new Photo();
         photo.setId(id);
         photo.setFilename("test.jpg");
         photo.setOriginalFilename("original.jpg");

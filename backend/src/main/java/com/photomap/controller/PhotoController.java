@@ -31,6 +31,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.time.LocalDateTime;
 import java.util.Map;
 import java.util.UUID;
 
@@ -58,8 +59,8 @@ public class PhotoController {
 
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<Map<String, String>> uploadPhoto(
-            @RequestParam("file") MultipartFile file,
-            Authentication authentication) throws IOException {
+            @RequestParam("file") final MultipartFile file,
+            final Authentication authentication) throws IOException {
 
         if (file.isEmpty()) {
             throw new IllegalArgumentException("File is empty");
@@ -69,18 +70,18 @@ public class PhotoController {
             throw new IllegalArgumentException("File size exceeds maximum allowed size (10MB)");
         }
 
-        String contentType = file.getContentType();
+        final String contentType = file.getContentType();
         if (contentType == null || (!contentType.equals("image/jpeg") && !contentType.equals("image/png"))) {
             throw new IllegalArgumentException("File type not allowed. Only JPEG and PNG are supported");
         }
 
-        String originalFilename = file.getOriginalFilename();
-        String extension = originalFilename != null && originalFilename.contains(".")
+        final String originalFilename = file.getOriginalFilename();
+        final String extension = originalFilename != null && originalFilename.contains(".")
                 ? originalFilename.substring(originalFilename.lastIndexOf('.'))
                 : ".jpg";
-        String filename = UUID.randomUUID() + extension;
+        final String filename = UUID.randomUUID() + extension;
 
-        Path inputPath = Paths.get(inputDirectory, filename);
+        final Path inputPath = Paths.get(inputDirectory, filename);
         Files.copy(file.getInputStream(), inputPath, StandardCopyOption.REPLACE_EXISTING);
 
         log.info("File uploaded to input directory: {}", filename);
@@ -95,36 +96,45 @@ public class PhotoController {
 
     @GetMapping
     public ResponseEntity<Page<PhotoResponse>> getPhotos(
-            @PageableDefault(size = 20, sort = "uploadedAt", direction = Sort.Direction.DESC) Pageable pageable,
-            Authentication authentication) {
+            @RequestParam(required = false) final String dateFrom,
+            @RequestParam(required = false) final String dateTo,
+            @RequestParam(required = false) final Integer minRating,
+            @RequestParam(required = false) final Boolean hasGps,
+            @PageableDefault(size = 20, sort = "uploadedAt", direction = Sort.Direction.DESC) final Pageable pageable,
+            final Authentication authentication) {
 
-        User currentUser = getCurrentUser(authentication);
-        Page<Photo> photos = photoService.getPhotos(currentUser.getId(), pageable);
+        final User currentUser = getCurrentUser(authentication);
 
-        Page<PhotoResponse> response = photos.map(photo -> mapToPhotoResponse(photo, currentUser.getId()));
+        // Parse date parameters
+        final LocalDateTime dateFromParsed = dateFrom != null ? LocalDateTime.parse(dateFrom + "T00:00:00") : null;
+        final LocalDateTime dateToParsed = dateTo != null ? LocalDateTime.parse(dateTo + "T23:59:59") : null;
+
+        final Page<Photo> photos = photoService.getPhotos(currentUser.getId(), pageable, dateFromParsed, dateToParsed, minRating, hasGps);
+
+        final Page<PhotoResponse> response = photos.map(photo -> mapToPhotoResponse(photo, currentUser.getId()));
         return ResponseEntity.ok(response);
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<PhotoResponse> getPhotoById(
-            @PathVariable Long id,
-            Authentication authentication) {
+            @PathVariable final Long id,
+            final Authentication authentication) {
 
-        User currentUser = getCurrentUser(authentication);
-        Photo photo = photoService.getPhotoById(id, currentUser.getId())
+        final User currentUser = getCurrentUser(authentication);
+        final Photo photo = photoService.getPhotoById(id, currentUser.getId())
                 .orElseThrow(() -> new IllegalArgumentException("Photo not found or access denied"));
 
         return ResponseEntity.ok(mapToPhotoResponse(photo, currentUser.getId()));
     }
 
     @GetMapping("/{id}/thumbnail")
-    public ResponseEntity<Resource> getThumbnail(@PathVariable Long id, Authentication authentication) throws IOException {
-        Photo photo;
+    public ResponseEntity<Resource> getThumbnail(@PathVariable final Long id, final Authentication authentication) throws IOException {
+        final Photo photo;
         if (!securityEnabled) {
             photo = photoRepository.findById(id)
                     .orElseThrow(() -> new IllegalArgumentException("Photo not found"));
         } else {
-            User currentUser = getCurrentUser(authentication);
+            final User currentUser = getCurrentUser(authentication);
             photo = photoService.getPhotoById(id, currentUser.getId())
                     .orElseThrow(() -> new IllegalArgumentException("Photo not found or access denied"));
         }
@@ -134,8 +144,8 @@ public class PhotoController {
             thumbnailFilename = photo.getFilename();
         }
 
-        Path filePath = Paths.get(mediumDirectory, thumbnailFilename);
-        Resource resource = new FileSystemResource(filePath);
+        final Path filePath = Paths.get(mediumDirectory, thumbnailFilename);
+        final Resource resource = new FileSystemResource(filePath);
 
         if (!resource.exists()) {
             return ResponseEntity.notFound().build();
@@ -152,19 +162,19 @@ public class PhotoController {
     }
 
     @GetMapping("/{id}/full")
-    public ResponseEntity<Resource> getFullImage(@PathVariable Long id, Authentication authentication) throws IOException {
-        Photo photo;
+    public ResponseEntity<Resource> getFullImage(@PathVariable final Long id, final Authentication authentication) throws IOException {
+        final Photo photo;
         if (!securityEnabled) {
             photo = photoRepository.findById(id)
                     .orElseThrow(() -> new IllegalArgumentException("Photo not found"));
         } else {
-            User currentUser = getCurrentUser(authentication);
+            final User currentUser = getCurrentUser(authentication);
             photo = photoService.getPhotoById(id, currentUser.getId())
                     .orElseThrow(() -> new IllegalArgumentException("Photo not found or access denied"));
         }
 
-        Path filePath = Paths.get(originalDirectory, photo.getFilename());
-        Resource resource = new FileSystemResource(filePath);
+        final Path filePath = Paths.get(originalDirectory, photo.getFilename());
+        final Resource resource = new FileSystemResource(filePath);
 
         if (!resource.exists()) {
             return ResponseEntity.notFound().build();
@@ -177,22 +187,22 @@ public class PhotoController {
 
     @PutMapping("/{id}/rating")
     public ResponseEntity<RatingResponse> ratePhoto(
-            @PathVariable Long id,
-            @Valid @RequestBody RatingRequest request,
-            Authentication authentication) {
+            @PathVariable final Long id,
+            @Valid @RequestBody final RatingRequest request,
+            final Authentication authentication) {
 
-        User currentUser = getCurrentUser(authentication);
-        Rating rating = photoService.ratePhoto(id, currentUser.getId(), request.rating());
+        final User currentUser = getCurrentUser(authentication);
+        final Rating rating = photoService.ratePhoto(id, currentUser.getId(), request.rating());
 
         return ResponseEntity.ok(mapToRatingResponse(rating));
     }
 
     @DeleteMapping("/{id}/rating")
     public ResponseEntity<Void> clearRating(
-            @PathVariable Long id,
-            Authentication authentication) {
+            @PathVariable final Long id,
+            final Authentication authentication) {
 
-        User currentUser = getCurrentUser(authentication);
+        final User currentUser = getCurrentUser(authentication);
         photoService.clearRating(id, currentUser.getId());
 
         return ResponseEntity.noContent().build();
@@ -200,33 +210,33 @@ public class PhotoController {
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deletePhoto(
-            @PathVariable Long id,
-            Authentication authentication) throws IOException {
+            @PathVariable final Long id,
+            final Authentication authentication) throws IOException {
 
-        User currentUser = getCurrentUser(authentication);
+        final User currentUser = getCurrentUser(authentication);
         photoService.deletePhoto(id, currentUser.getId());
 
         return ResponseEntity.noContent().build();
     }
 
-    private User getCurrentUser(Authentication authentication) {
+    private User getCurrentUser(final Authentication authentication) {
         if (authentication == null) {
             return userRepository.findById(1L)
                     .orElseThrow(() -> new IllegalArgumentException("Admin user not found"));
         }
-        String email = authentication.getName();
+        final String email = authentication.getName();
         return userRepository.findByEmail(email)
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
     }
 
-    private PhotoResponse mapToPhotoResponse(Photo photo, Long currentUserId) {
-        String thumbnailUrl = photo.getThumbnailFilename() != null
+    private PhotoResponse mapToPhotoResponse(final Photo photo, final Long currentUserId) {
+        final String thumbnailUrl = photo.getThumbnailFilename() != null
                 ? "/api/photos/" + photo.getId() + "/thumbnail"
                 : null;
 
-        Double averageRating = calculateAverageRating(photo);
-        Integer totalRatings = photo.getRatings() != null ? photo.getRatings().size() : 0;
-        Integer userRating = currentUserId != null ? getUserRating(photo, currentUserId) : null;
+        final Double averageRating = calculateAverageRating(photo);
+        final Integer totalRatings = photo.getRatings() != null ? photo.getRatings().size() : 0;
+        final Integer userRating = currentUserId != null ? getUserRating(photo, currentUserId) : null;
 
         return new PhotoResponse(
                 photo.getId(),
@@ -245,7 +255,7 @@ public class PhotoController {
         );
     }
 
-    private RatingResponse mapToRatingResponse(Rating rating) {
+    private RatingResponse mapToRatingResponse(final Rating rating) {
         return new RatingResponse(
                 rating.getId(),
                 rating.getPhoto().getId(),
@@ -255,7 +265,7 @@ public class PhotoController {
         );
     }
 
-    private Double calculateAverageRating(Photo photo) {
+    private Double calculateAverageRating(final Photo photo) {
         if (photo.getRatings() == null || photo.getRatings().isEmpty()) {
             return null;
         }
@@ -266,7 +276,7 @@ public class PhotoController {
                 .orElse(0.0);
     }
 
-    private Integer getUserRating(Photo photo, Long userId) {
+    private Integer getUserRating(final Photo photo, final Long userId) {
         if (photo.getRatings() == null) {
             return null;
         }
