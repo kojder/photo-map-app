@@ -11,7 +11,7 @@
 
 ### 🎯 Currently Working On
 
-**Next:** Phase 5 - Admin Panel Frontend (1-2h)
+**Next:** Phase 5 - Admin Panel complete, consider Admin Security or Deployment
 
 <!-- Use template below when starting new task -->
 <!--
@@ -22,6 +22,31 @@
 -->
 
 ### ✅ Last Completed
+
+**User Permissions Management System** (2025-10-26)
+- ✅ Backend: Migracja V5 - can_view_photos, can_rate kolumny + app_settings tabela
+- ✅ Backend: Nowe uprawnienia - canViewPhotos (default false), canRate (default false)
+- ✅ Backend: Backward compatibility - istniejący użytkownicy dostają true dla obu uprawnień
+- ✅ Backend: PublicController z /api/public/settings (admin contact bez auth)
+- ✅ Backend: SecurityConfig - /api/public/** dodane do permitAll
+- ✅ Backend: PhotoController - weryfikacja canViewPhotos i canRate przed operacjami
+- ✅ Backend: AdminController - wyszukiwanie użytkowników po email (contains, case-insensitive) + paginacja
+- ✅ Backend: AdminController - PUT /api/admin/users/{id}/permissions endpoint
+- ✅ Backend: AuthController - GET /api/auth/me zwraca uprawnienia użytkownika
+- ✅ Backend: SettingsService - zarządzanie app_settings (admin contact email)
+- ✅ Frontend: AdminComponent - system notyfikacji banerowych (auto-dismiss 5s)
+- ✅ Frontend: AdminComponent - zarządzanie uprawnieniami w sidebar (batch save)
+- ✅ Frontend: AdminComponent - wyszukiwanie użytkowników po email + paginacja
+- ✅ Frontend: AdminComponent - Admin Settings sekcja (poniżej User Management)
+- ✅ Frontend: GalleryComponent - obsługa błędów uprawnień z kontaktem do admina
+- ✅ Frontend: PhotoCardComponent - ukrywanie UI rating gdy canRate=false
+- ✅ Frontend: AuthService - metody canRate(), canViewPhotos()
+- ✅ Frontend: PhotoService - getPublicSettings(), clearPhotos()
+- ✅ Frontend: RegisterComponent - info o kontakcie do admina po rejestracji
+- ✅ UX: Zastąpiono wszystkie alert() popups banerami z auto-dismiss
+- ✅ UX: Permission error - komunikat z przyciskiem mailto: do admina
+- 📝 Commit: 8f9901f
+- 📝 Files: 31 changed (+971 additions, -90 deletions)
 
 **Phase 5 - Admin Panel Backend** (2025-10-26)
 - ✅ PhotoAdminResponse DTO with userId and userEmail
@@ -184,7 +209,7 @@
 
 ## 📊 Project Status
 
-**Overall Progress:** 4/6 phases (67% core MVP) + Photo Viewer Feature + GitHub Copilot setup
+**Overall Progress:** 5/6 phases (83% core MVP) + Photo Viewer Feature + GitHub Copilot setup
 
 | Phase | Status | Description |
 |------|--------|------|
@@ -194,7 +219,7 @@
 | 4. Frontend - Gallery & Map | ✅ | Gallery grid, Leaflet Map, Rating (stars), Upload (drag-and-drop), Filters |
 | 📸 Photo Viewer Feature | ✅ | Fullscreen viewer, keyboard nav, mobile touch (Phases 1-4 complete) |
 | 🤖 GitHub Copilot Setup | ✅ | Instructions, prompts, VS Code integration |
-| 5. Admin Panel | 🔜 | Admin API, Admin UI |
+| 5. Admin Panel | ✅ | User Management, Photo Management, Permissions System, Admin Settings |
 | 6. Deployment | 🔜 | Mikrus config, Nginx, SSL, Monitoring |
 
 **Legend:** 🔜 Pending | ⏳ In Progress | ✅ Completed
@@ -422,29 +447,48 @@ uploads/
 
 ## 📋 Phase 5: Admin Panel
 
-**Time:** ~2-3 hours | **Status:** 🔜 Pending
+**Time:** ~2-3 hours | **Status:** ✅ Completed (2025-10-26)
 
 ### Tasks:
 
-- [ ] **5.1 Admin API Endpoints**
-  - `/api/admin/users` GET (list all users)
+- [x] **5.1 Admin API Endpoints**
+  - `/api/admin/users` GET (list all users with pagination and search)
   - `/api/admin/users/{id}` DELETE (delete user)
+  - `/api/admin/users/{id}/permissions` PUT (update user permissions)
   - `/api/admin/photos` GET (list all photos with owners)
   - `/api/admin/photos/{id}` DELETE (delete any photo)
+  - `/api/admin/settings` GET/PUT (manage admin contact email)
 
-- [ ] **5.2 Admin UI**
+- [x] **5.2 Admin UI**
   - **Plan:** `.ai/ui-plan.md` (AdminComponent section)
   - Admin dashboard component (user count, photo count)
-  - User management table (list, delete)
+  - User management table (list, delete, search by email)
   - Photo management table (list, delete)
+  - User permissions management (sidebar with canViewPhotos, canRate)
+  - Admin Settings (admin contact email configuration)
+  - Banner notification system (replaced alert() popups)
   - Admin-only route with `adminGuard`
+
+- [x] **5.3 User Permissions System**
+  - Database migration V5 (can_view_photos, can_rate, app_settings)
+  - Backend permission enforcement (PhotoController)
+  - Frontend permission checks (AuthService, UI conditional rendering)
+  - Public endpoint for admin contact (/api/public/settings)
+  - Permission error handling with user-friendly messages
 
 ### Acceptance Criteria:
 - ✅ Admin can view all users
 - ✅ Admin can delete users
-- ✅ Admin can view all photos
+- ✅ Admin can search users by email (case-insensitive, contains)
+- ✅ Admin can manage user permissions (canViewPhotos, canRate)
+- ✅ Admin can view all photos with owner information
 - ✅ Admin can delete any photo
+- ✅ Admin can configure contact email
 - ✅ Regular users cannot access admin panel
+- ✅ Permission errors show helpful messages with admin contact
+- ✅ All UI uses banner notifications instead of popups
+- ✅ New users get canViewPhotos=false, canRate=false by default
+- ✅ Existing users keep both permissions true (backward compatibility)
 
 ---
 
