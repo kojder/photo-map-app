@@ -394,7 +394,9 @@ Before starting implementation **ALWAYS**:
 - ✅ **BEFORE EVERY commit - show changes for review:**
   - Run `git status` to show modified files
   - Run `git diff --cached --stat` to show summary of staged changes
-  - **WAIT for user confirmation** before executing `git commit`
+  - **ASK USER: "Czy zacommitować te zmiany?"**
+  - ⚠️ **STOP AND WAIT** - DO NOT execute `git commit` until user explicitly confirms
+  - ⚠️ **NEVER commit in the same response** where you ask for confirmation
   - User will review changes and either approve or request corrections
   - If corrections needed - make changes and repeat review process
 - ✅ **EVERY push MUST be confirmed by user** - NEVER auto-push (critical!)
@@ -406,8 +408,14 @@ Before starting implementation **ALWAYS**:
 2. Stage changes: `git add <files>`
 3. Show summary: `git status` + `git diff --cached --stat`
 4. **ASK USER: "Czy zacommitować te zmiany?"**
-5. If YES → create commit with Conventional Commits message
-6. If NO → make corrections, return to step 3
+5. ⚠️ **STOP HERE** - Wait for user's explicit response (DO NOT continue in the same message)
+6. After user confirms YES → create commit with Conventional Commits message
+7. If user says NO → make corrections, return to step 3
+
+**ABSOLUTE PROHIBITION:**
+- ❌ **NEVER execute `git commit` in the same response where you ask for confirmation**
+- ❌ **NEVER assume user's answer** - always wait for explicit "yes"/"tak"/"commit"
+- ❌ **NEVER bundle question + commit in one response**
 
 ## 🛠️ Tech Stack Guidelines
 
