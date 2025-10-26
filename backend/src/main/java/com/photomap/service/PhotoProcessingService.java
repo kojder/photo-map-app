@@ -49,7 +49,8 @@ public class PhotoProcessingService {
     private Long adminUserId;
 
     private static final String[] ALLOWED_EXTENSIONS = {".jpg", ".jpeg", ".png"};
-    private static final int THUMBNAIL_MEDIUM = 400;
+    private static final int THUMBNAIL_MEDIUM = 300;
+    private static final double THUMBNAIL_QUALITY = 0.85;
 
     @PostConstruct
     public void init() throws IOException {
@@ -130,10 +131,11 @@ public class PhotoProcessingService {
 
         Thumbnails.of(originalFile)
                 .size(size, size)
+                .outputQuality(THUMBNAIL_QUALITY)
                 .keepAspectRatio(true)
                 .toFile(thumbnailPath.toFile());
 
-        log.info("Generated thumbnail: {}x{} -> {}", size, size, thumbnailPath);
+        log.info("Generated thumbnail: {}x{} (quality: {}) -> {}", size, size, THUMBNAIL_QUALITY, thumbnailPath);
         return thumbnailFilename;
     }
 
