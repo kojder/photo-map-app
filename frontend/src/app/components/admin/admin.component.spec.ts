@@ -42,7 +42,10 @@ describe('AdminComponent', () => {
     const adminServiceSpy = jasmine.createSpyObj('AdminService', [
       'getUsers',
       'deleteUser',
-      'updateUserRole'
+      'updateUserRole',
+      'getSettings',
+      'updateSettings',
+      'updateUserPermissions'
     ]);
 
     currentUserSubject = new BehaviorSubject<User | null>(mockCurrentUser);
@@ -62,6 +65,7 @@ describe('AdminComponent', () => {
     authService = TestBed.inject(AuthService) as jasmine.SpyObj<AuthService>;
 
     adminService.getUsers.and.returnValue(of(mockUsersPage));
+    adminService.getSettings.and.returnValue(of({ adminContactEmail: 'admin@test.com' }));
 
     fixture = TestBed.createComponent(AdminComponent);
     component = fixture.componentInstance;
@@ -74,8 +78,9 @@ describe('AdminComponent', () => {
   it('should load users on init', () => {
     fixture.detectChanges();
 
-    expect(adminService.getUsers).toHaveBeenCalledWith(0, 10);
+    expect(adminService.getUsers).toHaveBeenCalledWith(0, 10, undefined);
     expect(component.users().length).toBe(1);
+    expect(adminService.getSettings).toHaveBeenCalled();
   });
 
   it('should set current user id from auth service', () => {
@@ -119,7 +124,7 @@ describe('AdminComponent', () => {
   });
 
   it('should handle role change error', () => {
-    spyOn(window, 'alert');
+    spyOn(component, 'showNotification');
     adminService.updateUserRole.and.returnValue(throwError(() => new Error('API error')));
     adminService.getUsers.and.returnValue(of(mockUsersPage));
 
@@ -128,7 +133,7 @@ describe('AdminComponent', () => {
     component.onRoleSelect(mockUser.id, 'ADMIN');
     component.onSaveRoleChange(mockUser);
 
-    expect(window.alert).toHaveBeenCalledWith('Failed to update user role. Please try again.');
+    expect(component.showNotification).toHaveBeenCalledWith('Nie udało się zaktualizować roli użytkownika. Spróbuj ponownie.', 'error');
     expect(adminService.getUsers).toHaveBeenCalledTimes(2);
   });
 
@@ -155,14 +160,14 @@ describe('AdminComponent', () => {
   });
 
   it('should not delete current user', () => {
-    spyOn(window, 'alert');
+    spyOn(component, 'showNotification');
     component.currentUserId.set(1);
 
     fixture.detectChanges();
     component.onDeleteUser(mockUser);
 
     expect(adminService.deleteUser).not.toHaveBeenCalled();
-    expect(window.alert).toHaveBeenCalledWith('You cannot delete your own admin account!');
+    expect(component.showNotification).toHaveBeenCalledWith('Nie możesz usunąć własnego konta administratora!', 'error');
   });
 
   it('should change users page', () => {
@@ -171,7 +176,7 @@ describe('AdminComponent', () => {
     fixture.detectChanges();
     component.onUsersPageChange(1);
 
-    expect(adminService.getUsers).toHaveBeenCalledWith(1, 10);
+    expect(adminService.getUsers).toHaveBeenCalledWith(1, 10, undefined);
   });
 
   it('should calculate users end index correctly', () => {

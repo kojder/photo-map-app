@@ -1,22 +1,29 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ReactiveFormsModule } from '@angular/forms';
 import { Router, provideRouter } from '@angular/router';
+import { provideHttpClient } from '@angular/common/http';
+import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { of, throwError } from 'rxjs';
 import { RegisterComponent } from './register.component';
 import { AuthService } from '../../services/auth.service';
+import { AppSettings } from '../../models/settings.model';
+import { RegisterResponse } from '../../models/auth.model';
 
 describe('RegisterComponent', () => {
   let component: RegisterComponent;
   let fixture: ComponentFixture<RegisterComponent>;
   let authService: jasmine.SpyObj<AuthService>;
   let router: Router;
+  let httpMock: HttpTestingController;
 
   beforeEach(async () => {
-    const authServiceSpy = jasmine.createSpyObj('AuthService', ['register', 'login']);
+    const authServiceSpy = jasmine.createSpyObj('AuthService', ['register']);
 
     await TestBed.configureTestingModule({
       imports: [RegisterComponent, ReactiveFormsModule],
       providers: [
+        provideHttpClient(),
+        provideHttpClientTesting(),
         { provide: AuthService, useValue: authServiceSpy },
         provideRouter([])
       ]
@@ -24,14 +31,41 @@ describe('RegisterComponent', () => {
 
     authService = TestBed.inject(AuthService) as jasmine.SpyObj<AuthService>;
     router = TestBed.inject(Router);
+    httpMock = TestBed.inject(HttpTestingController);
     spyOn(router, 'navigate');
     fixture = TestBed.createComponent(RegisterComponent);
     component = fixture.componentInstance;
-    fixture.detectChanges();
+  });
+
+  afterEach(() => {
+    httpMock.verify();
   });
 
   it('should create', () => {
     expect(component).toBeTruthy();
+  });
+
+  it('should load admin contact email on init', () => {
+    const mockSettings: AppSettings = {
+      adminContactEmail: 'admin@test.com'
+    };
+
+    fixture.detectChanges();
+
+    const req = httpMock.expectOne('/api/admin/settings');
+    expect(req.request.method).toBe('GET');
+    req.flush(mockSettings);
+
+    expect(component.adminContactEmail()).toBe('admin@test.com');
+  });
+
+  it('should use fallback email when admin settings request fails', () => {
+    fixture.detectChanges();
+
+    const req = httpMock.expectOne('/api/admin/settings');
+    req.error(new ProgressEvent('error'), { status: 403 });
+
+    expect(component.adminContactEmail()).toBe('admin@photomap.local');
   });
 
   it('should initialize form with empty values', () => {
@@ -104,8 +138,13 @@ describe('RegisterComponent', () => {
   });
 
   it('should call authService.register with correct credentials when form is valid', () => {
-    authService.register.and.returnValue(of({ id: 1, email: 'test@example.com', role: 'USER', createdAt: '2025-10-24T00:00:00Z' }));
-    authService.login.and.returnValue(of({ token: 'fake-token', type: 'Bearer', expiresIn: 3600, user: { id: 1, email: 'test@example.com', role: 'USER', createdAt: '2025-10-24T00:00:00Z' } }));
+    const mockResponse: RegisterResponse = {
+      id: 1,
+      email: 'test@example.com',
+      role: 'USER',
+      createdAt: '2025-10-24T00:00:00Z'
+    };
+    authService.register.and.returnValue(of(mockResponse));
 
     component.registerForm.get('email')?.setValue('test@example.com');
     component.registerForm.get('password')?.setValue('password123');
@@ -115,33 +154,33 @@ describe('RegisterComponent', () => {
     expect(authService.register).toHaveBeenCalledWith('test@example.com', 'password123');
   });
 
-  it('should call authService.login after successful registration', () => {
-    authService.register.and.returnValue(of({ id: 1, email: 'test@example.com', role: 'USER', createdAt: '2025-10-24T00:00:00Z' }));
-    authService.login.and.returnValue(of({ token: 'fake-token', type: 'Bearer', expiresIn: 3600, user: { id: 1, email: 'test@example.com', role: 'USER', createdAt: '2025-10-24T00:00:00Z' } }));
+  it('should set registrationSuccess to true after successful registration', () => {
+    const mockResponse: RegisterResponse = {
+      id: 1,
+      email: 'test@example.com',
+      role: 'USER',
+      createdAt: '2025-10-24T00:00:00Z'
+    };
+    authService.register.and.returnValue(of(mockResponse));
 
     component.registerForm.get('email')?.setValue('test@example.com');
     component.registerForm.get('password')?.setValue('password123');
     component.registerForm.get('confirmPassword')?.setValue('password123');
     component.onSubmit();
 
-    expect(authService.login).toHaveBeenCalledWith('test@example.com', 'password123');
-  });
-
-  it('should navigate to /gallery after successful registration and login', () => {
-    authService.register.and.returnValue(of({ id: 1, email: 'test@example.com', role: 'USER', createdAt: '2025-10-24T00:00:00Z' }));
-    authService.login.and.returnValue(of({ token: 'fake-token', type: 'Bearer', expiresIn: 3600, user: { id: 1, email: 'test@example.com', role: 'USER', createdAt: '2025-10-24T00:00:00Z' } }));
-
-    component.registerForm.get('email')?.setValue('test@example.com');
-    component.registerForm.get('password')?.setValue('password123');
-    component.registerForm.get('confirmPassword')?.setValue('password123');
-    component.onSubmit();
-
-    expect(router.navigate).toHaveBeenCalledWith(['/gallery']);
+    expect(component.registrationSuccess()).toBe(true);
+    expect(component.loading()).toBe(false);
+    expect(component.errorMessage()).toBeNull();
   });
 
   it('should set loading to true during registration', () => {
-    authService.register.and.returnValue(of({ id: 1, email: 'test@example.com', role: 'USER', createdAt: '2025-10-24T00:00:00Z' }));
-    authService.login.and.returnValue(of({ token: 'fake-token', type: 'Bearer', expiresIn: 3600, user: { id: 1, email: 'test@example.com', role: 'USER', createdAt: '2025-10-24T00:00:00Z' } }));
+    const mockResponse: RegisterResponse = {
+      id: 1,
+      email: 'test@example.com',
+      role: 'USER',
+      createdAt: '2025-10-24T00:00:00Z'
+    };
+    authService.register.and.returnValue(of(mockResponse));
 
     component.registerForm.get('email')?.setValue('test@example.com');
     component.registerForm.get('password')?.setValue('password123');
@@ -149,7 +188,13 @@ describe('RegisterComponent', () => {
 
     expect(component.loading()).toBe(false);
     component.onSubmit();
+
     expect(component.loading()).toBe(false);
+  });
+
+  it('should navigate to login page when onLoginClick is called', () => {
+    component.onLoginClick();
+    expect(router.navigate).toHaveBeenCalledWith(['/login']);
   });
 
   it('should set errorMessage on registration failure', () => {
@@ -177,18 +222,6 @@ describe('RegisterComponent', () => {
     expect(component.loading()).toBe(false);
   });
 
-  it('should set errorMessage on auto-login failure after successful registration', () => {
-    authService.register.and.returnValue(of({ id: 1, email: 'test@example.com', role: 'USER', createdAt: '2025-10-24T00:00:00Z' }));
-    authService.login.and.returnValue(throwError(() => ({ error: { message: 'Login error' } })));
-
-    component.registerForm.get('email')?.setValue('test@example.com');
-    component.registerForm.get('password')?.setValue('password123');
-    component.registerForm.get('confirmPassword')?.setValue('password123');
-    component.onSubmit();
-
-    expect(component.errorMessage()).toBe('Registration successful, but auto-login failed. Please login manually.');
-    expect(component.loading()).toBe(false);
-  });
 
   it('should clear errorMessage when submitting again', () => {
     authService.register.and.returnValue(throwError(() => ({ error: { message: 'Error' } })));
@@ -200,8 +233,13 @@ describe('RegisterComponent', () => {
 
     expect(component.errorMessage()).toBe('Error');
 
-    authService.register.and.returnValue(of({ id: 1, email: 'test@example.com', role: 'USER', createdAt: '2025-10-24T00:00:00Z' }));
-    authService.login.and.returnValue(of({ token: 'fake-token', type: 'Bearer', expiresIn: 3600, user: { id: 1, email: 'test@example.com', role: 'USER', createdAt: '2025-10-24T00:00:00Z' } }));
+    const mockResponse: RegisterResponse = {
+      id: 1,
+      email: 'test@example.com',
+      role: 'USER',
+      createdAt: '2025-10-24T00:00:00Z'
+    };
+    authService.register.and.returnValue(of(mockResponse));
     component.onSubmit();
 
     expect(component.errorMessage()).toBe(null);
