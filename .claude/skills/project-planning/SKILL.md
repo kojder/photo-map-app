@@ -1,289 +1,247 @@
 ---
 name: Project Planning for Photo Map MVP
-description: Break down, design, and structure features into implementable tasks for Photo Map MVP following 10xDevs methodology and Workflow 3x3. Use when planning new features, creating user stories, defining API endpoints, structuring implementation phases, organizing project tasks, or designing feature breakdowns.
+description: Break down, design, and structure features into implementable tasks for Photo Map MVP. Use when planning new features, creating user stories, defining API endpoints, structuring implementation phases, organizing project tasks, or designing feature breakdowns.
 allowed-tools: Read, Write, Edit, Grep, Glob
 ---
 
 # Project Planning - Photo Map MVP
 
-## MVP Scope
+## Project Context
 
-**Product:** Photo Map MVP - Full-stack aplikacja (Angular 18 + Spring Boot 3 + PostgreSQL)
+Photo Map MVP to full-stack aplikacja do zarządzania zdjęciami z geolokalizacją.
+
+**Stack:** Angular 18 (standalone), Spring Boot 3, Java 17, PostgreSQL 15
+**Deployment:** Mikrus VPS (limited resources, no background jobs)
+**Timeline:** 10 dni (6 faz implementacji)
 
 **Core Features:**
-1. **Authentication** - JWT-based login/registration
-2. **Photo Management** - Upload z EXIF, thumbnails, CRUD
-3. **Gallery View** - Responsive grid, rating, filtering
-4. **Map View** - Leaflet.js, GPS markers, clustering
-5. **Admin Panel** - User management (ADMIN role)
+1. Authentication (JWT-based login/registration)
+2. Photo Management (Upload z EXIF, thumbnails, CRUD)
+3. Gallery View (Responsive grid, rating, filtering)
+4. Map View (Leaflet.js, GPS markers, clustering)
+5. Admin Panel (User management)
 
-**Out of Scope (NOT MVP):**
-- ❌ Batch uploads
-- ❌ Photo sharing between users
-- ❌ Social features (comments, likes)
-- ❌ Advanced analytics
-- ❌ Mobile apps (web only)
-- ❌ Background processing (Mikrus VPS constraint)
+**Key Constraints (Mikrus VPS):**
+- ❌ No background jobs (Celery, Sidekiq) → synchronous processing
+- ❌ No resource-intensive operations (ML, heavy processing)
+- ✅ In-memory cache (60s TTL) - no Redis
+- ✅ Synchronous thumbnail generation
 
----
-
-## Workflow 3x3
-
-**Pattern: 3 Small Tasks → Checkpoint**
-
-**Steps:**
-1. **Small Chunk** - Implement ONE small feature (1 endpoint, 1 component, 1 service method)
-2. **Test Immediately** - Verify it works (unit test, manual test, curl)
-3. **Commit** - Save progress with Conventional Commits
-
-**Repeat 3 times, then checkpoint with user.**
-
-**Example - Photo Upload Feature:**
-- **Chunk 1:** Backend POST `/api/photos/upload` endpoint - test with curl
-- **Chunk 2:** Frontend PhotoService.uploadPhoto() - test with console.log
-- **Chunk 3:** Upload form component - test in browser
-- **CHECKPOINT** - Show user working upload feature
+**Więcej szczegółów:** `references/mvp-scope-boundaries.md`
 
 ---
 
-## Feature Breakdown Template
+## When to Use This Skill
 
-### Example: Photo Rating Feature
+Użyj tego skilla gdy:
+- Planujesz dodanie nowej funkcji do Photo Map MVP
+- Weryfikujesz pomysł pod kątem MVP scope
+- Oceniasz złożoność implementacji
+- Rozbijasz funkcję na małe zadania (chunks)
+- Identyfikujesz ryzyka nowej funkcji
 
-**User Story:**
-As a user, I want to rate my photos (1-10 stars) so that I can organize my favorites.
+**NIE używaj gdy:**
+- Szukasz szczegółów technicznych (API specs → `.ai/api-plan.md`)
+- Szukasz database schema (→ `.ai/db-plan.md`)
+- Szukasz frontend architecture (→ `.ai/ui-plan.md`)
 
-**Backend Tasks:**
-- [ ] Create `RatingUpdateRequest` DTO (validation: 1-10)
-- [ ] Implement PUT `/api/photos/{id}/rating` endpoint
-- [ ] Add `updateRating(photoId, rating, userId)` in PhotoService
-- [ ] User scoping check (can only rate own photos)
-- [ ] Unit tests (PhotoServiceTest)
-- [ ] Integration test (MockMvc)
+---
 
-**Frontend Tasks:**
-- [ ] Create rating component (star icons, clickable)
-- [ ] Add `updateRating()` method to PhotoService
-- [ ] Integrate rating component in PhotoCard
-- [ ] Show current rating in gallery
-- [ ] Show rating in map popups
-- [ ] Component tests
+## Feature Verification Process
 
-**Acceptance Criteria:**
-- [ ] API returns 204 No Content on success
-- [ ] User can click stars to set rating 1-10
-- [ ] Rating persists after page reload
-- [ ] User scoping enforced (can't rate other users' photos)
-- [ ] Rating visible in gallery and map
+Proces weryfikacji nowego pomysłu (5 kroków):
 
-**Testing:**
-- [ ] Backend unit tests pass
-- [ ] Frontend component tests pass
-- [ ] Manual test: Rate photo, reload page, verify rating saved
-- [ ] Security test: Try to rate other user's photo → 404
+### Krok 1: MVP Scope Check
 
-**Git Commits:**
+**Pytanie:** Czy funkcja pasuje do MVP?
+
+**Sprawdzenie:**
+1. Czy funkcja wymieniona w `.ai/prd.md` Core Features? → ✅ GO
+2. Czy funkcja w "Out of Scope" liście? → ❌ STOP
+3. Czy funkcja rozwiązuje core problem? → ✅ GO / ❌ STOP
+
+**Decision:**
+- ✅ **In Scope** → Kontynuuj do Kroku 2
+- ⚠️ **Maybe** → Szukaj simplified version, consulta z użytkownikiem
+- ❌ **Out of Scope** → Odrzuć lub consulta (jeśli strong business case)
+
+**Szczegóły:** `references/mvp-scope-boundaries.md`
+
+---
+
+### Krok 2: Tech Stack Compatibility
+
+**Pytanie:** Czy funkcja zgodna z tech stack i constraints?
+
+**Sprawdzenie:**
+1. Sprawdź `.ai/tech-stack.md` - czy używamy odpowiednich technologii?
+2. Mikrus VPS constraints:
+   - Czy wymaga background jobs? → ❌ (use Spring Integration workaround)
+   - Czy resource-intensive? → ⚠️ (carefully)
+   - Czy wymaga nowych bibliotek? → Lista i oceń
+
+**Decision:**
+- ✅ **Compatible** → Kontynuuj do Kroku 3
+- ⚠️ **Needs Workaround** → Zaplanuj alternatywne podejście
+- ❌ **Incompatible** → Odrzuć lub zmień approach
+
+---
+
+### Krok 3: Complexity Assessment
+
+**Pytanie:** Jaka jest złożoność funkcji?
+
+**Ocena złożoności** (sprawdź tabelę w sekcji "Complexity Levels" poniżej):
+- **Database changes?** (ADD COLUMN / CREATE TABLE / None)
+- **API endpoints?** (0 / 1-2 / 3+)
+- **Frontend + Backend?** (Yes / No)
+- **Async processing?** (Yes / No)
+
+**Decision:**
+- **Simple:** 1-2 chunks (1-2h) → Szybkie wykonanie
+- **Medium:** 3-5 chunks (3-6h) → Checkpoints co 3 chunks
+- **Complex:** 6+ chunks (6-12h) → Multiple checkpoints
+
+**Szczegóły:** `references/complexity-assessment.md`
+
+---
+
+### Krok 4: Implementation Planning
+
+**Pytanie:** Jak rozbić funkcję na małe chunks?
+
+**Pattern:** 3 małe zadania (30-60 min każde) → Checkpoint
+
+**Dla każdego chunk:**
+1. **Implement** - napisać kod (1 endpoint/component/method)
+2. **Test** - zweryfikować (curl/browser)
+3. **Commit** - zapisać (Conventional Commits)
+
+**Po 3 chunks → CHECKPOINT:**
+- Pokazać użytkownikowi działającą funkcję
+- Zebrać feedback
+- Kontynuować lub adjust
+
+**Przykłady:**
+- Simple feature: `examples/simple-feature-example.md`
+- Medium feature: `examples/good-feature-breakdown.md`
+- Complex feature: `examples/complex-feature-example.md`
+
+---
+
+### Krok 5: Risk Identification
+
+**Pytanie:** Co może pójść nie tak?
+
+**Common Risks:**
+- **Performance:** Slow queries, large files, timeouts
+- **Security:** User scoping violations, validation gaps, SQL injection
+- **Race conditions:** Concurrent updates, database locks
+- **Error handling:** Edge cases, corrupt files, network failures
+- **Migration:** Rollback strategy, data loss
+
+**Dla każdego risk:**
+1. Zidentyfikuj impact (High / Medium / Low)
+2. Zaplanuj mitigation strategy
+3. Dokumentuj w feature proposal
+
+**Template:** `templates/feature-proposal-template.md`
+
+---
+
+## Complexity Levels
+
+| Level | Timeline | DB Changes | Endpoints | Example |
+|-------|----------|------------|-----------|---------|
+| **Simple** | 1-2 chunks<br/>(1-2h) | ADD COLUMN (nullable)<br/>or None | 0 (modify existing)<br/>or None | Add photo description field |
+| **Medium** | 3-5 chunks<br/>(3-6h) | ADD COLUMN + INDEX<br/>or simple changes | 1-2 new endpoints | Rating system (1-5 stars) |
+| **Complex** | 6+ chunks<br/>(6-12h) | CREATE TABLE<br/>+ relations | 3+ new endpoints | Batch upload async (Spring Integration) |
+
+### Complexity Decision Tree
+
 ```
-feat(api): add photo rating endpoint
-feat(ui): add rating component to gallery
-fix(rating): handle edge case when rating is null
+Q1: Database changes?
+  - None/ADD COLUMN (nullable) → likely Simple
+  - ADD COLUMN + INDEX → likely Medium
+  - CREATE TABLE + relations → likely Complex
+
+Q2: New endpoints?
+  - 0 (modify existing) → likely Simple
+  - 1-2 → likely Medium
+  - 3+ → likely Complex
+
+Q3: Async processing needed?
+  - No → Simple/Medium
+  - Yes → Complex (Spring Integration required)
+
+Q4: External dependencies?
+  - None → Simple/Medium
+  - New libraries → likely Complex
 ```
 
----
-
-## API Endpoint Planning
-
-### Template
-
-**Endpoint:** POST `/api/photos/upload`
-
-**Purpose:** Upload photo with EXIF extraction and thumbnail generation
-
-**Request:**
-- Method: POST
-- Content-Type: multipart/form-data
-- Body: `file` (MultipartFile)
-- Headers: `Authorization: Bearer <JWT>`
-
-**Response (201 Created):**
-```json
-{
-  "id": 1,
-  "fileName": "IMG_1234.jpg",
-  "fileSize": 2048576,
-  "thumbnailUrl": "/api/photos/1/thumbnail",
-  "latitude": 52.2297,
-  "longitude": 21.0122,
-  "takenAt": "2025-10-19T14:30:00",
-  "createdAt": "2025-10-19T15:00:00"
-}
-```
-
-**Error Responses:**
-- 400 Bad Request - File empty, too large (>50MB), invalid type
-- 401 Unauthorized - Missing/invalid JWT
-- 500 Internal Server Error - File processing failure
-
-**Backend Implementation:**
-1. PhotoController - handle multipart request
-2. PhotoService - coordinate processing
-3. ExifService - extract GPS/date/camera
-4. ThumbnailService - generate 400x300px thumbnail
-5. FileStorageService - save to `/opt/photo-map/storage/{userId}/`
-6. PhotoRepository - save entity
-
-**Frontend Implementation:**
-1. Upload form component (file input)
-2. PhotoService.uploadPhoto(file: File)
-3. Show upload progress (optional for MVP)
-4. Refresh gallery after upload
+**Szczegóły i przykłady:** `references/complexity-assessment.md`
 
 ---
 
-## Database Schema Planning
+## Quick Reference Tables
 
-### Example: Add Comments Feature (Future)
+### Tabela 1: Kiedy Czytać References?
 
-**User Story:**
-As a user, I want to add comments to my photos.
-
-**Database Changes:**
-1. Create `comments` table:
-   - id BIGSERIAL PRIMARY KEY
-   - photo_id BIGINT REFERENCES photos(id) ON DELETE CASCADE
-   - user_id BIGINT REFERENCES users(id) ON DELETE CASCADE
-   - text VARCHAR(500) NOT NULL
-   - created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-
-2. Add indexes:
-   - `comments(photo_id)` - for fetching comments by photo
-   - `comments(user_id)` - for user scoping
-
-3. JPA Entity:
-   - `Comment` entity with `@ManyToOne` to Photo and User
-
-4. Repository:
-   - `CommentRepository extends JpaRepository<Comment, Long>`
-   - `List<Comment> findByPhotoIdOrderByCreatedAtDesc(Long photoId)`
+| Pytanie | Reference File |
+|---------|----------------|
+| Czy pomysł pasuje do MVP? | `mvp-scope-boundaries.md` |
+| Jak ocenić złożoność? | `complexity-assessment.md` |
+| Jak przeprowadzić weryfikację? | `verification-checklist.md` |
+| Jak wygląda proces planowania PRD? | `prd-planning-process.md` |
+| Jakie są fazy implementacji? | `implementation-phases.md` |
 
 ---
 
-## Tech Constraints (Mikrus VPS)
+### Tabela 2: Kiedy Używać Examples?
 
-**Resource Limits:**
-- Limited CPU/RAM
-- No GPU
-- 250GB storage
-- Standard network bandwidth
-
-**Implications:**
-- ❌ NO background job queues (Celery, Sidekiq)
-- ❌ NO parallel processing (process photos synchronously)
-- ✅ Simple in-memory cache (60s TTL for photo list)
-- ✅ Thumbnail generation on upload (synchronous)
-- ✅ Keep database queries optimized (indexes!)
+| Scenario | Example File |
+|----------|--------------|
+| Pomysł odrzucony (out of scope) | `feature-verification-example.md` |
+| Dobry breakdown funkcji (Medium) | `good-feature-breakdown.md` |
+| Over-engineered funkcja (BAD) | `bad-feature-example.md` |
+| Prosta funkcja (Simple) | `simple-feature-example.md` |
+| Złożona funkcja (Complex) | `complex-feature-example.md` |
 
 ---
 
-## Implementation Phases
+### Tabela 3: Kiedy Używać Templates?
 
-**Phase 1: Backend - Setup & Auth**
-- Spring Boot setup, PostgreSQL connection
-- User entity, registration, login, JWT
-- Basic error handling
-
-**Phase 2: Backend - Photo Management**
-- Photo entity, upload endpoint
-- EXIF extraction, thumbnail generation
-- Photo CRUD (GET, DELETE)
-
-**Phase 3: Frontend - Setup & Auth**
-- Angular setup, Tailwind config
-- Login/Register components
-- AuthService, JWT storage, interceptor
-- Route guards
-
-**Phase 4: Frontend - Gallery & Map**
-- PhotoService (BehaviorSubject)
-- Gallery component (grid, rating)
-- Map component (Leaflet, markers)
-- Upload form
-
-**Phase 5: Admin Panel**
-- Admin API endpoints (user list, delete)
-- Admin guard (role-based)
-- Admin UI component
-
-**Phase 6: Deployment**
-- Mikrus VPS setup
-- Nginx reverse proxy
-- Systemd service
-- SSL (Let's Encrypt)
-
----
-
-## Task Breakdown Checklist
-
-**Before Starting:**
-- [ ] Read `.ai/prd.md` - understand MVP requirements
-- [ ] Read `.ai/tech-stack.md` - know tech constraints
-- [ ] Check MASTER_PLAN.md - see which phase you're in
-- [ ] Identify dependencies - what must be done first?
-
-**For Each Feature:**
-- [ ] Define user story (As X, I want Y, so that Z)
-- [ ] Break into backend + frontend tasks
-- [ ] Identify acceptance criteria (testable!)
-- [ ] Plan tests (unit + integration)
-- [ ] Estimate chunks (each chunk should be ~30-60 min)
-
-**During Implementation:**
-- [ ] Follow Workflow 3x3 (small chunks, test, commit)
-- [ ] User scoping enforced (backend)
-- [ ] Standalone components (frontend)
-- [ ] Tests written and passing
-- [ ] Conventional Commits
-
-**After Feature:**
-- [ ] Update MASTER_PLAN.md - check off tasks
-- [ ] Manual testing in browser/curl
-- [ ] Code review (if team)
-- [ ] Checkpoint with user
+| Zadanie | Template File |
+|---------|---------------|
+| Weryfikacja nowego pomysłu | `feature-proposal-template.md` |
+| Plan implementacji | `implementation-plan-template.md` |
+| Napisanie user story | `user-story-template.md` |
+| Specyfikacja API endpoint | `api-endpoint-spec-template.md` |
+| Sesja planistyczna PRD | `prd-planning-session-template.md` |
+| Podsumowanie sesji PRD | `prd-summary-template.md` |
+| Analiza tech stacku | `tech-stack-analysis-template.md` |
 
 ---
 
 ## Related Documentation
 
-- `.ai/prd.md` - Product requirements and user stories
-- `.ai/db-plan.md` - Database schema reference
-- `.ai/api-plan.md` - REST API endpoints reference
-- `.ai/ui-plan.md` - Frontend architecture reference
-- `MASTER_PLAN.md` - Implementation progress tracker
+### Core Context (.ai/)
+Główne dokumenty implementacyjne:
+- `.ai/prd.md` - MVP requirements (user stories, acceptance criteria)
+- `.ai/tech-stack.md` - Technology specs (stack, constraints, versions)
+- `.ai/db-plan.md` - Database schema (tables, relations, indexes)
+- `.ai/api-plan.md` - REST API specification (endpoints, DTOs, errors)
+- `.ai/ui-plan.md` - Frontend architecture (components, services, routing)
 
----
+### Decision Context (.decisions/)
+Rationale dla decyzji (optional read):
+- `.decisions/prd-context.md` - Business context + future vision
+- `.decisions/tech-decisions.md` - Technology decisions rationale
 
-## Templates
+### Project Status
+- `PROGRESS_TRACKER.md` - Current implementation status (6 phases, current task)
 
-See `templates/` directory:
-1. **feature-breakdown.md** - Template for feature planning
-2. **user-story-template.md** - User story format
-3. **api-endpoint-spec.md** - REST endpoint specification
-
----
-
-## Key Reminders
-
-**MVP Scope:**
-- ✅ Only features in `.ai/prd.md`
-- ✅ Simple solutions
-- ❌ NO over-engineering
-
-**Workflow 3x3:**
-- ✅ Small chunks (~30-60 min)
-- ✅ Test immediately
-- ✅ Commit frequently
-
-**Mikrus Constraints:**
-- ✅ Synchronous processing
-- ✅ No background jobs
-- ✅ Optimize for limited resources
+### Skill Resources
+- `references/` - Szczegółowa dokumentacja (7 plików)
+- `examples/` - Konkretne przykłady z Photo Map MVP (5 plików)
+- `templates/` - Gotowe szablony do użycia (7 plików)

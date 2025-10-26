@@ -1,12 +1,12 @@
 ---
-name: Code Review for Photo Map MVP
+name: code-review
 description: Review, analyze, and inspect code for Photo Map MVP project following Spring Boot, Angular 18, and shared project conventions. Check security, performance, naming, testing, and MVP scope compliance. Use when reviewing pull requests, conducting code audits, analyzing code quality, inspecting Java or TypeScript files, or ensuring quality before commits. File types: .java, .ts, .html, .xml, .properties, .css, .scss
 allowed-tools: Read, Grep, Glob
 ---
 
 # Code Review - Photo Map MVP
 
-**Note:** This is a READ-ONLY Skill (no Write/Edit/Bash).
+**Note:** This is a READ-ONLY Skill (allowed-tools: Read, Grep, Glob only).
 
 ## Review Philosophy
 
@@ -17,259 +17,136 @@ allowed-tools: Read, Grep, Glob
 - ❌ NO over-engineering
 - ❌ NO features beyond MVP requirements
 
----
-
-## Backend Review Checklist
-
-### Security (CRITICAL!)
-
-**User Scoping:**
-```java
-// ❌ BAD: No user scoping - security vulnerability!
-public Photo getPhoto(Long photoId) {
-    return photoRepository.findById(photoId).orElseThrow();
-}
-
-// ✅ GOOD: User scoping enforced
-public Photo getPhoto(Long photoId, Long userId) {
-    return photoRepository.findByIdAndUserId(photoId, userId)
-        .orElseThrow(() -> new ResourceNotFoundException("Photo not found"));
-}
-```
-
-**Check:**
-- ✅ ALL photo queries include userId filtering
-- ✅ JWT validation on protected endpoints
-- ✅ BCrypt password hashing
-- ✅ Input validation (`@Valid` on DTOs)
-- ✅ Error messages don't expose internals
-
-### Architecture
-
-**Layered Separation:**
-- ✅ Controllers only handle HTTP (no business logic)
-- ✅ Services contain business logic
-- ✅ Repositories only data access
-- ✅ DTOs used for API (entities NEVER exposed)
-- ✅ `@Transactional` on service methods
-- ✅ `@Transactional(readOnly = true)` on queries
-
-### Testing
-
-**Coverage:**
-- ✅ Service methods tested (business logic)
-- ✅ Custom repository queries tested
-- ✅ Security configuration tested
-- ✅ DTO validation tested
+**Read-Only Workflow:**
+Use Read, Grep, Glob to analyze code. Provide findings as comments. Never edit code directly.
 
 ---
 
-## Frontend Review Checklist
+## When to Review
 
-### Architecture (CRITICAL!)
+**Decision Tree:**
 
-**Standalone Components:**
-```typescript
-// ❌ BAD: Using NgModule
-@NgModule({
-  declarations: [PhotoGalleryComponent],
-  imports: [CommonModule]
-})
-export class PhotoGalleryModule { }
-
-// ✅ GOOD: Standalone component
-@Component({
-  standalone: true,
-  imports: [CommonModule]
-})
-export class PhotoGalleryComponent { }
-```
-
-**Dependency Injection:**
-```typescript
-// ❌ BAD: Constructor injection (old style)
-constructor(private photoService: PhotoService) {}
-
-// ✅ GOOD: inject() function (modern Angular 18)
-private photoService = inject(PhotoService);
-```
-
-**State Management:**
-```typescript
-// ❌ BAD: Exposing BehaviorSubject
-public photosSubject = new BehaviorSubject<Photo[]>([]);
-
-// ✅ GOOD: Private BehaviorSubject, public Observable
-private photosSubject = new BehaviorSubject<Photo[]>([]);
-public photos$ = this.photosSubject.asObservable();
-```
-
-### Check:
-- ✅ NO `@NgModule` anywhere (standalone only!)
-- ✅ `inject()` function used (not constructor)
-- ✅ BehaviorSubject kept private
-- ✅ Async pipe over manual subscriptions
-- ✅ Guards protect routes (authGuard, adminGuard)
-- ✅ Tailwind utilities (not custom CSS)
-- ✅ JWT stored in localStorage
-- ✅ Auth interceptor adds token to requests
-
-### Testing
-
-**Coverage:**
-- ✅ Component logic tested
-- ✅ Service methods tested (HTTP mocked)
-- ✅ Guards tested
-- ✅ Standalone imports in TestBed
+| Scenario | Action |
+|----------|--------|
+| Pre-commit review | Check Security + Architecture + Tests |
+| Pull Request review | Full review with `references/` checklists |
+| Bug investigation | Focus on Security + Performance |
+| Refactoring audit | Check Architecture + Anti-patterns |
 
 ---
 
-## Security Review
+## Review Workflows
 
-### Authentication & Authorization
+### Backend Review (Spring Boot + Java 17)
 
-**Backend:**
-- ✅ JWT token validation on all protected endpoints
-- ✅ Role-based access (`@PreAuthorize`, `/api/admin/**`)
-- ✅ Password hashing with BCrypt
-- ✅ User data isolation (userId in queries)
+**Priority Check Order:**
+1. **Security (CRITICAL!)** → `references/security-patterns.md`
+   - User scoping on ALL photo queries
+   - JWT validation working
+   - Input validation present
+   - No entities exposed to API
 
-**Frontend:**
-- ✅ JWT stored securely (localStorage or httpOnly cookie)
-- ✅ Token added via interceptor
-- ✅ Route guards protect pages
-- ✅ 401 errors → redirect to login
-- ✅ Token cleared on logout
+2. **Architecture** → `references/backend-checklist.md`
+   - Controllers → Services → Repositories
+   - DTOs used for all API responses
+   - `@Transactional` on service methods
 
-### Input Validation
+3. **Testing** → `references/backend-checklist.md`
+   - Service logic tested (>70% coverage)
+   - Custom queries tested
+   - Security configuration tested
 
-**Backend:**
-- ✅ File upload validation (size, type, empty check)
-- ✅ `@Valid` on request DTOs
-- ✅ File names sanitized (prevent directory traversal)
+**Quick Scan:**
+- Grep for `findById\(` without `userId` parameter → Security issue!
+- Grep for `return new Photo\(` in Controller → Entity exposure!
+- Grep for business logic in `@RestController` → Architecture violation!
 
-**Frontend:**
-- ✅ Form validators (email, minLength, required)
-- ✅ Validation errors displayed to user
-- ✅ Client-side validation (+ backend validation!)
+**Examples:** Check `examples/user-scoping.java` for bad vs good patterns.
 
 ---
 
-## Performance Review
+### Frontend Review (Angular 18 + TypeScript)
 
-### Backend
+**Priority Check Order:**
+1. **Architecture (CRITICAL!)** → `references/frontend-checklist.md`
+   - NO `@NgModule` anywhere (standalone only!)
+   - `inject()` function used (not constructor)
+   - BehaviorSubject kept private
 
-**Check:**
-- ✅ Database indexes on `user_id`, `created_at`, `rating`
-- ✅ `@Transactional(readOnly = true)` on queries
-- ✅ Lazy fetch relationships (`FetchType.LAZY`)
-- ✅ Thumbnail generation (not loading originals)
+2. **State Management** → `references/frontend-checklist.md`
+   - Signals for component-local state
+   - BehaviorSubject for shared state (services)
+   - Async pipe over manual subscriptions
+
+3. **Testing** → `references/frontend-checklist.md`
+   - Component logic tested
+   - Service methods tested (HTTP mocked)
+   - Guards tested
+
+**Quick Scan:**
+- Grep for `@NgModule` → Angular 18 violation!
+- Grep for `constructor.*inject\(` → Should use inject() function!
+- Grep for `public.*BehaviorSubject` → Exposed state management!
+
+**Examples:**
+- `examples/standalone-patterns.ts` - NgModule vs Standalone
+- `examples/state-management.ts` - BehaviorSubject patterns
+
+---
+
+### Security Review
+
+**Critical Checks:**
+- **User Scoping:** ALL photo queries include `userId` filtering
+- **JWT Validation:** Token signature & expiration checked
+- **Input Validation:** `@Valid` on DTOs, file upload validation
+- **No Data Leaks:** Entities never exposed, DTOs only
+
+**Detailed Patterns:** `references/security-patterns.md`
+
+**Examples:** `examples/user-scoping.java` for complete patterns
+
+---
+
+### Performance Review
+
+**Backend Checks:**
+- Database indexes on `user_id`, frequently queried columns
+- `@Transactional(readOnly = true)` on queries
+- `FetchType.LAZY` for relationships
 - ❌ NO premature optimization (Redis, queues)
 
-### Frontend
-
-**Check:**
-- ✅ Lazy loading images in gallery
-- ✅ Async pipe (automatic subscription cleanup)
-- ✅ Thumbnail URLs from backend (not originals)
-- ✅ TrackBy for *ngFor lists
+**Frontend Checks:**
+- Lazy loading images in gallery
+- Async pipe (automatic subscription cleanup)
+- TrackBy for *ngFor lists
 - ❌ NO premature optimization (Virtual Scroll, Service Workers)
 
----
-
-## Naming Conventions
-
-### General Rules
-
-**Check:**
-- ✅ All code identifiers in English
-- ✅ Self-documenting names (clear intent)
-- ✅ Method names: `getX()`, `findX()`, `createX()`, `updateX()`, `deleteX()`
-- ✅ Boolean methods: `isX()`, `hasX()`, `canX()`
-- ✅ No Polish variable/method names
-
-### File Naming
-
-**Backend:**
-- ✅ Controllers: `PhotoController.java`
-- ✅ Services: `PhotoService.java`
-- ✅ Repositories: `PhotoRepository.java`
-- ✅ DTOs: `PhotoDto.java`, `UserRegistrationRequest.java`
-
-**Frontend:**
-- ✅ Components: `photo-gallery.component.ts`
-- ✅ Services: `photo.service.ts`
-- ✅ Guards: `auth.guard.ts`
-- ✅ Interfaces: `photo.interface.ts`
+**Detailed Patterns:** `references/performance-review.md`
 
 ---
 
 ## Common Anti-Patterns
 
-### Backend
+**Quick Scan List:**
 
-**❌ Business Logic in Controller:**
-```java
-// BAD
-@PostMapping
-public ResponseEntity<Photo> upload(MultipartFile file) {
-    // Extracting EXIF in controller - WRONG!
-    ExifData exif = extractExif(file);
-    // ...
-}
-```
+**Backend:**
+- ❌ Business logic in Controller
+- ❌ Exposing entities to API
+- ❌ No user scoping on queries
+- ❌ No `@Transactional` on service methods
 
-**❌ Exposing Entities:**
-```java
-// BAD
-@GetMapping
-public List<Photo> getPhotos() {
-    return photoRepository.findAll(); // Entity exposed!
-}
-```
+**Frontend:**
+- ❌ `@NgModule` usage (Angular 18!)
+- ❌ Constructor injection instead of `inject()`
+- ❌ Exposed BehaviorSubject (public)
+- ❌ Nested subscriptions (use `switchMap`)
 
-**❌ No User Scoping:**
-```java
-// BAD - Security vulnerability!
-public void deletePhoto(Long photoId) {
-    photoRepository.deleteById(photoId);
-}
-```
-
-### Frontend
-
-**❌ NgModules (Forbidden!):**
-```typescript
-// BAD - Angular 18 standalone project!
-@NgModule({ ... })
-```
-
-**❌ Nested Subscriptions:**
-```typescript
-// BAD
-this.http.get<User>('/user').subscribe(user => {
-  this.http.get<Photo[]>(`/photos/${user.id}`).subscribe(photos => {
-    // ...
-  });
-});
-
-// GOOD - Use switchMap
-this.http.get<User>('/user').pipe(
-  switchMap(user => this.http.get<Photo[]>(`/photos/${user.id}`))
-).subscribe(photos => {
-  // ...
-});
-```
-
-**❌ Exposed BehaviorSubject:**
-```typescript
-// BAD
-public photosSubject = new BehaviorSubject<Photo[]>([]);
-```
+**Complete List:** `examples/common-anti-patterns.md`
 
 ---
 
-## Git Commits Review
+## Git Commit Review
 
 **Check:**
 - ✅ Conventional Commits format: `type(scope): description`
@@ -278,13 +155,30 @@ public photosSubject = new BehaviorSubject<Photo[]>([]);
 - ✅ Clear, focused commits (single change)
 - ✅ Imperative mood ("add" not "added")
 
-**Examples:**
-```
-✅ feat(auth): add JWT token validation
-✅ fix(upload): handle photos without GPS data
-❌ feat: add stuff to the code
-❌ Update code - Generated with Claude Code
-```
+**Detailed Standards:** `references/git-standards.md`
+
+---
+
+## Quick Reference
+
+### Reference Lookup
+
+| Need | Check |
+|------|-------|
+| Backend security, architecture, testing | `references/backend-checklist.md` |
+| Frontend standalone, DI, state, testing | `references/frontend-checklist.md` |
+| User scoping, JWT, input validation | `references/security-patterns.md` |
+| Performance checks (backend + frontend) | `references/performance-review.md` |
+| Conventional Commits, PR review | `references/git-standards.md` |
+
+### Example Lookup
+
+| Need | Check |
+|------|-------|
+| User scoping patterns (bad vs good) | `examples/user-scoping.java` |
+| Standalone components (NgModule vs Standalone) | `examples/standalone-patterns.ts` |
+| BehaviorSubject patterns (private vs public) | `examples/state-management.ts` |
+| Common mistakes quick scan | `examples/common-anti-patterns.md` |
 
 ---
 
@@ -305,7 +199,7 @@ public photosSubject = new BehaviorSubject<Photo[]>([]);
 - [ ] DTOs used for all API responses
 
 **Testing:**
-- [ ] Service logic tested
+- [ ] Service logic tested (>70% coverage)
 - [ ] Component logic tested
 - [ ] Custom queries tested
 - [ ] Guards tested
@@ -321,11 +215,18 @@ public photosSubject = new BehaviorSubject<Photo[]>([]);
 - [ ] No premature optimization
 - [ ] Simple solutions
 
+**For detailed checklists:** Check `references/backend-checklist.md` and `references/frontend-checklist.md`
+
 ---
 
 ## Related Documentation
 
+**Project Context:**
 - `.ai/prd.md` - MVP scope and requirements
-- `.cursor/rules/spring-boot.mdc` - Backend guidelines
-- `.cursor/rules/angular.mdc` - Frontend guidelines
-- `.cursor/rules/shared.mdc` - Project conventions
+- `.ai/tech-stack.md` - Technology specifications
+- `.ai/api-plan.md` - Backend API specification
+- `.ai/ui-plan.md` - Frontend architecture
+
+**Skill Resources:**
+- `references/` - Detailed review checklists (loaded on demand)
+- `examples/` - Code examples (bad vs good patterns)
