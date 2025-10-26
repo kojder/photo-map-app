@@ -11,7 +11,7 @@
 
 ### 🎯 Currently Working On
 
-**Next:** Admin Security Enhancement (3-4h) - HIGH priority before Admin Panel
+**Next:** Phase 5 - Admin Panel (2-3h)
 
 <!-- Use template below when starting new task -->
 <!--
@@ -23,14 +23,15 @@
 
 ### ✅ Last Completed
 
-**Photo Processing - Removed Admin User Assignment** (2025-10-26)
-- ✅ Usunięto przypisywanie zdjęć batch-uploadowanych do użytkownika admin
-- ✅ Zdjęcia z `input/` folderu mają teraz `user_id = NULL` (bez właściciela)
-- ✅ Usunięto `PHOTO_PROCESSING_ADMIN_ID` z konfiguracji (application.properties, .env)
-- ✅ Usunięto UserRepository, Role, User z PhotoProcessingService
-- ✅ Backend kompiluje i działa poprawnie
-- 📝 Powód: Uniknięcie problemów przy zmianie/usunięciu użytkownika admin
-- 📝 Zdjęcia z web upload nadal są przypisane do zalogowanego użytkownika
+**Photo Upload - User Assignment Fix** (2025-10-26)
+- ✅ Migracja V4: `user_id` nullable w tabeli `photos`
+- ✅ Photo entity: `@ManyToOne User user` z nullable=true
+- ✅ PhotoController: przy web upload przypisuje usera (nazwa pliku: `{userId}_uuid.jpg`)
+- ✅ PhotoProcessingService: parsuje userId z nazwy pliku i przypisuje User
+- ✅ PhotoService: sprawdza `photo.getUser() != null` przed walidacją właściciela
+- ✅ Wszystkie testy: 61/61 ✅
+- 📝 **Web uploads** (przez stronę): user przypisany = zalogowany użytkownik
+- 📝 **Batch uploads** (folder `input/`): user = null (bez właściciela)
 
 **Environment Configuration - spring.config.import** (2025-10-26)
 - ✅ Removed spring-dotenv dependency (simpler native Spring Boot approach)
