@@ -238,7 +238,12 @@ Frontend Photo Map MVP to Single Page Application (SPA) zbudowana z Angular 18 (
 - Thumbnail image (w-full h-48 object-cover) - clickable
 - Original filename (truncate)
 - Date taken (or uploaded, Angular date pipe: 'short')
-- Average rating (⭐ 1-5 stars + average + total count)
+- **Personalized rating display (⭐ 1-5 stars + rating value + context):**
+  - Wyświetla `photo.averageRating` (backend zwraca userRating gdy user ocenił, lub średnią innych gdy nie)
+  - Kontekst:
+    - Jeśli `photo.userRating` istnieje → "(your rating)"
+    - Jeśli `photo.userRating` null → "(X ratings)" gdzie X = `photo.totalRatings`
+    - Jeśli nikt nie ocenił → "No rating yet"
 - Actions: Rate button, Clear rating button, Delete button
 
 **Template Structure:**

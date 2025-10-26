@@ -104,7 +104,7 @@ Stack for MVP:
 - **Authorization:**
   - Roles: USER, ADMIN
   - Method security: `@PreAuthorize("hasRole('ADMIN')")`
-  - Photo ownership: users see only their own photos
+  - All photos are public (no ownership restrictions for MVP)
 
 **JWT Flow:**
 1. User logs in → server validates credentials

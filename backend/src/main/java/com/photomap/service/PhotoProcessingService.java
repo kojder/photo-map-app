@@ -39,14 +39,8 @@ public class PhotoProcessingService {
     @Value("${photo.upload.directory.original}")
     private String originalDirectory;
 
-    @Value("${photo.upload.directory.small}")
-    private String smallDirectory;
-
     @Value("${photo.upload.directory.medium}")
     private String mediumDirectory;
-
-    @Value("${photo.upload.directory.large}")
-    private String largeDirectory;
 
     @Value("${photo.upload.directory.failed}")
     private String failedDirectory;
@@ -55,17 +49,13 @@ public class PhotoProcessingService {
     private Long adminUserId;
 
     private static final String[] ALLOWED_EXTENSIONS = {".jpg", ".jpeg", ".png"};
-    private static final int THUMBNAIL_SMALL = 150;
     private static final int THUMBNAIL_MEDIUM = 400;
-    private static final int THUMBNAIL_LARGE = 800;
 
     @PostConstruct
     public void init() throws IOException {
         createDirectoryIfNotExists(inputDirectory);
         createDirectoryIfNotExists(originalDirectory);
-        createDirectoryIfNotExists(smallDirectory);
         createDirectoryIfNotExists(mediumDirectory);
-        createDirectoryIfNotExists(largeDirectory);
         createDirectoryIfNotExists(failedDirectory);
         log.info("Photo processing directories initialized");
     }
@@ -98,10 +88,7 @@ public class PhotoProcessingService {
             Path originalPath = moveToDirectory(file, originalDirectory, baseFilename + extension);
             log.info("Moved to original: {}", originalPath);
 
-            generateThumbnail(originalPath.toFile(), smallDirectory, baseFilename, extension, THUMBNAIL_SMALL);
             String mediumFilename = generateThumbnail(originalPath.toFile(), mediumDirectory, baseFilename, extension, THUMBNAIL_MEDIUM);
-            generateThumbnail(originalPath.toFile(), largeDirectory, baseFilename, extension, THUMBNAIL_LARGE);
-
             photo.setThumbnailFilename(mediumFilename);
 
             photoRepository.save(photo);

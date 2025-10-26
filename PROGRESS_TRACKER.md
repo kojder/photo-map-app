@@ -7,11 +7,11 @@
 
 ## 🔄 Current Status
 
-**Last Updated:** 2025-10-25
+**Last Updated:** 2025-10-26
 
 ### 🎯 Currently Working On
 
-**No active tasks** - Ready for commit and deployment.
+**Next:** Admin Security Enhancement (3-4h) - HIGH priority before Admin Panel
 
 <!-- Use template below when starting new task -->
 <!--
@@ -22,6 +22,25 @@
 -->
 
 ### ✅ Last Completed
+
+**Environment Configuration - spring.config.import** (2025-10-26)
+- ✅ Removed spring-dotenv dependency (simpler native Spring Boot approach)
+- ✅ Implemented `spring.config.import=optional:file:../.env[.properties]` in application.properties
+- ✅ Applied to both application.properties and application-test.properties
+- ✅ Verified: Backend loads .env variables correctly (ADMIN_EMAIL, JWT_SECRET, etc.)
+- ✅ Tests: Backend 61/61 ✅, All tests passing
+- 📝 Benefits: Native Spring Boot feature, no external dependencies, works from backend/ directory
+- 📝 Documentation: https://docs.spring.io/spring-boot/reference/features/external-config.html
+
+**Documentation: Admin Security & Email System** (2025-10-26)
+- ✅ Created `.ai/implementation-admin-initializer.md` - detailed plan for Admin Security (3-4h)
+  - AdminInitializer checks `countByRole(ADMIN)` not email (prevents duplicates after email change)
+  - `must_change_password` flag forces password change on first login
+  - `/api/admin/profile` endpoint for changing email + password
+- ✅ Created `.ai/features/feature-email-system.md` - full spec for Email System (12-16h)
+  - Email verification (24h token), Password reset (1h token), Email notifications
+- ✅ Updated `.ai/prd.md` - added Future Enhancements section
+- ✅ Updated `PROGRESS_TRACKER.md` - added Admin Security + Email System specs
 
 **Rating System Improvements** (2025-10-25)
 - ✅ Fixed rating range display (1-5 stars with flex-wrap for mobile)
@@ -508,5 +527,89 @@ After completing MVP (6 phases above), possible feature enhancements:
 
 ---
 
-**Last Updated:** 2025-10-25
-**Next Step:** Optional enhancements (Admin Panel or Deployment)
+### Public Photo Sharing & Temporal/Spatial Filters
+
+**Description:** Dwie niezależne funkcjonalności rozszerzające MVP:
+
+1. **Public Photo Sharing** - Udostępnianie zdjęć w grupach bez logowania
+   - Tworzenie grup zdjęć z unikalnym linkiem UUID
+   - Bulk selection (checkboxes) i bulk operations (rating, data, usuwanie)
+   - Publiczny widok galerii+mapy (read-only, no auth)
+   - Zarządzanie grupami (dodawanie/usuwanie zdjęć, edycja, kasowanie)
+
+2. **Temporal & Spatial Filters** - Zaawansowane filtry czasowo-przestrzenne
+   - "W tym samym miesiącu w innych latach" (np. lipiec 2020, 2022, 2024)
+   - "W tej samej lokalizacji w innych latach" (GPS + radius + lata)
+   - Multi-select lat (checkboxes), auto-fill GPS z mapy
+   - Haversine formula dla spatial queries
+
+**Implementation phases:**
+- [ ] **Phase 1.1:** Backend - Shared Groups API (3-4h)
+- [ ] **Phase 1.2:** Frontend - Bulk Selection & Sharing UI (4-5h)
+- [ ] **Phase 2.1:** Backend - Temporal & Spatial Queries (2-3h)
+- [ ] **Phase 2.2:** Frontend - Smart Filters UI (3-4h)
+
+**Recommended order:** Start with Temporal Filters (simpler, faster ROI), then Public Sharing
+
+**Documentation:**
+- **Public Sharing:** `.ai/features/feature-public-sharing.md` (7-9h)
+- **Temporal & Spatial Filters:** `.ai/features/feature-temporal-spatial-filters.md` (5-7h)
+
+**Estimated time:** 12-16 hours total (2-3 weekends)
+
+---
+
+### Email System (Post-MVP Security Enhancement)
+
+**Description:** System obsługi emaili dla weryfikacji użytkowników i odzyskiwania hasła.
+
+**Key Features:**
+1. **Email Verification** - potwierdzenie rejestracji przez link w emailu
+2. **Password Reset** - odzyskiwanie hasła przez email (token jednorazowy, 1h ważności)
+3. **Email Notifications** (opcjonalne) - powiadomienia o aktywności
+
+**Implementation phases:**
+- [ ] **Phase 1:** Email Infrastructure - SMTP config + EmailService (3-4h)
+- [ ] **Phase 2:** Email Verification - token system + endpoints (3-4h)
+- [ ] **Phase 3:** Password Reset - forgot password flow (4-5h)
+- [ ] **Phase 4:** Polish & Deployment - templates + testing (2-3h)
+
+**Recommended SMTP:** Gmail (free, 500 emails/day) lub SendGrid (100 emails/day free)
+
+**Documentation:** `.ai/features/feature-email-system.md` (full spec)
+
+**Estimated time:** 12-16 hours (2-3 weekends)
+
+---
+
+### Admin Security Enhancements (Before Admin Panel)
+
+**Description:** Bezpieczne zarządzanie kontem administratora.
+
+**Key Features:**
+1. **AdminInitializer** - auto-create default admin on startup (z `.env`)
+2. **Must Change Password** - wymuszenie zmiany hasła przy pierwszym logowaniu
+3. **Admin Profile Management** - zmiana email + hasło przez `/api/admin/profile`
+
+**Implementation phases:**
+- [ ] **Phase 1:** Database - migration dla `must_change_password` (30 min)
+- [ ] **Phase 2:** AdminInitializer - CommandLineRunner + tests (45 min)
+- [ ] **Phase 3:** Change Password - endpoint + logic (60 min)
+- [ ] **Phase 4:** Admin Profile - endpoint + frontend (45 min)
+- [ ] **Phase 5:** Testing & Deployment (30 min)
+
+**Security Benefits:**
+- ✅ Brak publicznej rejestracji admina
+- ✅ Wymuszenie silnego hasła produkcyjnego
+- ✅ Admin kontroluje swój email
+
+**Documentation:** `.ai/implementation-admin-initializer.md` (full plan)
+
+**Estimated time:** 3-4 hours
+
+**Priority:** HIGH - implement before Admin Panel (Phase 5)
+
+---
+
+**Last Updated:** 2025-10-26
+**Next Step:** Implement Admin Security Enhancements → Admin Panel → Deployment → Optional: Email System / Public Sharing / Temporal Filters

@@ -33,14 +33,8 @@ public class PhotoService {
     @Value("${photo.upload.directory.original}")
     private String originalDirectory;
 
-    @Value("${photo.upload.directory.small}")
-    private String smallDirectory;
-
     @Value("${photo.upload.directory.medium}")
     private String mediumDirectory;
-
-    @Value("${photo.upload.directory.large}")
-    private String largeDirectory;
 
 
     @Transactional(readOnly = true)
@@ -127,18 +121,9 @@ public class PhotoService {
 
         if (photo.getThumbnailFilename() != null) {
             final String filename = photo.getThumbnailFilename();
-
-            final Path smallPath = Paths.get(smallDirectory, filename);
-            Files.deleteIfExists(smallPath);
-            log.info("Deleted small thumbnail: {}", smallPath);
-
             final Path mediumPath = Paths.get(mediumDirectory, filename);
             Files.deleteIfExists(mediumPath);
-            log.info("Deleted medium thumbnail: {}", mediumPath);
-
-            final Path largePath = Paths.get(largeDirectory, filename);
-            Files.deleteIfExists(largePath);
-            log.info("Deleted large thumbnail: {}", largePath);
+            log.info("Deleted thumbnail: {}", mediumPath);
         }
     }
 

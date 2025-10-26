@@ -35,6 +35,15 @@ public class User {
     @Column(name = "must_change_password", nullable = false)
     private boolean mustChangePassword = false;
 
+    @Column(name = "can_upload", nullable = false)
+    private boolean canUpload = true;
+
+    @Column(name = "can_rate", nullable = false)
+    private boolean canRate = true;
+
+    @Column(name = "is_active", nullable = false)
+    private boolean isActive = true;
+
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt;

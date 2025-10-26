@@ -74,13 +74,13 @@ REST API dla Photo Map MVP zapewnia endpointy do:
 
 ### GET /api/photos
 
-**Opis:** Pobiera listę zdjęć aktualnego użytkownika z filtrowaniem.
+**Opis:** Pobiera listę wszystkich zdjęć z filtrowaniem.
 
 **Security:** Requires authentication (JWT token)
 
 **Query Parameters:**
 - `dateFrom`, `dateTo` (optional) - ISO 8601 date (np. `2024-01-01`)
-- `minRating` (optional) - Integer 1-10
+- `minRating` (optional) - Integer 1-5
 - `hasGps` (optional) - Boolean
 - `page` (optional) - Integer, default 0
 - `size` (optional) - Integer, default 20
@@ -103,7 +103,7 @@ REST API dla Photo Map MVP zapewnia endpointy do:
 
 **Opis:** Pobiera szczegóły pojedynczego zdjęcia.
 
-**Security:** Requires authentication (user must own the photo)
+**Security:** Requires authentication (JWT token)
 
 **Path Parameters:** `id` - Photo ID
 
@@ -111,7 +111,6 @@ REST API dla Photo Map MVP zapewnia endpointy do:
 
 **Error Responses:**
 - **401 Unauthorized** - Missing or invalid JWT token
-- **403 Forbidden** - User doesn't own this photo
 - **404 Not Found** - Photo not found
 
 ---
@@ -165,11 +164,11 @@ REST API dla Photo Map MVP zapewnia endpointy do:
 
 **Opis:** Pobiera thumbnail zdjęcia (400x300px).
 
-**Security:** Requires authentication (user must own the photo)
+**Security:** Requires authentication (JWT token)
 
 **Response (200 OK):** Binary image data (Content-Type: `image/jpeg`)
 
-**Error Responses:** 401 (no token), 403 (not owner), 404 (not found)
+**Error Responses:** 401 (no token), 404 (not found)
 
 ---
 
@@ -177,11 +176,11 @@ REST API dla Photo Map MVP zapewnia endpointy do:
 
 **Opis:** Pobiera pełne zdjęcie (original).
 
-**Security:** Requires authentication (user must own the photo)
+**Security:** Requires authentication (JWT token)
 
 **Response (200 OK):** Binary image data (Content-Type: odpowiedni MIME type)
 
-**Error Responses:** 401 (no token), 403 (not owner), 404 (not found)
+**Error Responses:** 401 (no token), 404 (not found)
 
 ---
 
@@ -198,13 +197,30 @@ REST API dla Photo Map MVP zapewnia endpointy do:
 **Error Responses:**
 - **400 Bad Request** - Rating out of range (1-5)
 - **401 Unauthorized** - Missing or invalid JWT token
-- **403 Forbidden** - Cannot rate own photo
 - **404 Not Found** - Photo not found
 
 **Business Rules:**
-- Użytkownik NIE może ocenić własnego zdjęcia
 - Jeden użytkownik = jedna ocena na photo (update jeśli już ocenił)
 - Rating: 1-5 gwiazdek
+
+**Personalized Rating Display Logic:**
+Backend zwraca 3 pola: `averageRating`, `totalRatings`, `userRating`
+
+**`averageRating` (backend calculation - PhotoController.calculateDisplayRating):**
+- Jeśli current user ocenił zdjęcie → zwraca **jego własną ocenę** (= `userRating`)
+- Jeśli current user NIE ocenił → zwraca **średnią ocen innych użytkowników**
+- Jeśli nikt nie ocenił → `null`
+
+**`userRating`:**
+- Ocena current user (1-5) lub `null` jeśli nie ocenił
+
+**`totalRatings`:**
+- Liczba wszystkich ocen dla zdjęcia
+
+**Frontend display:**
+- Wyświetla `averageRating` z kontekstem:
+  - Jeśli `userRating` istnieje → "(your rating)"
+  - Jeśli `userRating` null → "(X ratings)" gdzie X = `totalRatings`
 
 ---
 
@@ -230,18 +246,17 @@ REST API dla Photo Map MVP zapewnia endpointy do:
 
 **Opis:** Usuwa zdjęcie (wraz z plikami i ocenami).
 
-**Security:** Requires authentication (user must own the photo)
+**Security:** Requires authentication (JWT token)
 
 **Response (204 No Content):** Empty body
 
 **Deletion Flow:**
-1. Verify ownership (user owns the photo)
-2. Delete ratings (CASCADE from database)
-3. Delete thumbnail file from filesystem
-4. Delete original file from filesystem
-5. Delete photo record from database
+1. Delete ratings (CASCADE from database)
+2. Delete thumbnail file from filesystem
+3. Delete original file from filesystem
+4. Delete photo record from database
 
-**Error Responses:** 401 (no token), 403 (not owner), 404 (not found)
+**Error Responses:** 401 (no token), 404 (not found)
 
 ---
 
@@ -354,12 +369,12 @@ REST API dla Photo Map MVP zapewnia endpointy do:
 |----------|---------------|------------------|
 | POST /api/auth/register | Public | - |
 | POST /api/auth/login | Public | - |
-| GET /api/photos | USER, ADMIN | User sees only own photos |
-| GET /api/photos/{id} | USER, ADMIN | User must own the photo |
+| GET /api/photos | USER, ADMIN | - |
+| GET /api/photos/{id} | USER, ADMIN | - |
 | POST /api/photos | USER, ADMIN | - |
-| PUT /api/photos/{id}/rating | USER, ADMIN | Cannot rate own photo |
+| PUT /api/photos/{id}/rating | USER, ADMIN | - |
 | DELETE /api/photos/{id}/rating | USER, ADMIN | Can only delete own rating |
-| DELETE /api/photos/{id} | USER, ADMIN | User must own the photo |
+| DELETE /api/photos/{id} | USER, ADMIN | - |
 | GET /api/admin/users | ADMIN | - |
 | PUT /api/admin/users/{id}/role | ADMIN | - |
 | DELETE /api/admin/users/{id} | ADMIN | Cannot delete yourself |

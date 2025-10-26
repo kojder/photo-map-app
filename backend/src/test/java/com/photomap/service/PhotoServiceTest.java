@@ -50,9 +50,7 @@ class PhotoServiceTest {
     @BeforeEach
     void setUp() {
         ReflectionTestUtils.setField(photoService, "originalDirectory", tempDir.resolve("original").toString());
-        ReflectionTestUtils.setField(photoService, "smallDirectory", tempDir.resolve("small").toString());
         ReflectionTestUtils.setField(photoService, "mediumDirectory", tempDir.resolve("medium").toString());
-        ReflectionTestUtils.setField(photoService, "largeDirectory", tempDir.resolve("large").toString());
 
         testUser = new User();
         testUser.setId(1L);

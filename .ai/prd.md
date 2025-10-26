@@ -17,8 +17,8 @@ Photo Map MVP to full-stack aplikacja (Angular 18 + Spring Boot 3 + PostgreSQL) 
 
 1. **Upload i Przetwarzanie** - Upload zdjęć z automatyczną ekstrakcją EXIF i generowaniem miniatur
 2. **Wizualizacja** - Galeria siatki i mapa (Leaflet.js) z markerami GPS
-3. **Interakcja** - Ocena zdjęć (1-10) i zaawansowane filtrowanie
-4. **Bezpieczeństwo** - Autentykacja JWT, izolacja danych użytkowników
+3. **Interakcja** - Ocena zdjęć (1-5 gwiazdek) i zaawansowane filtrowanie
+4. **Bezpieczeństwo** - Autentykacja JWT, hashowanie haseł (BCrypt)
 5. **Administracja** - Panel admina do zarządzania użytkownikami
 
 ---
@@ -31,13 +31,11 @@ Photo Map MVP to full-stack aplikacja (Angular 18 + Spring Boot 3 + PostgreSQL) 
 - Rejestracja (email + password)
 - Login z JWT token
 - Hasła hashowane (BCrypt)
-- Izolacja danych - użytkownik widzi tylko swoje zdjęcia
 - Role: USER (domyślna), ADMIN
 
 **User Stories:**
 - **US-AUTH-001:** Jako użytkownik mogę się zarejestrować aby mieć konto
 - **US-AUTH-002:** Jako użytkownik mogę się zalogować aby uzyskać dostęp
-- **US-AUTH-003:** Jako użytkownik widzę tylko swoje zdjęcia
 
 ### 2.2. Upload Zdjęć
 
@@ -106,9 +104,15 @@ Photo Map MVP to full-stack aplikacja (Angular 18 + Spring Boot 3 + PostgreSQL) 
 - **US-RAT-004:** Jako użytkownik widzę oceny w galerii i na mapie
 
 **Business Rules:**
-- Użytkownik NIE może ocenić własnego zdjęcia
 - Jeden użytkownik może wystawić tylko jedną ocenę na zdjęcie (może ją edytować)
-- Ocena wyświetlana to średnia ze wszystkich ocen użytkowników
+
+**Personalized Rating Display:**
+- API zwraca `averageRating`, `totalRatings`, `userRating`
+- **Co widzi użytkownik:**
+  - Jeśli user ocenił zdjęcie → widzi **swoją ocenę** (backend zwraca `averageRating` = `userRating`)
+  - Jeśli user NIE ocenił → widzi **średnią ocen innych użytkowników** (backend oblicza średnią bez current user)
+  - Jeśli nikt nie ocenił → zdjęcie **nie ma oceny** (`averageRating` = null)
+- Frontend wyświetla `averageRating` z kontekstem: "(your rating)" lub "(X ratings)"
 
 ### 2.6. Filtrowanie
 
@@ -162,7 +166,6 @@ Photo Map MVP to full-stack aplikacja (Angular 18 + Spring Boot 3 + PostgreSQL) 
 
 - JWT authentication
 - Hasła hashowane (BCrypt)
-- Izolacja danych między użytkownikami
 - Walidacja inputów (frontend + backend)
 - CORS configuration
 
@@ -239,7 +242,37 @@ MVP jest sukcesem jeśli:
 
 ---
 
-## 6. Technical Architecture (High-Level)
+## 6. Future Enhancements (Post-MVP)
+
+**Status:** 🔜 Optional features for implementation after MVP completion
+
+### 6.1 Email System
+
+**Purpose:** Email verification and password recovery
+
+**Key Features:**
+- Email verification (confirm registration)
+- Password reset through email
+- Email notifications (optional)
+
+**Estimated Time:** 12-16 hours
+**Details:** See `.ai/features/feature-email-system.md`
+
+### 6.2 Admin Security Enhancements
+
+**Purpose:** Secure admin initialization and profile management
+
+**Key Features:**
+- Auto-create default admin on first startup (from `.env` credentials)
+- Force password change on first admin login (`must_change_password` flag)
+- Admin can change email and password through `/api/admin/profile`
+
+**Estimated Time:** 3-4 hours
+**Details:** See `.ai/implementation-admin-initializer.md`
+
+---
+
+## 7. Technical Architecture (High-Level)
 
 ### Frontend (Angular 18)
 ```

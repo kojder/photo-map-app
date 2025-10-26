@@ -5,6 +5,7 @@ import com.photomap.dto.RatingRequest;
 import com.photomap.dto.RatingResponse;
 import com.photomap.model.Photo;
 import com.photomap.model.Rating;
+import com.photomap.model.Role;
 import com.photomap.model.User;
 import com.photomap.repository.PhotoRepository;
 import com.photomap.repository.UserRepository;
@@ -56,9 +57,6 @@ public class PhotoController {
 
     @Value("${photo.upload.directory.medium}")
     private String mediumDirectory;
-
-    @Value("${photo.upload.directory.large}")
-    private String largeDirectory;
 
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<Map<String, String>> uploadPhoto(
@@ -229,7 +227,7 @@ public class PhotoController {
 
     private User getCurrentUser(final Authentication authentication) {
         if (authentication == null) {
-            return userRepository.findById(1L)
+            return userRepository.findFirstByRole(Role.ADMIN)
                     .orElseThrow(() -> new IllegalArgumentException("Admin user not found"));
         }
         final String email = authentication.getName();
