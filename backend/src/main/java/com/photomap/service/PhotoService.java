@@ -70,7 +70,7 @@ public class PhotoService {
         final Photo photo = photoRepository.findById(photoId)
                 .orElseThrow(() -> new IllegalArgumentException("Photo not found"));
 
-        if (!photo.getUser().getId().equals(userId)) {
+        if (photo.getUser() != null && !photo.getUser().getId().equals(userId)) {
             throw new IllegalArgumentException("User does not own this photo");
         }
 

@@ -23,6 +23,15 @@
 
 ### ✅ Last Completed
 
+**Photo Processing - Removed Admin User Assignment** (2025-10-26)
+- ✅ Usunięto przypisywanie zdjęć batch-uploadowanych do użytkownika admin
+- ✅ Zdjęcia z `input/` folderu mają teraz `user_id = NULL` (bez właściciela)
+- ✅ Usunięto `PHOTO_PROCESSING_ADMIN_ID` z konfiguracji (application.properties, .env)
+- ✅ Usunięto UserRepository, Role, User z PhotoProcessingService
+- ✅ Backend kompiluje i działa poprawnie
+- 📝 Powód: Uniknięcie problemów przy zmianie/usunięciu użytkownika admin
+- 📝 Zdjęcia z web upload nadal są przypisane do zalogowanego użytkownika
+
 **Environment Configuration - spring.config.import** (2025-10-26)
 - ✅ Removed spring-dotenv dependency (simpler native Spring Boot approach)
 - ✅ Implemented `spring.config.import=optional:file:../.env[.properties]` in application.properties

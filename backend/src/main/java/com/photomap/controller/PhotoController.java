@@ -76,16 +76,18 @@ public class PhotoController {
             throw new IllegalArgumentException("File type not allowed. Only JPEG and PNG are supported");
         }
 
+        final User currentUser = getCurrentUser(authentication);
+
         final String originalFilename = file.getOriginalFilename();
         final String extension = originalFilename != null && originalFilename.contains(".")
                 ? originalFilename.substring(originalFilename.lastIndexOf('.'))
                 : ".jpg";
-        final String filename = UUID.randomUUID() + extension;
+        final String filename = currentUser.getId() + "_" + UUID.randomUUID() + extension;
 
         final Path inputPath = Paths.get(inputDirectory, filename);
         Files.copy(file.getInputStream(), inputPath, StandardCopyOption.REPLACE_EXISTING);
 
-        log.info("File uploaded to input directory: {}", filename);
+        log.info("File uploaded to input directory by user {}: {}", currentUser.getEmail(), filename);
 
         return ResponseEntity.status(HttpStatus.ACCEPTED)
                 .body(Map.of(

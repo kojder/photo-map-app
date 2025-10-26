@@ -45,9 +45,6 @@ public class PhotoProcessingService {
     @Value("${photo.upload.directory.failed}")
     private String failedDirectory;
 
-    @Value("${photo.processing.admin.id}")
-    private Long adminUserId;
-
     private static final String[] ALLOWED_EXTENSIONS = {".jpg", ".jpeg", ".png"};
     private static final int THUMBNAIL_MEDIUM = 300;
     private static final double THUMBNAIL_QUALITY = 0.85;
@@ -80,9 +77,13 @@ public class PhotoProcessingService {
             photo.setFileSize(file.length());
             photo.setMimeType(getMimeType(extension));
 
-            User adminUser = userRepository.findById(adminUserId)
-                    .orElseThrow(() -> new IllegalStateException("Admin user not found: " + adminUserId));
-            photo.setUser(adminUser);
+            final User user = extractUserFromFilename(filename);
+            if (user != null) {
+                photo.setUser(user);
+                log.info("Photo assigned to user: id={}, email={}", user.getId(), user.getEmail());
+            } else {
+                log.info("Photo has no owner (batch upload)");
+            }
 
             extractExifMetadata(file, photo);
 
@@ -189,5 +190,18 @@ public class PhotoProcessingService {
             case ".png" -> "image/png";
             default -> "application/octet-stream";
         };
+    }
+
+    private User extractUserFromFilename(final String filename) {
+        try {
+            if (filename.matches("^\\d+_.*")) {
+                final String userIdStr = filename.substring(0, filename.indexOf('_'));
+                final Long userId = Long.parseLong(userIdStr);
+                return userRepository.findById(userId).orElse(null);
+            }
+        } catch (Exception e) {
+            log.warn("Failed to extract user from filename: {}", filename, e);
+        }
+        return null;
     }
 }

@@ -14,7 +14,6 @@ import java.util.List;
 
 @Entity
 @Table(name = "photos", indexes = {
-    @Index(name = "photos_user_id_idx", columnList = "user_id"),
     @Index(name = "photos_gps_idx", columnList = "gps_latitude, gps_longitude"),
     @Index(name = "photos_taken_at_idx", columnList = "taken_at"),
     @Index(name = "photos_uploaded_at_idx", columnList = "uploaded_at")
@@ -29,7 +28,7 @@ public class Photo {
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = false)
+    @JoinColumn(name = "user_id")
     private User user;
 
     @Column(nullable = false, length = 500)

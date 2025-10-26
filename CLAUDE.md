@@ -414,8 +414,11 @@ Before starting implementation **ALWAYS**:
 
 **ABSOLUTE PROHIBITION:**
 - ❌ **NEVER execute `git commit` in the same response where you ask for confirmation**
-- ❌ **NEVER assume user's answer** - always wait for explicit "yes"/"tak"/"commit"
+- ❌ **NEVER execute `git push` without explicit user confirmation** - ALWAYS ask first and wait
+- ❌ **NEVER assume user's answer** - always wait for explicit "yes"/"tak"/"commit"/"push"
 - ❌ **NEVER bundle question + commit in one response**
+- ❌ **NEVER bundle question + push in one response**
+- ❌ **NEVER auto-push** even if user says "finish everything" or "zrób wszystko"
 
 ## 🛠️ Tech Stack Guidelines
 

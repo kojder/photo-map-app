@@ -157,6 +157,7 @@ REST API dla Photo Map MVP zapewnia endpointy do:
 **Batch Upload Alternative:**
 - Users can upload multiple photos directly to `input/` via scp/ftp
 - Spring Integration will process them automatically
+- **Note:** Batch-uploaded photos will have `user_id = NULL` (no user assignment)
 
 ---
 
