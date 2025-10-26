@@ -234,6 +234,43 @@ class PhotoServiceTest {
         verify(ratingRepository, never()).deleteByPhotoIdAndUserId(any(), any());
     }
 
+    @Test
+    void getPhotosForAdmin_Success() {
+        final Pageable pageable = PageRequest.of(0, 20);
+        final Photo photo = createTestPhoto(1L);
+        final List<Photo> photos = List.of(photo);
+        final Page<Photo> photoPage = new PageImpl<>(photos);
+
+        when(photoRepository.findAll(pageable)).thenReturn(photoPage);
+
+        final Page<Photo> result = photoService.getPhotosForAdmin(pageable);
+
+        assertNotNull(result);
+        assertEquals(1, result.getTotalElements());
+        verify(photoRepository, times(1)).findAll(pageable);
+    }
+
+    @Test
+    void deletePhotoByAdmin_Success() throws Exception {
+        final Photo photo = createTestPhoto(1L);
+        when(photoRepository.findById(1L)).thenReturn(Optional.of(photo));
+
+        assertDoesNotThrow(() -> photoService.deletePhotoByAdmin(1L));
+
+        verify(photoRepository, times(1)).delete(photo);
+    }
+
+    @Test
+    void deletePhotoByAdmin_PhotoNotFound_ThrowsException() {
+        when(photoRepository.findById(999L)).thenReturn(Optional.empty());
+
+        assertThrows(IllegalArgumentException.class, () -> {
+            photoService.deletePhotoByAdmin(999L);
+        });
+
+        verify(photoRepository, never()).delete(any(Photo.class));
+    }
+
     private Photo createTestPhoto(final Long id) {
         final Photo photo = new Photo();
         photo.setId(id);

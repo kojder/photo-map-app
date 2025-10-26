@@ -65,6 +65,11 @@ public class PhotoService {
         return photoRepository.findById(photoId);
     }
 
+    @Transactional(readOnly = true)
+    public Page<Photo> getPhotosForAdmin(final Pageable pageable) {
+        return photoRepository.findAll(pageable);
+    }
+
     @Transactional
     public void deletePhoto(final Long photoId, final Long userId) throws IOException {
         final Photo photo = photoRepository.findById(photoId)
@@ -77,6 +82,16 @@ public class PhotoService {
         deletePhotoFiles(photo);
         photoRepository.delete(photo);
         log.info("Photo deleted: id={}, filename={}", photoId, photo.getFilename());
+    }
+
+    @Transactional
+    public void deletePhotoByAdmin(final Long photoId) throws IOException {
+        final Photo photo = photoRepository.findById(photoId)
+                .orElseThrow(() -> new IllegalArgumentException("Photo not found"));
+
+        deletePhotoFiles(photo);
+        photoRepository.delete(photo);
+        log.info("Photo deleted by admin: id={}, filename={}", photoId, photo.getFilename());
     }
 
     @Transactional
