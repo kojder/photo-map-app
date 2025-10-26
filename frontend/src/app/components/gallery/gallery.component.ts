@@ -1,10 +1,12 @@
 import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { HttpErrorResponse } from '@angular/common/http';
 import { Observable, take } from 'rxjs';
 import { Photo } from '../../models/photo.model';
 import { PhotoService } from '../../services/photo.service';
 import { FilterService } from '../../services/filter.service';
 import { PhotoViewerService } from '../../services/photo-viewer.service';
+import { AdminService } from '../../services/admin.service';
 import { PhotoCardComponent } from '../photo-card/photo-card.component';
 import { FilterBarComponent } from '../filter-bar/filter-bar.component';
 import { UploadDialogComponent } from '../upload-dialog/upload-dialog.component';
@@ -21,16 +23,20 @@ export class GalleryComponent implements OnInit {
   loading = signal(false);
   showUploadDialog = signal(false);
   errorMessage = signal<string | null>(null);
+  isPermissionError = signal(false);
+  adminContactEmail = signal<string>('admin@photomap.local');
 
   constructor(
     private photoService: PhotoService,
     private filterService: FilterService,
-    private photoViewerService: PhotoViewerService
+    private photoViewerService: PhotoViewerService,
+    private adminService: AdminService
   ) {
     this.photos$ = this.photoService.photos$;
   }
 
   ngOnInit(): void {
+    this.loadAdminContact();
     this.loadPhotos();
 
     this.filterService.filters$.subscribe(() => {
@@ -38,9 +44,21 @@ export class GalleryComponent implements OnInit {
     });
   }
 
+  loadAdminContact(): void {
+    this.photoService.getPublicSettings().subscribe({
+      next: (settings) => {
+        this.adminContactEmail.set(settings.adminContactEmail);
+      },
+      error: () => {
+        this.adminContactEmail.set('admin@photomap.local');
+      }
+    });
+  }
+
   loadPhotos(): void {
     this.loading.set(true);
     this.errorMessage.set(null);
+    this.isPermissionError.set(false);
 
     const filters = this.filterService.currentFilters();
 
@@ -48,9 +66,19 @@ export class GalleryComponent implements OnInit {
       next: () => {
         this.loading.set(false);
       },
-      error: (error) => {
+      error: (error: HttpErrorResponse) => {
         console.error('Error loading photos:', error);
-        this.errorMessage.set('Failed to load photos. Please try again.');
+
+        // Clear photos on error
+        this.photoService.clearPhotos();
+
+        if (error.error?.message?.includes('permission') || error.status === 403) {
+          this.isPermissionError.set(true);
+          this.errorMessage.set(`Aby oglądać zdjęcia, skontaktuj się z administratorem: ${this.adminContactEmail()}`);
+        } else {
+          this.errorMessage.set('Nie udało się załadować zdjęć. Spróbuj ponownie.');
+        }
+
         this.loading.set(false);
       }
     });

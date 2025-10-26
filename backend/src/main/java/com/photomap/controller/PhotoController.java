@@ -108,6 +108,10 @@ public class PhotoController {
 
         final User currentUser = getCurrentUser(authentication);
 
+        if (!currentUser.isCanViewPhotos()) {
+            throw new IllegalArgumentException("User does not have permission to view photos");
+        }
+
         // Parse date parameters
         final LocalDateTime dateFromParsed = dateFrom != null ? LocalDateTime.parse(dateFrom + "T00:00:00") : null;
         final LocalDateTime dateToParsed = dateTo != null ? LocalDateTime.parse(dateTo + "T23:59:59") : null;
@@ -124,6 +128,11 @@ public class PhotoController {
             final Authentication authentication) {
 
         final User currentUser = getCurrentUser(authentication);
+
+        if (!currentUser.isCanViewPhotos()) {
+            throw new IllegalArgumentException("User does not have permission to view photos");
+        }
+
         final Photo photo = photoService.getPhotoById(id, currentUser.getId())
                 .orElseThrow(() -> new IllegalArgumentException("Photo not found or access denied"));
 
@@ -138,6 +147,11 @@ public class PhotoController {
                     .orElseThrow(() -> new IllegalArgumentException("Photo not found"));
         } else {
             final User currentUser = getCurrentUser(authentication);
+
+            if (!currentUser.isCanViewPhotos()) {
+                throw new IllegalArgumentException("User does not have permission to view photos");
+            }
+
             photo = photoService.getPhotoById(id, currentUser.getId())
                     .orElseThrow(() -> new IllegalArgumentException("Photo not found or access denied"));
         }
@@ -172,6 +186,11 @@ public class PhotoController {
                     .orElseThrow(() -> new IllegalArgumentException("Photo not found"));
         } else {
             final User currentUser = getCurrentUser(authentication);
+
+            if (!currentUser.isCanViewPhotos()) {
+                throw new IllegalArgumentException("User does not have permission to view photos");
+            }
+
             photo = photoService.getPhotoById(id, currentUser.getId())
                     .orElseThrow(() -> new IllegalArgumentException("Photo not found or access denied"));
         }
@@ -200,6 +219,11 @@ public class PhotoController {
             final Authentication authentication) {
 
         final User currentUser = getCurrentUser(authentication);
+
+        if (!currentUser.isCanRate()) {
+            throw new IllegalArgumentException("User does not have permission to rate photos");
+        }
+
         final Rating rating = photoService.ratePhoto(id, currentUser.getId(), request.rating());
 
         return ResponseEntity.ok(mapToRatingResponse(rating));
@@ -211,6 +235,11 @@ public class PhotoController {
             final Authentication authentication) {
 
         final User currentUser = getCurrentUser(authentication);
+
+        if (!currentUser.isCanRate()) {
+            throw new IllegalArgumentException("User does not have permission to rate photos");
+        }
+
         photoService.clearRating(id, currentUser.getId());
 
         return ResponseEntity.noContent().build();

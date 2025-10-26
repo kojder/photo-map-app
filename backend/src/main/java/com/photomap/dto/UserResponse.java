@@ -8,5 +8,7 @@ public record UserResponse(
         Long id,
         String email,
         Role role,
-        Instant createdAt
+        Instant createdAt,
+        Boolean canViewPhotos,
+        Boolean canRate
 ) {}

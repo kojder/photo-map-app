@@ -41,6 +41,8 @@ public class AuthService {
         user.setEmail(request.email());
         user.setPasswordHash(passwordEncoder.encode(request.password()));
         user.setRole(Role.USER);
+        user.setCanViewPhotos(false);
+        user.setCanRate(false);
 
         final User savedUser = userRepository.save(user);
 
@@ -48,7 +50,9 @@ public class AuthService {
                 savedUser.getId(),
                 savedUser.getEmail(),
                 savedUser.getRole(),
-                savedUser.getCreatedAt()
+                savedUser.getCreatedAt(),
+                savedUser.isCanViewPhotos(),
+                savedUser.isCanRate()
         );
     }
 
@@ -67,7 +71,9 @@ public class AuthService {
                 user.getId(),
                 user.getEmail(),
                 user.getRole(),
-                user.getCreatedAt()
+                user.getCreatedAt(),
+                user.isCanViewPhotos(),
+                user.isCanRate()
         );
 
         return new LoginResponse(token, "Bearer", 86400, userResponse);

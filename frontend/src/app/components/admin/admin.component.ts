@@ -1,9 +1,11 @@
 import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { AdminService } from '../../services/admin.service';
 import { AuthService } from '../../services/auth.service';
 import { User } from '../../models/user.model';
 import { PageInfo } from '../../models/photo.model';
+import { AppSettings } from '../../models/settings.model';
 
 interface PendingRoleChange {
   userId: number;
@@ -13,7 +15,7 @@ interface PendingRoleChange {
 @Component({
   selector: 'app-admin',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, FormsModule],
   templateUrl: './admin.component.html'
 })
 export class AdminComponent implements OnInit {
@@ -21,6 +23,7 @@ export class AdminComponent implements OnInit {
   usersLoading = signal<boolean>(false);
   currentUserId = signal<number | null>(null);
   pendingRoleChanges = signal<Map<number, 'USER' | 'ADMIN'>>(new Map());
+  searchQuery = signal<string>('');
 
   usersPage = signal<PageInfo>({
     size: 10,
@@ -28,6 +31,18 @@ export class AdminComponent implements OnInit {
     totalElements: 0,
     totalPages: 0
   });
+
+  selectedUser = signal<User | null>(null);
+  pendingPermissionChanges = signal<Map<number, { canViewPhotos: boolean; canRate: boolean }>>(new Map());
+
+  appSettings = signal<AppSettings | null>(null);
+  settingsLoadError = signal<boolean>(false);
+  editingSettings = signal<boolean>(false);
+  editedAdminEmail = signal<string>('');
+
+  notificationMessage = signal<string | null>(null);
+  notificationType = signal<'success' | 'error'>('success');
+  private notificationTimeout?: number;
 
   constructor(
     private adminService: AdminService,
@@ -42,11 +57,13 @@ export class AdminComponent implements OnInit {
 
   ngOnInit(): void {
     this.loadUsers();
+    this.loadSettings();
   }
 
   loadUsers(page: number = 0): void {
     this.usersLoading.set(true);
-    this.adminService.getUsers(page, 10).subscribe({
+    const search = this.searchQuery() || undefined;
+    this.adminService.getUsers(page, 10, search).subscribe({
       next: (response) => {
         this.users.set(response.content);
         this.usersPage.set(response.page);
@@ -57,6 +74,11 @@ export class AdminComponent implements OnInit {
         this.usersLoading.set(false);
       }
     });
+  }
+
+  onSearchChange(query: string): void {
+    this.searchQuery.set(query);
+    this.loadUsers(0);
   }
 
   onRoleSelect(userId: number, newRole: string): void {
@@ -98,7 +120,7 @@ export class AdminComponent implements OnInit {
       },
       error: (error) => {
         console.error('Failed to update user role:', error);
-        alert('Failed to update user role. Please try again.');
+        this.showNotification('Nie udało się zaktualizować roli użytkownika. Spróbuj ponownie.', 'error');
         this.loadUsers(this.usersPage().number);
       }
     });
@@ -112,16 +134,16 @@ export class AdminComponent implements OnInit {
 
   onDeleteUser(user: User): void {
     if (user.id === this.currentUserId()) {
-      alert('You cannot delete your own admin account!');
+      this.showNotification('Nie możesz usunąć własnego konta administratora!', 'error');
       return;
     }
 
-    const confirmMessage = `Are you sure you want to delete user "${user.email}"?\n\n` +
-      `This will permanently delete:\n` +
-      `- User account\n` +
-      `- All user's photos (${user.totalPhotos || 0} photos)\n` +
-      `- All associated data\n\n` +
-      `This action cannot be undone!`;
+    const confirmMessage = `Czy na pewno chcesz usunąć użytkownika "${user.email}"?\n\n` +
+      `Zostaną trwale usunięte:\n` +
+      `- Konto użytkownika\n` +
+      `- Wszystkie zdjęcia użytkownika (${user.totalPhotos || 0} zdjęć)\n` +
+      `- Wszystkie powiązane dane\n\n` +
+      `Ta operacja jest nieodwracalna!`;
 
     if (!confirm(confirmMessage)) {
       return;
@@ -129,11 +151,12 @@ export class AdminComponent implements OnInit {
 
     this.adminService.deleteUser(user.id).subscribe({
       next: () => {
+        this.showNotification('Użytkownik został pomyślnie usunięty.', 'success');
         this.loadUsers(this.usersPage().number);
       },
       error: (error) => {
         console.error('Failed to delete user:', error);
-        alert('Failed to delete user. Please try again.');
+        this.showNotification('Nie udało się usunąć użytkownika. Spróbuj ponownie.', 'error');
       }
     });
   }
@@ -145,5 +168,152 @@ export class AdminComponent implements OnInit {
   getUsersEndIndex(): number {
     const page = this.usersPage();
     return Math.min((page.number + 1) * page.size, page.totalElements);
+  }
+
+  onUserRowClick(user: User): void {
+    this.selectedUser.set(user);
+  }
+
+  closeSidebar(): void {
+    this.selectedUser.set(null);
+    this.pendingPermissionChanges.set(new Map());
+    this.editingSettings.set(false);
+  }
+
+  isUserSelected(userId: number): boolean {
+    return this.selectedUser()?.id === userId;
+  }
+
+  onPermissionChange(field: 'canViewPhotos' | 'canRate', value: boolean): void {
+    const user = this.selectedUser();
+    if (!user) return;
+
+    const changes = new Map(this.pendingPermissionChanges());
+    const currentChanges = changes.get(user.id) || {
+      canViewPhotos: user.canViewPhotos ?? true,
+      canRate: user.canRate ?? true
+    };
+
+    currentChanges[field] = value;
+    changes.set(user.id, currentChanges);
+    this.pendingPermissionChanges.set(changes);
+  }
+
+  hasPermissionChanges(userId: number): boolean {
+    return this.pendingPermissionChanges().has(userId);
+  }
+
+  getEffectivePermissions(user: User): { canViewPhotos: boolean; canRate: boolean } {
+    const pending = this.pendingPermissionChanges().get(user.id);
+    if (pending) return pending;
+
+    return {
+      canViewPhotos: user.canViewPhotos ?? true,
+      canRate: user.canRate ?? true
+    };
+  }
+
+  onSavePermissions(user: User): void {
+    const changes = this.pendingPermissionChanges().get(user.id);
+    if (!changes) return;
+
+    this.adminService.updateUserPermissions(user.id, changes).subscribe({
+      next: () => {
+        const currentUsers = this.users();
+        const index = currentUsers.findIndex(u => u.id === user.id);
+        if (index !== -1) {
+          currentUsers[index] = {
+            ...currentUsers[index],
+            canViewPhotos: changes.canViewPhotos,
+            canRate: changes.canRate
+          };
+          this.users.set([...currentUsers]);
+
+          if (this.selectedUser()?.id === user.id) {
+            this.selectedUser.set(currentUsers[index]);
+          }
+        }
+
+        const pendingChanges = new Map(this.pendingPermissionChanges());
+        pendingChanges.delete(user.id);
+        this.pendingPermissionChanges.set(pendingChanges);
+
+        this.showNotification('Uprawnienia zaktualizowane. Użytkownik musi się ponownie zalogować.', 'success');
+      },
+      error: (error) => {
+        console.error('Failed to update permissions:', error);
+        this.showNotification('Nie udało się zaktualizować uprawnień. Spróbuj ponownie.', 'error');
+      }
+    });
+  }
+
+  onCancelPermissions(userId: number): void {
+    const changes = new Map(this.pendingPermissionChanges());
+    changes.delete(userId);
+    this.pendingPermissionChanges.set(changes);
+  }
+
+  loadSettings(): void {
+    this.adminService.getSettings().subscribe({
+      next: (settings) => {
+        this.appSettings.set(settings);
+        this.editedAdminEmail.set(settings.adminContactEmail);
+        this.settingsLoadError.set(false);
+      },
+      error: (error) => {
+        console.error('Failed to load settings:', error);
+        this.settingsLoadError.set(true);
+        this.appSettings.set({ adminContactEmail: '' });
+      }
+    });
+  }
+
+  onEditSettings(): void {
+    this.editingSettings.set(true);
+  }
+
+  onSaveSettings(): void {
+    const email = this.editedAdminEmail();
+    if (!email) {
+      this.showNotification('Email kontaktowy administratora jest wymagany.', 'error');
+      return;
+    }
+
+    this.adminService.updateSettings({ adminContactEmail: email }).subscribe({
+      next: (settings) => {
+        this.appSettings.set(settings);
+        this.editingSettings.set(false);
+        this.showNotification('Ustawienia zostały zaktualizowane pomyślnie.', 'success');
+      },
+      error: (error) => {
+        console.error('Failed to update settings:', error);
+        this.showNotification('Nie udało się zaktualizować ustawień. Spróbuj ponownie.', 'error');
+      }
+    });
+  }
+
+  onCancelSettingsEdit(): void {
+    this.editedAdminEmail.set(this.appSettings()?.adminContactEmail || '');
+    this.editingSettings.set(false);
+  }
+
+  showNotification(message: string, type: 'success' | 'error' = 'success', duration: number = 5000): void {
+    if (this.notificationTimeout) {
+      window.clearTimeout(this.notificationTimeout);
+    }
+
+    this.notificationMessage.set(message);
+    this.notificationType.set(type);
+
+    this.notificationTimeout = window.setTimeout(() => {
+      this.notificationMessage.set(null);
+    }, duration);
+  }
+
+  closeNotification(): void {
+    if (this.notificationTimeout) {
+      window.clearTimeout(this.notificationTimeout);
+    }
+    this.notificationMessage.set(null);
   }
 }

@@ -41,6 +41,9 @@ public class User {
     @Column(name = "can_rate", nullable = false)
     private boolean canRate = true;
 
+    @Column(name = "can_view_photos", nullable = false)
+    private boolean canViewPhotos = true;
+
     @Column(name = "is_active", nullable = false)
     private boolean isActive = true;
 

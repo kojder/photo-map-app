@@ -25,41 +25,45 @@
     </p>
 
     @if (!showRatingInput()) {
-      <div class="flex items-center gap-2 mb-4">
-        @if (photo.averageRating && photo.averageRating > 0) {
-          <span class="text-yellow-500">{{ getStars(photo.averageRating) }}</span>
-          <span class="text-sm text-gray-600">
-            {{ photo.averageRating.toFixed(1) }}
-            @if (photo.userRating) {
-              <span class="text-xs text-blue-600">(your rating)</span>
-            } @else if (photo.totalRatings > 0) {
-              <span class="text-xs text-gray-500">({{ photo.totalRatings }} {{ photo.totalRatings === 1 ? 'rating' : 'ratings' }})</span>
-            }
-          </span>
-        } @else {
-          <span class="text-sm text-gray-500 italic">No rating yet</span>
-        }
-      </div>
+      @if (authService.canRate()) {
+        <div class="flex items-center gap-2 mb-4">
+          @if (photo.averageRating && photo.averageRating > 0) {
+            <span class="text-yellow-500">{{ getStars(photo.averageRating) }}</span>
+            <span class="text-sm text-gray-600">
+              {{ photo.averageRating.toFixed(1) }}
+              @if (photo.userRating) {
+                <span class="text-xs text-blue-600">(your rating)</span>
+              } @else if (photo.totalRatings > 0) {
+                <span class="text-xs text-gray-500">({{ photo.totalRatings }} {{ photo.totalRatings === 1 ? 'rating' : 'ratings' }})</span>
+              }
+            </span>
+          } @else {
+            <span class="text-sm text-gray-500 italic">No rating yet</span>
+          }
+        </div>
+      }
 
       <div class="flex justify-between items-center gap-2">
-        <button
-          data-testid="photo-card-rate-button"
-          (click)="onRate()"
-          [disabled]="loading()"
-          class="px-3 py-1 text-sm bg-blue-500 text-white rounded hover:bg-blue-600 disabled:bg-gray-300 transition-colors"
-        >
-          Rate
-        </button>
-
-        @if (photo.userRating) {
+        @if (authService.canRate()) {
           <button
-            data-testid="photo-card-clear-rating-button"
-            (click)="onClearRating()"
+            data-testid="photo-card-rate-button"
+            (click)="onRate()"
             [disabled]="loading()"
-            class="px-3 py-1 text-sm bg-orange-500 text-white rounded hover:bg-orange-600 disabled:bg-gray-300 transition-colors"
+            class="px-3 py-1 text-sm bg-blue-500 text-white rounded hover:bg-blue-600 disabled:bg-gray-300 transition-colors"
           >
-            Clear Rating
+            Rate
           </button>
+
+          @if (photo.userRating) {
+            <button
+              data-testid="photo-card-clear-rating-button"
+              (click)="onClearRating()"
+              [disabled]="loading()"
+              class="px-3 py-1 text-sm bg-orange-500 text-white rounded hover:bg-orange-600 disabled:bg-gray-300 transition-colors"
+            >
+              Clear Rating
+            </button>
+          }
         }
 
         <button

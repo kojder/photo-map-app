@@ -1,5 +1,6 @@
 package com.photomap.service;
 
+import com.photomap.dto.UpdatePermissionsRequest;
 import com.photomap.dto.UpdateRoleRequest;
 import com.photomap.dto.UserAdminResponse;
 import com.photomap.dto.UserResponse;
@@ -26,14 +27,27 @@ public class UserService {
 
     @Transactional(readOnly = true)
     public Page<UserAdminResponse> listAllUsers(final Pageable pageable) {
-        return userRepository.findAll(pageable)
-                .map(user -> new UserAdminResponse(
-                        user.getId(),
-                        user.getEmail(),
-                        user.getRole(),
-                        user.getCreatedAt(),
-                        photoRepository.countByUserId(user.getId())
-                ));
+        return listAllUsers(pageable, null);
+    }
+
+    @Transactional(readOnly = true)
+    public Page<UserAdminResponse> listAllUsers(final Pageable pageable, final String searchEmail) {
+        final Page<User> users;
+        if (searchEmail != null && !searchEmail.trim().isEmpty()) {
+            users = userRepository.findByEmailContainingIgnoreCase(searchEmail.trim(), pageable);
+        } else {
+            users = userRepository.findAll(pageable);
+        }
+
+        return users.map(user -> new UserAdminResponse(
+                user.getId(),
+                user.getEmail(),
+                user.getRole(),
+                user.getCreatedAt(),
+                photoRepository.countByUserId(user.getId()),
+                user.isCanViewPhotos(),
+                user.isCanRate()
+        ));
     }
 
     @Transactional
@@ -48,7 +62,9 @@ public class UserService {
                 savedUser.getId(),
                 savedUser.getEmail(),
                 savedUser.getRole(),
-                savedUser.getCreatedAt()
+                savedUser.getCreatedAt(),
+                savedUser.isCanViewPhotos(),
+                savedUser.isCanRate()
         );
     }
 
@@ -65,5 +81,24 @@ public class UserService {
         }
 
         userRepository.delete(userToDelete);
+    }
+
+    @Transactional
+    public UserResponse updateUserPermissions(final Long userId, final UpdatePermissionsRequest request) {
+        final User user = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+
+        user.setCanViewPhotos(request.canViewPhotos());
+        user.setCanRate(request.canRate());
+        final User savedUser = userRepository.save(user);
+
+        return new UserResponse(
+                savedUser.getId(),
+                savedUser.getEmail(),
+                savedUser.getRole(),
+                savedUser.getCreatedAt(),
+                savedUser.isCanViewPhotos(),
+                savedUser.isCanRate()
+        );
     }
 }

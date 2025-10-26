@@ -4,4 +4,6 @@ export interface User {
   role: 'USER' | 'ADMIN';
   createdAt: string;
   totalPhotos?: number;
+  canViewPhotos?: boolean;
+  canRate?: boolean;
 }

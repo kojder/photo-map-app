@@ -4,6 +4,7 @@ import { HttpClient } from '@angular/common/http';
 import { DomSanitizer, SafeUrl } from '@angular/platform-browser';
 import { Photo } from '../../models/photo.model';
 import { PhotoService } from '../../services/photo.service';
+import { AuthService } from '../../services/auth.service';
 
 @Component({
   selector: 'app-photo-card',
@@ -25,7 +26,8 @@ export class PhotoCardComponent implements OnInit, OnDestroy {
   constructor(
     private photoService: PhotoService,
     private http: HttpClient,
-    private sanitizer: DomSanitizer
+    private sanitizer: DomSanitizer,
+    public authService: AuthService
   ) {}
 
   ngOnInit(): void {

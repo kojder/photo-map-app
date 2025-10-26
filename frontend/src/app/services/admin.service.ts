@@ -4,6 +4,7 @@ import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { User } from '../models/user.model';
 import { PageResponse } from '../models/photo.model';
+import { AppSettings } from '../models/settings.model';
 
 interface SpringPage<T> {
   content: T[];
@@ -23,10 +24,14 @@ export class AdminService {
 
   constructor(private http: HttpClient) {}
 
-  getUsers(page: number = 0, size: number = 10): Observable<PageResponse<User>> {
-    const params = new HttpParams()
+  getUsers(page: number = 0, size: number = 10, searchEmail?: string): Observable<PageResponse<User>> {
+    let params = new HttpParams()
       .set('page', page.toString())
       .set('size', size.toString());
+
+    if (searchEmail && searchEmail.trim()) {
+      params = params.set('searchEmail', searchEmail.trim());
+    }
 
     return this.http.get<SpringPage<User>>(`${this.API_URL}/users`, { params }).pipe(
       map(springPage => ({
@@ -47,5 +52,17 @@ export class AdminService {
 
   updateUserRole(id: number, role: 'USER' | 'ADMIN'): Observable<User> {
     return this.http.put<User>(`${this.API_URL}/users/${id}/role`, { role });
+  }
+
+  updateUserPermissions(id: number, permissions: { canViewPhotos: boolean; canRate: boolean }): Observable<User> {
+    return this.http.put<User>(`${this.API_URL}/users/${id}/permissions`, permissions);
+  }
+
+  getSettings(): Observable<AppSettings> {
+    return this.http.get<AppSettings>(`${this.API_URL}/settings`);
+  }
+
+  updateSettings(settings: AppSettings): Observable<AppSettings> {
+    return this.http.put<AppSettings>(`${this.API_URL}/settings`, settings);
   }
 }

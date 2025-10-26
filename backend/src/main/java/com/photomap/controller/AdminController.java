@@ -1,12 +1,10 @@
 package com.photomap.controller;
 
-import com.photomap.dto.PhotoAdminResponse;
-import com.photomap.dto.UpdateRoleRequest;
-import com.photomap.dto.UserAdminResponse;
-import com.photomap.dto.UserResponse;
+import com.photomap.dto.*;
 import com.photomap.model.Photo;
 import com.photomap.model.Rating;
 import com.photomap.service.PhotoService;
+import com.photomap.service.SettingsService;
 import com.photomap.service.UserService;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
@@ -27,17 +25,20 @@ public class AdminController {
 
     private final UserService userService;
     private final PhotoService photoService;
+    private final SettingsService settingsService;
 
-    public AdminController(final UserService userService, final PhotoService photoService) {
+    public AdminController(final UserService userService, final PhotoService photoService, final SettingsService settingsService) {
         this.userService = userService;
         this.photoService = photoService;
+        this.settingsService = settingsService;
     }
 
     @GetMapping("/users")
     public ResponseEntity<Page<UserAdminResponse>> listAllUsers(
             @RequestParam(defaultValue = "0") final int page,
             @RequestParam(defaultValue = "20") final int size,
-            @RequestParam(defaultValue = "createdAt,desc") final String sort) {
+            @RequestParam(defaultValue = "createdAt,desc") final String sort,
+            @RequestParam(required = false) final String searchEmail) {
 
         final String[] sortParams = sort.split(",");
         final Sort.Direction direction = sortParams.length > 1 && sortParams[1].equalsIgnoreCase("asc")
@@ -45,7 +46,7 @@ public class AdminController {
                 : Sort.Direction.DESC;
 
         final Pageable pageable = PageRequest.of(page, size, Sort.by(direction, sortParams[0]));
-        final Page<UserAdminResponse> users = userService.listAllUsers(pageable);
+        final Page<UserAdminResponse> users = userService.listAllUsers(pageable, searchEmail);
 
         return ResponseEntity.ok(users);
     }
@@ -63,6 +64,29 @@ public class AdminController {
     public ResponseEntity<Void> deleteUser(@PathVariable final Long id) {
         userService.deleteUser(id);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+    }
+
+    @PutMapping("/users/{id}/permissions")
+    public ResponseEntity<UserResponse> updateUserPermissions(
+            @PathVariable final Long id,
+            @Valid @RequestBody final UpdatePermissionsRequest request) {
+
+        final UserResponse response = userService.updateUserPermissions(id, request);
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/settings")
+    public ResponseEntity<AppSettingsResponse> getSettings() {
+        final String adminContactEmail = settingsService.getAdminContactEmail();
+        return ResponseEntity.ok(new AppSettingsResponse(adminContactEmail));
+    }
+
+    @PutMapping("/settings")
+    public ResponseEntity<AppSettingsResponse> updateSettings(
+            @Valid @RequestBody final UpdateSettingsRequest request) {
+
+        settingsService.updateAdminContactEmail(request.adminContactEmail());
+        return ResponseEntity.ok(new AppSettingsResponse(request.adminContactEmail()));
     }
 
     @GetMapping("/photos")

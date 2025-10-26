@@ -9,5 +9,7 @@ public record UserAdminResponse(
         String email,
         Role role,
         Instant createdAt,
-        Long totalPhotos
+        Long totalPhotos,
+        Boolean canViewPhotos,
+        Boolean canRate
 ) {}

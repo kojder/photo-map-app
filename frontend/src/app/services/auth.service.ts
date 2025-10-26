@@ -49,6 +49,16 @@ export class AuthService {
     return user?.role === 'ADMIN';
   }
 
+  canRate(): boolean {
+    const user = this.getCurrentUser();
+    return user?.canRate ?? false;
+  }
+
+  canViewPhotos(): boolean {
+    const user = this.getCurrentUser();
+    return user?.canViewPhotos ?? false;
+  }
+
   getToken(): string | null {
     return localStorage.getItem(this.TOKEN_KEY);
   }

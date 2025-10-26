@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { BehaviorSubject, Observable, tap } from 'rxjs';
 import { Photo, PageResponse, RatingRequest, RatingResponse, PhotoFilters } from '../models/photo.model';
+import { AppSettings } from '../models/settings.model';
 
 @Injectable({
   providedIn: 'root'
@@ -128,5 +129,13 @@ export class PhotoService {
     }
 
     return true;
+  }
+
+  getPublicSettings(): Observable<AppSettings> {
+    return this.http.get<AppSettings>('/api/public/settings');
+  }
+
+  clearPhotos(): void {
+    this.photosSubject.next([]);
   }
 }
