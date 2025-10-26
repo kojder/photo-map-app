@@ -32,6 +32,9 @@ public class User {
     @Column(nullable = false, length = 50)
     private Role role = Role.USER;
 
+    @Column(name = "must_change_password", nullable = false)
+    private boolean mustChangePassword = false;
+
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt;
