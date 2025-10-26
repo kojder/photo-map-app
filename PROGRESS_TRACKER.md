@@ -11,7 +11,7 @@
 
 ### 🎯 Currently Working On
 
-**Next:** Phase 5 - Admin Panel (2-3h)
+**Next:** Phase 5 - Admin Panel Frontend (1-2h)
 
 <!-- Use template below when starting new task -->
 <!--
@@ -22,6 +22,15 @@
 -->
 
 ### ✅ Last Completed
+
+**Phase 5 - Admin Panel Backend** (2025-10-26)
+- ✅ PhotoAdminResponse DTO with userId and userEmail
+- ✅ GET /api/admin/photos endpoint (list all photos with owner info)
+- ✅ DELETE /api/admin/photos/{id} endpoint (admin can delete any photo)
+- ✅ PhotoService: getPhotosForAdmin(), deletePhotoByAdmin()
+- ✅ Unit tests: 8 new tests (AdminControllerTest: 5, PhotoServiceTest: 3)
+- ✅ All tests passing: 74/74 ✅
+- 📝 Backend commit: cc0aee2
 
 **Photo Upload - User Assignment Fix** (2025-10-26)
 - ✅ Migracja V4: `user_id` nullable w tabeli `photos`
