@@ -1,0 +1,131 @@
+name: "CI: Build, Test & SonarCloud Analysis"
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+jobs:
+  build:
+    name: Build, Test & Analyze
+    runs-on: ubuntu-latest
+    
+    env:
+      # Backend configuration
+      DB_USERNAME: photomap_user
+      DB_PASSWORD: test_password
+      DB_NAME: photomap
+      JWT_SECRET: test-secret-key-for-ci-only-not-for-production
+      JWT_EXPIRATION: 86400000
+      SECURITY_ENABLED: false
+      
+    steps:
+      # ============================================
+      # CHECKOUT & SETUP
+      # ============================================
+      - name: Checkout code
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0  # Shallow clones disabled for SonarCloud analysis
+          
+      - name: Set up JDK 17
+        uses: actions/setup-java@v5
+        with:
+          distribution: 'zulu'
+          java-version: '17'
+          
+      - name: Set up Node.js 20
+        uses: actions/setup-node@v6
+        with:
+          node-version: '20'
+          
+      # ============================================
+      # CACHING
+      # ============================================
+      - name: Cache Maven dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.m2
+          key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
+          restore-keys: ${{ runner.os }}-m2-
+          
+      - name: Cache SonarCloud packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.sonar/cache
+          key: ${{ runner.os }}-sonar
+          restore-keys: ${{ runner.os }}-sonar-
+          
+      - name: Cache npm dependencies
+        uses: actions/cache@v4
+        with:
+          path: frontend/node_modules
+          key: ${{ runner.os }}-npm-${{ hashFiles('frontend/package-lock.json') }}
+          restore-keys: ${{ runner.os }}-npm-
+          
+      # ============================================
+      # BACKEND: BUILD & TEST
+      # ============================================
+      - name: Backend - Maven clean install
+        working-directory: backend
+        run: mvn clean install -DskipTests
+        
+      - name: Backend - Run tests with coverage
+        working-directory: backend
+        run: mvn test jacoco:report
+        
+      # ============================================
+      # FRONTEND: BUILD & TEST
+      # ============================================
+      - name: Frontend - Install dependencies
+        working-directory: frontend
+        run: npm ci
+        
+      - name: Frontend - Run tests with coverage
+        working-directory: frontend
+        run: npm run test:coverage
+        
+      # ============================================
+      # SONARCLOUD ANALYSIS
+      # ============================================
+      - name: Backend - SonarCloud analysis
+        working-directory: backend
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        run: mvn sonar:sonar -Dsonar.token=${{ secrets.SONAR_TOKEN }}
+        
+      - name: Frontend - SonarCloud analysis
+        uses: SonarSource/sonarqube-scan-action@v6
+        with:
+          projectBaseDir: frontend
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          
+      # ============================================
+      # ARTIFACTS UPLOAD (Optional)
+      # ============================================
+      - name: Upload backend test reports
+        if: always()
+        uses: actions/upload-artifact@v5
+        with:
+          name: backend-test-reports
+          path: backend/target/surefire-reports/
+          retention-days: 7
+          
+      - name: Upload backend coverage reports
+        if: always()
+        uses: actions/upload-artifact@v5
+        with:
+          name: backend-coverage-reports
+          path: backend/target/site/jacoco/
+          retention-days: 7
+          
+      - name: Upload frontend coverage reports
+        if: always()
+        uses: actions/upload-artifact@v5
+        with:
+          name: frontend-coverage-reports
+          path: frontend/coverage/
+          retention-days: 7

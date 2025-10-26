@@ -7,19 +7,47 @@
 
 ## 🔄 Current Status
 
-**Last Updated:** 2025-10-26
+**Last Updated:** 2025-10-26 (GitHub Actions CI/CD with SonarCloud - Phase 3 completed)
 
 ### 🎯 Currently Working On
 
-**Next:** Phase 5 - Admin Panel complete, consider Admin Security or Deployment
-
-<!-- Use template below when starting new task -->
-<!--
 **Active Tasks:**
-- [ ] **Task Name** (e.g., "Manual Testing - Photo Viewer Mobile Touch")
-  - [ ] Subtask 1
-  - [ ] Subtask 2
--->
+- [ ] **GitHub Actions CI/CD with SonarCloud Integration**
+  - [x] Phase 1: Backend SonarCloud configuration (pom.xml properties + Jacoco plugin) ✅
+    - [x] Added JaCoCo maven plugin (v0.8.12)
+    - [x] Added SonarCloud properties to pom.xml
+    - [x] Verified locally: `mvn clean test jacoco:report`
+    - [x] Tests: 74/74 passing ✅
+    - [x] Coverage: 51% instruction, 34% branch
+    - [x] Report generated: `target/site/jacoco/jacoco.xml`
+  - [x] Phase 2: Frontend SonarCloud configuration (sonar-project.properties + Karma coverage) ✅
+    - [x] Created `frontend/sonar-project.properties` (projectKey: kojder_photo-map-app-frontend)
+    - [x] Created `frontend/karma.conf.js` (coverage reporter: html + text-summary + lcovonly)
+    - [x] Updated `frontend/angular.json` (codeCoverage: true, karmaConfig: karma.conf.js)
+    - [x] Added script `test:coverage` to package.json
+    - [x] Tested locally: `npm run test:coverage` ✅
+    - [x] Coverage generated: `coverage/frontend/lcov.info` (15KB)
+    - [x] HTML report: `coverage/frontend/index.html`
+    - [x] Coverage: 65.24% statements, 43.47% branches, 65.25% lines, 62.5% functions
+    - ⚠️ Tests: 30 FAILED, 132 SUCCESS (mainly AdminComponent, RegisterComponent injection issues)
+  - [x] Phase 3: GitHub Actions workflow creation (.github/workflows/build.yml) ✅
+    - [x] Created workflow file with name "CI: Build, Test & SonarCloud Analysis"
+    - [x] Configured triggers: push (master), pull_request (opened, synchronize, reopened)
+    - [x] Added checkout step (actions/checkout@v5, fetch-depth: 0 for SonarCloud)
+    - [x] Added setup steps: JDK 17 (Zulu), Node.js 20
+    - [x] Added caching: Maven (~/.m2), SonarCloud (~/.sonar/cache), npm (node_modules)
+    - [x] Added backend build & test: mvn clean install, mvn test jacoco:report
+    - [x] Added frontend build & test: npm ci, npm run test:coverage
+    - [x] Added SonarCloud analysis: backend (mvn sonar:sonar), frontend (sonarqube-scan-action@v6)
+    - [x] Added artifacts upload: test reports + coverage (retention 7 days)
+    - [x] Verified action versions (latest major: v5, v6, v4)
+    - [x] Fixed deprecated action: replaced sonarcloud-github-action@v5 → sonarqube-scan-action@v6
+    - [x] Validated YAML syntax ✅
+  - [ ] Phase 4: Push and verify workflow runs on GitHub
+  - [ ] Phase 5: Validate SonarCloud analysis results (backend + frontend)
+  - [ ] Phase 6: Configure quality gates and PR decoration
+  - [ ] Phase 7: Update README.md (CI badges, documentation)
+  - [ ] Phase 8: Final testing (push to master + test PR)
 
 ### ✅ Last Completed
 
