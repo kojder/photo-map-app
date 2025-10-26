@@ -50,3 +50,8 @@ export interface PhotoFilters {
   size?: number;
   sort?: string;
 }
+
+export interface PhotoAdmin extends Photo {
+  userId?: number;
+  userEmail?: string;
+}

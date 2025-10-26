@@ -1,0 +1,107 @@
+<div class="min-h-screen bg-gray-100 py-8 px-4">
+  <div class="max-w-7xl mx-auto">
+    <h1 class="text-3xl font-bold text-gray-900 mb-8">Admin Panel</h1>
+
+    <!-- User Management Section -->
+    <div class="bg-white rounded-lg shadow mb-8">
+      <div class="px-6 py-4 border-b border-gray-200">
+        <h2 class="text-xl font-semibold text-gray-800">User Management</h2>
+      </div>
+
+      <div class="p-6">
+        @if (usersLoading()) {
+          <div class="flex justify-center items-center py-12">
+            <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+          </div>
+        } @else {
+          <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200" data-testid="admin-users-table">
+              <thead class="bg-gray-50">
+                <tr>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Role</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Photos</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Created At</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                </tr>
+              </thead>
+              <tbody class="bg-white divide-y divide-gray-200">
+                @for (user of users(); track user.id) {
+                  <tr>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ user.email }}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm">
+                      <div class="flex items-center gap-2">
+                        <select
+                          [value]="getSelectedRole(user)"
+                          (change)="onRoleSelect(user.id, $any($event.target).value)"
+                          class="border border-gray-300 rounded-md px-2 py-1 text-sm"
+                          data-testid="admin-user-role-select">
+                          <option value="USER">USER</option>
+                          <option value="ADMIN">ADMIN</option>
+                        </select>
+                        @if (hasRoleChange(user.id)) {
+                          <button
+                            (click)="onSaveRoleChange(user)"
+                            class="bg-green-600 hover:bg-green-700 text-white px-2 py-1 rounded text-xs font-medium transition-colors"
+                            data-testid="admin-save-role-button">
+                            Save
+                          </button>
+                          <button
+                            (click)="onCancelRoleChange(user.id)"
+                            class="bg-gray-500 hover:bg-gray-600 text-white px-2 py-1 rounded text-xs font-medium transition-colors"
+                            data-testid="admin-cancel-role-button">
+                            Cancel
+                          </button>
+                        }
+                      </div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      {{ user.totalPhotos || 0 }}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      {{ user.createdAt | date:'short' }}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm">
+                      <button
+                        (click)="onDeleteUser(user)"
+                        [disabled]="user.id === currentUserId()"
+                        class="bg-red-600 hover:bg-red-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-white px-3 py-1 rounded text-xs font-medium transition-colors"
+                        data-testid="admin-delete-user-button">
+                        Delete
+                      </button>
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Users Pagination -->
+          @if (usersPage().totalPages > 1) {
+            <div class="flex justify-between items-center mt-4">
+              <div class="text-sm text-gray-700">
+                Showing {{ usersPage().number * usersPage().size + 1 }} to
+                {{ getUsersEndIndex() }} of
+                {{ usersPage().totalElements }} users
+              </div>
+              <div class="flex gap-2">
+                <button
+                  (click)="onUsersPageChange(usersPage().number - 1)"
+                  [disabled]="usersPage().number === 0"
+                  class="px-3 py-1 border border-gray-300 rounded-md text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50">
+                  Previous
+                </button>
+                <button
+                  (click)="onUsersPageChange(usersPage().number + 1)"
+                  [disabled]="usersPage().number >= usersPage().totalPages - 1"
+                  class="px-3 py-1 border border-gray-300 rounded-md text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50">
+                  Next
+                </button>
+              </div>
+            </div>
+          }
+        }
+      </div>
+    </div>
+  </div>
+</div>

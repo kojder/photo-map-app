@@ -10,8 +10,9 @@ import { LoginRequest, LoginResponse, RegisterRequest, RegisterResponse } from '
 export class AuthService {
   private readonly API_URL = '/api/auth';
   private readonly TOKEN_KEY = 'auth_token';
+  private readonly USER_KEY = 'current_user';
 
-  private currentUserSubject = new BehaviorSubject<User | null>(this.getUserFromToken());
+  private currentUserSubject = new BehaviorSubject<User | null>(this.getCurrentUser());
   public currentUser$ = this.currentUserSubject.asObservable();
 
   constructor(private http: HttpClient) {}
@@ -22,6 +23,7 @@ export class AuthService {
       .pipe(
         tap(response => {
           this.setToken(response.token);
+          this.setCurrentUser(response.user);
           this.currentUserSubject.next(response.user);
         })
       );
@@ -34,6 +36,7 @@ export class AuthService {
 
   logout(): void {
     localStorage.removeItem(this.TOKEN_KEY);
+    localStorage.removeItem(this.USER_KEY);
     this.currentUserSubject.next(null);
   }
 
@@ -42,17 +45,8 @@ export class AuthService {
   }
 
   isAdmin(): boolean {
-    const token = this.getToken();
-    if (!token) {
-      return false;
-    }
-
-    try {
-      const payload = this.decodeToken(token);
-      return payload?.role === 'ADMIN';
-    } catch (error) {
-      return false;
-    }
+    const user = this.getCurrentUser();
+    return user?.role === 'ADMIN';
   }
 
   getToken(): string | null {
@@ -63,42 +57,21 @@ export class AuthService {
     localStorage.setItem(this.TOKEN_KEY, token);
   }
 
-  private getUserFromToken(): User | null {
-    const token = this.getToken();
-    if (!token) {
+  private setCurrentUser(user: User): void {
+    localStorage.setItem(this.USER_KEY, JSON.stringify(user));
+  }
+
+  private getCurrentUser(): User | null {
+    const userStr = localStorage.getItem(this.USER_KEY);
+    if (!userStr) {
       return null;
     }
 
     try {
-      const payload = this.decodeToken(token);
-      if (!payload) {
-        return null;
-      }
-
-      return {
-        id: parseInt(payload.sub, 10),
-        email: payload.email,
-        role: payload.role,
-        createdAt: ''
-      };
+      return JSON.parse(userStr);
     } catch (error) {
       return null;
     }
   }
 
-  private decodeToken(token: string): any {
-    try {
-      const parts = token.split('.');
-      if (parts.length !== 3) {
-        return null;
-      }
-
-      const payload = parts[1];
-      const decoded = atob(payload.replace(/-/g, '+').replace(/_/g, '/'));
-      return JSON.parse(decoded);
-    } catch (error) {
-      console.error('Failed to decode JWT token:', error);
-      return null;
-    }
-  }
 }

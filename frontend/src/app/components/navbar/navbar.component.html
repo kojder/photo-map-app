@@ -20,6 +20,16 @@
         >
           Map
         </a>
+        <a
+          *ngIf="authService.isAdmin()"
+          routerLink="/admin"
+          routerLinkActive="text-blue-600 border-b-2 border-blue-600"
+          [routerLinkActiveOptions]="{exact: false}"
+          class="px-4 py-2 text-gray-700 hover:text-blue-600 transition-colors"
+          data-testid="navbar-admin-link"
+        >
+          Admin Panel
+        </a>
       </div>
       <button
         (click)="logout()"

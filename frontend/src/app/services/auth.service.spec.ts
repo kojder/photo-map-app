@@ -8,6 +8,7 @@ describe('AuthService', () => {
   let service: AuthService;
   let httpMock: HttpTestingController;
   const TOKEN_KEY = 'auth_token';
+  const USER_KEY = 'current_user';
 
   const mockLoginResponse: LoginResponse = {
     token: createMockToken('1', 'test@example.com', 'USER'),
@@ -70,10 +71,14 @@ describe('AuthService', () => {
   });
 
   describe('login', () => {
-    it('should login successfully and store token', () => {
+    it('should login successfully and store token and user', () => {
       service.login('test@example.com', 'password123').subscribe(response => {
         expect(response).toEqual(mockLoginResponse);
         expect(localStorage.getItem(TOKEN_KEY)).toBe(mockLoginResponse.token);
+
+        const storedUser = localStorage.getItem(USER_KEY);
+        expect(storedUser).not.toBeNull();
+        expect(JSON.parse(storedUser!)).toEqual(mockLoginResponse.user);
       });
 
       const req = httpMock.expectOne('/api/auth/login');
@@ -137,12 +142,14 @@ describe('AuthService', () => {
   });
 
   describe('logout', () => {
-    it('should clear token and reset currentUser$', (done) => {
+    it('should clear token, user and reset currentUser$', (done) => {
       localStorage.setItem(TOKEN_KEY, mockLoginResponse.token);
+      localStorage.setItem(USER_KEY, JSON.stringify(mockLoginResponse.user));
 
       service.logout();
 
       expect(localStorage.getItem(TOKEN_KEY)).toBeNull();
+      expect(localStorage.getItem(USER_KEY)).toBeNull();
 
       service.currentUser$.subscribe(user => {
         expect(user).toBeNull();
@@ -164,21 +171,21 @@ describe('AuthService', () => {
 
   describe('isAdmin', () => {
     it('should return true for ADMIN role', () => {
-      localStorage.setItem(TOKEN_KEY, mockAdminLoginResponse.token);
+      localStorage.setItem(USER_KEY, JSON.stringify(mockAdminLoginResponse.user));
       expect(service.isAdmin()).toBe(true);
     });
 
     it('should return false for USER role', () => {
-      localStorage.setItem(TOKEN_KEY, mockLoginResponse.token);
+      localStorage.setItem(USER_KEY, JSON.stringify(mockLoginResponse.user));
       expect(service.isAdmin()).toBe(false);
     });
 
-    it('should return false when no token exists', () => {
+    it('should return false when no user exists', () => {
       expect(service.isAdmin()).toBe(false);
     });
 
-    it('should return false for invalid token', () => {
-      localStorage.setItem(TOKEN_KEY, 'invalid.token.here');
+    it('should return false for invalid user data', () => {
+      localStorage.setItem(USER_KEY, 'invalid-json');
       expect(service.isAdmin()).toBe(false);
     });
   });
@@ -195,8 +202,8 @@ describe('AuthService', () => {
   });
 
   describe('currentUser$ initialization', () => {
-    it('should initialize currentUser$ from localStorage token on service creation', () => {
-      localStorage.setItem(TOKEN_KEY, mockLoginResponse.token);
+    it('should initialize currentUser$ from localStorage user on service creation', () => {
+      localStorage.setItem(USER_KEY, JSON.stringify(mockLoginResponse.user));
 
       TestBed.resetTestingModule();
       TestBed.configureTestingModule({
@@ -217,51 +224,7 @@ describe('AuthService', () => {
       });
     });
 
-    it('should initialize currentUser$ as null when no token exists', () => {
-      TestBed.resetTestingModule();
-      TestBed.configureTestingModule({
-        providers: [
-          provideHttpClient(),
-          provideHttpClientTesting(),
-          AuthService
-        ]
-      });
-
-      const newService = TestBed.inject(AuthService);
-
-      newService.currentUser$.subscribe(user => {
-        expect(user).toBeNull();
-      });
-    });
-  });
-
-  describe('JWT token decode', () => {
-    it('should decode valid JWT token correctly', () => {
-      const token = createMockToken('123', 'decode@example.com', 'USER');
-      localStorage.setItem(TOKEN_KEY, token);
-
-      TestBed.resetTestingModule();
-      TestBed.configureTestingModule({
-        providers: [
-          provideHttpClient(),
-          provideHttpClientTesting(),
-          AuthService
-        ]
-      });
-
-      const newService = TestBed.inject(AuthService);
-
-      newService.currentUser$.subscribe(user => {
-        expect(user).not.toBeNull();
-        expect(user?.id).toBe(123);
-        expect(user?.email).toBe('decode@example.com');
-        expect(user?.role).toBe('USER');
-      });
-    });
-
-    it('should handle malformed JWT token gracefully', () => {
-      localStorage.setItem(TOKEN_KEY, 'not.a.valid.jwt.token');
-
+    it('should initialize currentUser$ as null when no user exists', () => {
       TestBed.resetTestingModule();
       TestBed.configureTestingModule({
         providers: [
