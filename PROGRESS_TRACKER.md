@@ -674,5 +674,39 @@ After completing MVP (6 phases above), possible feature enhancements:
 
 ---
 
+### NAS Batch Processing - Remote Photo Storage (Post-MVP Optimization)
+
+**Description:** System przetwarzania zdjęć z NAS, gdzie oryginały pozostają na NAS (storage zewnętrzny), a tylko miniatury są generowane lokalnie na Mikrus VPS.
+
+**Key Features:**
+1. **NFS/SMB Mount** - NAS zmontowany read-only na Mikrus
+2. **Batch Processing** - skanowanie NAS i przetwarzanie w partiach (np. 100 zdjęć)
+3. **Deduplikacja** - wykrywanie duplikatów po hash MD5/SHA256
+4. **Progress Tracking** - tabela `batch_jobs` z real-time statusem
+5. **Storage Optimization** - 90% oszczędności miejsca (tylko miniatury ~2.5GB, bez oryginałów 25GB)
+
+**Benefits:**
+- ✅ **Oszczędność miejsca:** 5000 zdjęć = tylko 2.5GB miniatur (zamiast 27.5GB)
+- ✅ **Centralne źródło:** NAS jako single source of truth
+- ✅ **Skalowalność:** Łatwe dodawanie tysięcy zdjęć przez NAS
+- ✅ **Backup:** Oryginały już backupowane na NAS
+
+**Implementation phases:**
+- [ ] **Phase 1:** Infrastructure - NFS/SMB mount + database migration (1-2 dni)
+- [ ] **Phase 2:** Backend - PhotoBatchService + Admin API (2-3 dni)
+- [ ] **Phase 3:** Photo Serving - serve originals from NAS (1 dzień)
+- [ ] **Phase 4:** Admin UI - NasManagementComponent + progress tracking (2-3 dni)
+- [ ] **Phase 5:** Deployment - Nginx cache + monitoring (1-2 dni)
+
+**Use Case:** Użytkownik z NAS (kilka tysięcy zdjęć) chce wyświetlać je w aplikacji bez kopiowania na VPS (250GB limit).
+
+**Documentation:** `.ai/features/feature-nas-batch-processing.md` (full spec)
+
+**Estimated time:** 7-11 days (1.5-2 weeks)
+
+**Priority:** Medium (optional, for users with large photo collections on NAS)
+
+---
+
 **Last Updated:** 2025-10-26
-**Next Step:** Implement Admin Security Enhancements → Admin Panel → Deployment → Optional: Email System / Public Sharing / Temporal Filters
+**Next Step:** Implement Admin Security Enhancements → Admin Panel → Deployment → Optional: Email System / Public Sharing / Temporal Filters / NAS Batch Processing
