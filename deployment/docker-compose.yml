@@ -1,0 +1,65 @@
+version: '3.8'
+
+services:
+  backend:
+    image: photo-map-backend:latest
+    container_name: photo-map-backend
+    restart: unless-stopped
+    ports:
+      - "${BACKEND_PORT:-8080}:8080"
+    environment:
+      # PostgreSQL (Shared Mikrus service - psql01.mikr.us)
+      - DATABASE_URL=${DATABASE_URL}
+      - DATABASE_USERNAME=${DATABASE_USERNAME}
+      - DATABASE_PASSWORD=${DATABASE_PASSWORD}
+
+      # JWT
+      - JWT_SECRET=${JWT_SECRET}
+      - JWT_EXPIRATION=${JWT_EXPIRATION:-86400000}
+
+      # Application
+      - SPRING_PROFILES_ACTIVE=${SPRING_PROFILES_ACTIVE:-production}
+      - SERVER_PORT=8080
+
+      # Upload paths (inside container)
+      - UPLOAD_INPUT_DIR=/app/uploads/input
+      - UPLOAD_ORIGINAL_DIR=/app/uploads/original
+      - UPLOAD_MEDIUM_DIR=/app/uploads/medium
+      - UPLOAD_FAILED_DIR=/app/uploads/failed
+
+      # Admin
+      - ADMIN_EMAIL=${ADMIN_EMAIL}
+    volumes:
+      - photo-map-uploads:/app/uploads
+    networks:
+      - photo-map-network
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:8080/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  frontend:
+    image: photo-map-frontend:latest
+    container_name: photo-map-frontend
+    restart: unless-stopped
+    ports:
+      - "${FRONTEND_PORT:-30288}:80"
+    depends_on:
+      - backend
+    networks:
+      - photo-map-network
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:80/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+volumes:
+  photo-map-uploads:
+    driver: local
+
+networks:
+  photo-map-network:
+    driver: bridge

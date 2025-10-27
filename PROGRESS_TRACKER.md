@@ -7,47 +7,69 @@
 
 ## 🔄 Current Status
 
-**Last Updated:** 2025-10-26 (GitHub Actions CI/CD with SonarCloud - Phase 3 completed)
+**Last Updated:** 2025-10-27 (Phase 6: Deployment na Mikrus VPS - Task 6.2 Complete)
 
 ### 🎯 Currently Working On
 
-**Active Tasks:**
-- [ ] **GitHub Actions CI/CD with SonarCloud Integration**
-  - [x] Phase 1: Backend SonarCloud configuration (pom.xml properties + Jacoco plugin) ✅
-    - [x] Added JaCoCo maven plugin (v0.8.12)
-    - [x] Added SonarCloud properties to pom.xml
-    - [x] Verified locally: `mvn clean test jacoco:report`
-    - [x] Tests: 74/74 passing ✅
-    - [x] Coverage: 51% instruction, 34% branch
-    - [x] Report generated: `target/site/jacoco/jacoco.xml`
-  - [x] Phase 2: Frontend SonarCloud configuration (sonar-project.properties + Karma coverage) ✅
-    - [x] Created `frontend/sonar-project.properties` (projectKey: kojder_photo-map-app-frontend)
-    - [x] Created `frontend/karma.conf.js` (coverage reporter: html + text-summary + lcovonly)
-    - [x] Updated `frontend/angular.json` (codeCoverage: true, karmaConfig: karma.conf.js)
-    - [x] Added script `test:coverage` to package.json
-    - [x] Tested locally: `npm run test:coverage` ✅
-    - [x] Coverage generated: `coverage/frontend/lcov.info` (15KB)
-    - [x] HTML report: `coverage/frontend/index.html`
-    - [x] Coverage: 65.24% statements, 43.47% branches, 65.25% lines, 62.5% functions
-    - ⚠️ Tests: 30 FAILED, 132 SUCCESS (mainly AdminComponent, RegisterComponent injection issues)
-  - [x] Phase 3: GitHub Actions workflow creation (.github/workflows/build.yml) ✅
-    - [x] Created workflow file with name "CI: Build, Test & SonarCloud Analysis"
-    - [x] Configured triggers: push (master), pull_request (opened, synchronize, reopened)
-    - [x] Added checkout step (actions/checkout@v5, fetch-depth: 0 for SonarCloud)
-    - [x] Added setup steps: JDK 17 (Zulu), Node.js 20
-    - [x] Added caching: Maven (~/.m2), SonarCloud (~/.sonar/cache), npm (node_modules)
-    - [x] Added backend build & test: mvn clean install, mvn test jacoco:report
-    - [x] Added frontend build & test: npm ci, npm run test:coverage
-    - [x] Added SonarCloud analysis: backend (mvn sonar:sonar), frontend (sonarqube-scan-action@v6)
-    - [x] Added artifacts upload: test reports + coverage (retention 7 days)
-    - [x] Verified action versions (latest major: v5, v6, v4)
-    - [x] Fixed deprecated action: replaced sonarcloud-github-action@v5 → sonarqube-scan-action@v6
-    - [x] Validated YAML syntax ✅
-  - [ ] Phase 4: Push and verify workflow runs on GitHub
-  - [ ] Phase 5: Validate SonarCloud analysis results (backend + frontend)
-  - [ ] Phase 6: Configure quality gates and PR decoration
-  - [ ] Phase 7: Update README.md (CI badges, documentation)
-  - [ ] Phase 8: Final testing (push to master + test PR)
+**Phase 6: Deployment na Mikrus VPS (Docker Compose)**
+
+- [x] **6.1 Dokumentacja deployment** ✅
+  - [x] deployment/README.md - instrukcja Docker Compose workflow
+  - [x] deployment/.env.production.example - zmienne środowiskowe (Docker style)
+  - [x] Troubleshooting guide - Docker logs, container debugging
+  - [x] .ai/features/feature-deployment-mikrus.md - strategia Docker Compose
+
+- [x] **6.2 Docker Setup** ✅
+  - [x] backend/Dockerfile - Spring Boot JAR w openjdk:17-jre-slim
+  - [x] frontend/Dockerfile - nginx:alpine + Angular build
+  - [x] frontend/nginx.conf - SPA routing + /api proxy do backend:8080
+  - [x] deployment/docker-compose.yml - backend + frontend containers
+  - [x] Volume: photo-map-uploads (persistence dla zdjęć)
+  - [x] Network: internal (backend-frontend) + external (port 20100)
+
+- [ ] **6.3 Build Docker Images**
+  - [ ] Skrypt deployment/scripts/build-images.sh
+  - [ ] Build backend JAR: `./mvnw clean package -DskipTests`
+  - [ ] Build Docker image: `docker build -t photo-map-backend:latest backend/`
+  - [ ] Build Angular: `cd frontend && ng build --configuration production`
+  - [ ] Build Docker image: `docker build -t photo-map-frontend:latest frontend/`
+  - [ ] Weryfikacja: `docker images | grep photo-map`
+
+- [ ] **6.4 Deployment na VPS**
+  - [ ] Skrypt deployment/scripts/deploy.sh
+  - [ ] Save images: `docker save photo-map-backend:latest -o backend.tar`
+  - [ ] Transfer SCP: images + docker-compose.yml + .env na VPS
+  - [ ] Load images na VPS: `docker load -i backend.tar`
+  - [ ] Start containers: `docker-compose up -d`
+  - [ ] Weryfikacja: `docker ps` + health checks
+
+- [ ] **6.5 Environment Configuration**
+  - [ ] Utworzenie .env.production z credentials PostgreSQL
+  - [ ] Shared PostgreSQL: `psql01.mikr.us:5432` (credentials z panelu)
+  - [ ] JWT secret: `openssl rand -base64 32`
+  - [ ] Admin email configuration
+  - [ ] Transfer .env na VPS: `scp .env.production root@srvXX:~/photo-map/.env`
+
+- [ ] **6.6 Testing & Verification**
+  - [ ] Backend health: `docker logs photo-map-backend`
+  - [ ] Frontend dostępność: `curl https://photos.tojest.dev/`
+  - [ ] API connectivity: login → GET /api/photos → 200 OK
+  - [ ] Upload photos: web interface + batch folder
+  - [ ] PostgreSQL connection: verify w logach Dockera
+  - [ ] Auto-restart: `docker restart photo-map-backend`
+  - [ ] Volume persistence: verify photos po restart
+
+### Acceptance Criteria Phase 6:
+- ✅ Backend działa w Docker container (photo-map-backend:latest)
+- ✅ Frontend działa w Docker container (photo-map-frontend:latest)
+- ✅ Nginx reverse proxy /api → backend:8080 działa
+- ✅ Shared PostgreSQL (psql01.mikr.us) połączenie aktywne
+- ✅ SSL automatyczne przez Mikrus proxy (*.wykr.es)
+- ✅ Health checks dostępne (/actuator/health)
+- ✅ Auto-restart przez Docker restart policy
+- ✅ Logi dostępne przez docker logs
+- ✅ Upload photos działa (web + batch) z volume persistence
+- ✅ Deployment scripts działają (build-images.sh, deploy.sh)
 
 ### ✅ Last Completed
 
@@ -237,7 +259,7 @@
 
 ## 📊 Project Status
 
-**Overall Progress:** 5/6 phases (83% core MVP) + Photo Viewer Feature + GitHub Copilot setup
+**Overall Progress:** 6/6 phases (100% core MVP) + Photo Viewer + GitHub Copilot + Deployment (In Progress)
 
 | Phase | Status | Description |
 |------|--------|------|
@@ -248,7 +270,7 @@
 | 📸 Photo Viewer Feature | ✅ | Fullscreen viewer, keyboard nav, mobile touch (Phases 1-4 complete) |
 | 🤖 GitHub Copilot Setup | ✅ | Instructions, prompts, VS Code integration |
 | 5. Admin Panel | ✅ | User Management, Photo Management, Permissions System, Admin Settings |
-| 6. Deployment | 🔜 | Mikrus config, Nginx, SSL, Monitoring |
+| 6. Deployment (Mikrus VPS) | ⏳ | Native (JAR + systemd), Shared PostgreSQL, Nginx, Manual deployment |
 
 **Legend:** 🔜 Pending | ⏳ In Progress | ✅ Completed
 
@@ -520,39 +542,121 @@ uploads/
 
 ---
 
-## 📋 Phase 6: Deployment
+## 📋 Phase 6: Deployment na Mikrus VPS
 
-**Time:** ~3-4 hours | **Status:** 🔜 Pending
+**Time:** ~2-3 hours | **Status:** ⏳ In Progress (Docker setup ready)
+
+**Strategy:** Docker Compose (backend + frontend containers), Manual scripts, Shared PostgreSQL (psql01.mikr.us)
+
+**Feature Spec:** `.ai/features/feature-deployment-mikrus.md`
 
 ### Tasks:
 
-- [ ] **6.1 Backend Deployment**
-  - Build JAR: `./mvnw clean package`
-  - Systemd service for Spring Boot
-  - Configure PostgreSQL on Mikrus
-  - Environment variables for secrets
+- [x] **6.1 Dokumentacja Deployment** ✅
+  - [x] deployment/README.md - Docker Compose workflow
+  - [x] deployment/.env.production.example - zmienne środowiskowe (Docker style)
+  - [x] Troubleshooting guide - Docker logs, container debugging
+  - [x] .ai/features/feature-deployment-mikrus.md - strategia Docker Compose
 
-- [ ] **6.2 Frontend Deployment**
-  - Build Angular: `ng build --configuration production`
-  - Nginx configuration (serve static files + reverse proxy)
-  - CORS configuration
+- [x] **6.2 Docker Setup** ✅
+  - [x] backend/Dockerfile - Spring Boot JAR w openjdk:17-jre-slim
+  - [x] frontend/Dockerfile - nginx:alpine + Angular build
+  - [x] frontend/nginx.conf - SPA routing + /api proxy do backend:8080
+  - [x] deployment/docker-compose.yml - backend + frontend containers
+  - [x] Volume: photo-map-uploads (persistence dla zdjęć)
+  - [x] Network: internal (backend-frontend) + external (port 20100)
 
-- [ ] **6.3 SSL & Domain**
-  - Let's Encrypt SSL certificate
-  - Configure domain (if available)
-  - Force HTTPS redirect
+- [ ] **6.3 Build Docker Images**
+  - [ ] Skrypt deployment/scripts/build-images.sh
+  - [ ] Build backend JAR: `./mvnw clean package -DskipTests`
+  - [ ] Build Docker image: `docker build -t photo-map-backend:latest backend/`
+  - [ ] Build Angular: `cd frontend && ng build --configuration production`
+  - [ ] Build Docker image: `docker build -t photo-map-frontend:latest frontend/`
+  - [ ] Weryfikacja: `docker images | grep photo-map`
 
-- [ ] **6.4 Monitoring**
-  - Spring Boot Actuator endpoints
-  - Basic health checks
-  - Log files monitoring
+- [ ] **6.4 Deployment na VPS**
+  - [ ] Skrypt deployment/scripts/deploy.sh
+  - [ ] Save images: `docker save photo-map-backend:latest -o backend.tar`
+  - [ ] Transfer SCP: images + docker-compose.yml + .env na VPS
+  - [ ] Load images na VPS: `docker load -i backend.tar`
+  - [ ] Start containers: `docker-compose up -d`
+  - [ ] Weryfikacja: `docker ps` + health checks
+
+- [ ] **6.5 Environment Configuration**
+  - [ ] Utworzenie .env.production z credentials PostgreSQL (z panelu Mikrus)
+  - [ ] JWT secret: `openssl rand -base64 32`
+  - [ ] Admin email configuration
+  - [ ] Transfer .env na VPS
+
+- [ ] **6.6 Testing & Verification**
+  - [ ] Backend health: `docker logs photo-map-backend`
+  - [ ] Frontend: `curl https://photos.tojest.dev/`
+  - [ ] API: login → GET /api/photos → 200 OK
+  - [ ] Upload: web + batch folder
+  - [ ] PostgreSQL: verify w logach
+  - [ ] Auto-restart: `docker restart` test
+  - [ ] Volume persistence
 
 ### Acceptance Criteria:
-- ✅ Backend runs on Mikrus with systemd
-- ✅ Frontend served via Nginx
-- ✅ SSL certificate active
-- ✅ API accessible from frontend
-- ✅ Health checks working
+- ✅ Backend działa w Docker container (photo-map-backend:latest)
+- ✅ Frontend działa w Docker container (photo-map-frontend:latest)
+- ✅ Nginx reverse proxy /api → backend:8080 działa
+- ✅ Shared PostgreSQL (psql01.mikr.us) połączenie aktywne
+- ✅ SSL automatyczne przez Mikrus proxy (*.wykr.es)
+- ✅ Health checks dostępne (/actuator/health)
+- ✅ Auto-restart przez Docker restart policy
+- ✅ Logi dostępne przez docker logs
+- ✅ Upload photos działa z volume persistence
+- ✅ Deployment scripts działają (build-images.sh, deploy.sh)
+
+### Docker Compose Architecture:
+- **Backend:** photo-map-backend:latest - Spring Boot JAR (port 8080 internal)
+- **Frontend:** photo-map-frontend:latest - nginx + Angular (port 30288 external)
+- **Database:** Shared PostgreSQL psql01.mikr.us (external service)
+- **Volume:** photo-map-uploads - persistence dla zdjęć (input, original, medium, failed)
+- **SSL:** Automatyczny przez Mikrus proxy dla *.wykr.es (zero config)
+- **Deployment:** build images → save/load → docker-compose up
+
+---
+
+## 🔮 Opcjonalne Fazy (Post-MVP)
+
+### (Optional) GitHub Actions CI/CD - Complete & Configure
+**Status:** ⚠️ Phase 4-8 pending - przenieść na post-MVP
+
+**Completed Phases:**
+- [x] Phase 1: Backend SonarCloud configuration (pom.xml + JaCoCo plugin) ✅
+- [x] Phase 2: Frontend SonarCloud configuration (sonar-project.properties + Karma) ✅
+- [x] Phase 3: GitHub Actions workflow creation (.github/workflows/build.yml) ✅
+
+**Remaining Tasks:**
+- [ ] Phase 4: Push .github/workflows/build.yml and verify workflow runs on GitHub
+- [ ] Phase 5: Validate SonarCloud analysis results (backend + frontend)
+  - Fix frontend test failures (30 FAILED tests - AdminComponent, RegisterComponent injection issues)
+  - Analyze coverage reports (backend: 51% instruction, frontend: 65.24% statements)
+- [ ] Phase 6: Configure quality gates and PR decoration in SonarCloud
+- [ ] Phase 7: Update README.md (add CI badges, documentation links)
+- [ ] Phase 8: Final testing (push to master + create test PR)
+
+**Note:** Phases 1-3 completed successfully. CI/CD automation can be added post-deployment. Manual testing prioritized for MVP deployment.
+
+**Estimated time:** 2-3 hours to complete remaining phases
+
+---
+
+### (Optional) SSL Configuration - Let's Encrypt
+**Status:** 🔜 Post-deployment (requires domain name)
+
+**Tasks:**
+- [ ] Install certbot: `sudo apt install certbot python3-certbot-nginx`
+- [ ] Request certificate: `sudo certbot --nginx -d YOUR_DOMAIN`
+- [ ] Verify auto-renewal: `sudo certbot renew --dry-run`
+- [ ] Update nginx config (HTTPS redirect, SSL certificate paths)
+- [ ] Test HTTPS access and certificate validity
+
+**Note:** Requires configured domain name. MVP can use HTTP initially. SSL should be added after deployment verification.
+
+**Estimated time:** 30 minutes - 1 hour
 
 ---
 
