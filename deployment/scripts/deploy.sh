@@ -23,7 +23,7 @@ NC='\033[0m' # No Color
 # Check arguments
 if [ -z "$1" ] || [ -z "$2" ]; then
     echo -e "${YELLOW}Usage: $0 [srv_host] [ssh_port]${NC}"
-    echo -e "${YELLOW}Example: $0 srv41.mikr.us 10041${NC}"
+    echo -e "${YELLOW}Example: $0 marcin288.mikrus.xyz 10288${NC}"
     exit 1
 fi
 

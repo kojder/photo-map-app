@@ -54,7 +54,7 @@ docker-compose.yml
 │   └── Env: .env (PostgreSQL, JWT, Admin)
 │
 └── frontend (photo-map-frontend:latest)
-    ├── Port: 20100 (external - Mikrus proxy)
+    ├── Port: 30288 (external - Mikrus proxy)
     ├── Nginx + Angular SPA
     └── Proxy: /api → backend:8080
 ```
@@ -75,8 +75,8 @@ PostgreSQL (psql01.mikr.us - shared service)
 
 **Ważne:**
 - Backend serwuje **HTTP** (port 8080 internal)
-- Frontend nginx nasłuchuje na **port 20100** (external)
-- Mikrus proxy dodaje SSL i przekierowuje do `https://srvXX-20100.wykr.es/`
+- Frontend nginx nasłuchuje na **port 30288** (external)
+- Mikrus proxy dodaje SSL i przekierowuje do `https://srv07-30288.wykr.es/`
 - Użytkownicy łączą się przez HTTPS, kontenery widzą HTTP
 
 ### Volumes
@@ -135,7 +135,7 @@ JWT_SECRET=xK8vN2pQr5tYw9zA1bCdE3fGhI4jKlM6nOpRqS7uVxY=
 Sprawdź przydzielone porty w panelu Mikrus (format: 201xx, 301xx).
 
 ```env
-FRONTEND_PORT=20100
+FRONTEND_PORT=30288
 ```
 
 ### Krok 5: Ustaw admin email
@@ -283,7 +283,7 @@ docker compose ps
 # Expected output:
 # NAME                  STATUS          PORTS
 # photo-map-backend     Up 10 seconds   0.0.0.0:8080->8080/tcp
-# photo-map-frontend    Up 10 seconds   0.0.0.0:20100->80/tcp
+# photo-map-frontend    Up 10 seconds   0.0.0.0:30288->80/tcp
 ```
 
 ### Krok 5: Weryfikacja logów
@@ -325,7 +325,7 @@ curl http://localhost:8080/actuator/health
 
 ```bash
 # Test HTTPS access (zastąp srvXX i PORT własnymi wartościami)
-curl https://srv41-20100.wykr.es/
+curl https://srv07-30288.wykr.es/
 
 # Expected: Angular index.html
 ```
@@ -334,7 +334,7 @@ curl https://srv41-20100.wykr.es/
 
 ```bash
 # Test login endpoint
-curl -X POST https://srv41-20100.wykr.es/api/auth/login \
+curl -X POST https://srv07-30288.wykr.es/api/auth/login \
   -H "Content-Type: application/json" \
   -d '{"email":"admin@example.com","password":"your-password"}'
 
@@ -343,7 +343,7 @@ curl -X POST https://srv41-20100.wykr.es/api/auth/login \
 
 ### 4. Upload Photos (Web Interface)
 
-1. Otwórz przeglądarkę: `https://srvXX-PORT.wykr.es/`
+1. Otwórz przeglądarkę: `https://srv07-30288.wykr.es/`
 2. Zaloguj się (admin credentials z .env)
 3. Przejdź do `/gallery`
 4. Kliknij "Upload Photos"
@@ -410,7 +410,7 @@ docker load < photo-map-frontend.tar.gz
 docker compose up -d frontend
 
 # 5. Verify
-curl https://srvXX-PORT.wykr.es/
+curl https://srv07-30288.wykr.es/
 ```
 
 ### Restart All Containers
@@ -450,7 +450,7 @@ docker compose up -d
 
 ### Współdzielona domena (*.wykr.es)
 
-- **Format domeny:** `srvXX-PORT.wykr.es` (np. `srv41-20100.wykr.es`)
+- **Format domeny:** `srvXX-PORT.wykr.es` (np. `srv07-30288.wykr.es`)
 - **Automatyczny SSL:** Mikrus zapewnia certyfikat SSL dla `*.wykr.es`
 - **Konfiguracja:** Zero - SSL działa automatycznie
 - **Dostęp:** `https://srvXX-PORT.wykr.es/`
@@ -460,16 +460,16 @@ docker compose up -d
 - Mikrus przydziela 2 porty na serwer (format: 201xx, 301xx)
 - Sprawdź porty w panelu Mikrus
 - Domyślny port 80 NIE działa z współdzieloną domeną
-- Ustaw `FRONTEND_PORT` w `.env` (np. 20100)
+- Ustaw `FRONTEND_PORT` w `.env` (np. 30288)
 
 ### Weryfikacja SSL
 
 ```bash
 # Test HTTPS access
-curl https://srv41-20100.wykr.es/
+curl https://srv07-30288.wykr.es/
 
 # Test SSL certificate
-openssl s_client -connect srv41-20100.wykr.es:443 -servername srv41-20100.wykr.es < /dev/null | grep subject
+openssl s_client -connect srv07-30288.wykr.es:443 -servername srv07-30288.wykr.es < /dev/null | grep subject
 
 # Expected: subject=CN=*.wykr.es
 ```
@@ -519,7 +519,7 @@ lsof -i :8080
 
 **Symptom:**
 ```bash
-curl https://srvXX-PORT.wykr.es/
+curl https://srv07-30288.wykr.es/
 # 502 Bad Gateway
 ```
 
