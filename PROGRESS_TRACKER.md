@@ -11,6 +11,20 @@
 
 ### 🎯 Currently Working On
 
+**TODO: Docker Health Checks Fix** - 🔧 Do naprawy jutro
+
+- [ ] **Naprawa Docker health checks dla nginx i frontend**
+  - Problem: nginx healthcheck sprawdza `/actuator/health` (endpoint backendu) - niepoprawny
+  - Problem: frontend healthcheck sprawdza `http://localhost:80/` - frontend nie nasłuchuje na :80
+  - Status: Aplikacja działa poprawnie (https://photos.tojest.dev/), tylko health checki failują
+  - Zasoby VPS: OK (17.5% RAM, 21% dysk, load 0.00)
+  - Do zrobienia:
+    - [ ] Poprawić nginx healthcheck (sprawdzić dostępność nginx, nie /actuator/health)
+    - [ ] Poprawić frontend healthcheck (sprawdzić pliki statyczne w kontenerze)
+    - [ ] Commit zmian w deployment/docker-compose.yml
+    - [ ] Redeploy na VPS
+    - [ ] Weryfikacja: `docker ps` powinien pokazać wszystkie kontenery jako "healthy"
+
 **Maintenance & Bug Fixes** - ✅ CI/CD naprawiony, wszystkie testy przechodzą
 
 **Phase 6: Deployment na Mikrus VPS (Docker Compose)** - ✅ **COMPLETED**
