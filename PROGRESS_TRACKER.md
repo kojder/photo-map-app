@@ -25,7 +25,7 @@
   - [x] frontend/nginx.conf - SPA routing + /api proxy do backend:8080
   - [x] deployment/docker-compose.yml - backend + frontend containers
   - [x] Volume: photo-map-uploads (persistence dla zdjęć)
-  - [x] Network: internal (backend-frontend) + external (port 20100)
+  - [x] Network: internal (backend-frontend) + external (port 30288)
 
 - [ ] **6.3 Build Docker Images**
   - [ ] Skrypt deployment/scripts/build-images.sh
@@ -564,7 +564,7 @@ uploads/
   - [x] frontend/nginx.conf - SPA routing + /api proxy do backend:8080
   - [x] deployment/docker-compose.yml - backend + frontend containers
   - [x] Volume: photo-map-uploads (persistence dla zdjęć)
-  - [x] Network: internal (backend-frontend) + external (port 20100)
+  - [x] Network: internal (backend-frontend) + external (port 30288)
 
 - [ ] **6.3 Build Docker Images**
   - [ ] Skrypt deployment/scripts/build-images.sh
