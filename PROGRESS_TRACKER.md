@@ -7,7 +7,7 @@
 
 ## 🔄 Current Status
 
-**Last Updated:** 2025-10-27 (Phase 6: Deployment - Documentation Verified ✅)
+**Last Updated:** 2025-10-27 (Phase 6: Deployment - Docker Images Built ✅)
 
 ### 🎯 Currently Working On
 
@@ -31,13 +31,13 @@
   - [x] Network: internal (backend-frontend) + external (port 30288)
   - [x] Scripts: build-images.sh, deploy.sh, deploy-marcin288.sh
 
-- [ ] **6.3 Build Docker Images**
-  - [ ] Skrypt deployment/scripts/build-images.sh
-  - [ ] Build backend JAR: `./mvnw clean package -DskipTests`
-  - [ ] Build Docker image: `docker build -t photo-map-backend:latest backend/`
-  - [ ] Build Angular: `cd frontend && ng build --configuration production`
-  - [ ] Build Docker image: `docker build -t photo-map-frontend:latest frontend/`
-  - [ ] Weryfikacja: `docker images | grep photo-map`
+- [x] **6.3 Build Docker Images** ✅
+  - [x] Skrypt deployment/scripts/build-images.sh
+  - [x] Build backend JAR: `./mvnw clean package -DskipTests`
+  - [x] Build Docker image: `docker build -t photo-map-backend:latest backend/`
+  - [x] Build Angular: `cd frontend && ng build --configuration production`
+  - [x] Build Docker image: `docker build -t photo-map-frontend:latest frontend/`
+  - [x] Weryfikacja: `docker images | grep photo-map`
 
 - [ ] **6.4 Deployment na VPS**
   - [ ] Skrypt deployment/scripts/deploy.sh
@@ -76,6 +76,17 @@
 - ✅ Deployment scripts działają (build-images.sh, deploy.sh)
 
 ### ✅ Last Completed
+
+**Docker Images Built** (2025-10-27)
+- ✅ Poprawione Dockerfiles (backend: eclipse-temurin:17-jre-alpine + wget, frontend: dist/frontend/browser)
+- ✅ Poprawiony build-images.sh (cd backend przed mvnw)
+- ✅ Backend JAR zbudowany pomyślnie (./mvnw clean package -DskipTests)
+- ✅ Frontend Angular zbudowany pomyślnie (ng build --configuration production)
+- ✅ Backend Docker image: photo-map-backend:latest (251MB)
+- ✅ Frontend Docker image: photo-map-frontend:latest (53.4MB)
+- ✅ Deployment/.env przygotowany z PostgreSQL credentials + JWT_SECRET
+- 📝 Files: backend/Dockerfile, frontend/Dockerfile, deployment/scripts/build-images.sh
+- 📝 Ready for deployment: Task 6.4 (Deployment na VPS)
 
 **Deployment Documentation Verification** (2025-10-27)
 - ✅ Weryfikacja spójności wszystkich plików deployment
@@ -579,13 +590,13 @@ uploads/
   - [x] Volume: photo-map-uploads (persistence dla zdjęć)
   - [x] Network: internal (backend-frontend) + external (port 30288)
 
-- [ ] **6.3 Build Docker Images**
-  - [ ] Skrypt deployment/scripts/build-images.sh
-  - [ ] Build backend JAR: `./mvnw clean package -DskipTests`
-  - [ ] Build Docker image: `docker build -t photo-map-backend:latest backend/`
-  - [ ] Build Angular: `cd frontend && ng build --configuration production`
-  - [ ] Build Docker image: `docker build -t photo-map-frontend:latest frontend/`
-  - [ ] Weryfikacja: `docker images | grep photo-map`
+- [x] **6.3 Build Docker Images** ✅
+  - [x] Skrypt deployment/scripts/build-images.sh
+  - [x] Build backend JAR: `./mvnw clean package -DskipTests`
+  - [x] Build Docker image: `docker build -t photo-map-backend:latest backend/`
+  - [x] Build Angular: `cd frontend && ng build --configuration production`
+  - [x] Build Docker image: `docker build -t photo-map-frontend:latest frontend/`
+  - [x] Weryfikacja: `docker images | grep photo-map`
 
 - [ ] **6.4 Deployment na VPS**
   - [ ] Skrypt deployment/scripts/deploy.sh

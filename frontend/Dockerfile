@@ -10,7 +10,7 @@ LABEL maintainer="Photo Map MVP"
 LABEL description="Nginx + Angular frontend for Photo Map application"
 
 # Copy Angular build (from local dist/)
-COPY dist/photo-map/browser /usr/share/nginx/html
+COPY dist/frontend/browser /usr/share/nginx/html
 
 # Copy nginx configuration
 COPY nginx.conf /etc/nginx/conf.d/default.conf

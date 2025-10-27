@@ -21,7 +21,9 @@ echo ""
 
 # Step 1: Build backend JAR
 echo -e "${GREEN}Step 1: Building backend JAR...${NC}"
+cd backend
 ./mvnw clean package -DskipTests
+cd ..
 echo -e "${GREEN}✓ Backend JAR built successfully${NC}"
 echo ""
 
