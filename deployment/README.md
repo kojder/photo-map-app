@@ -113,10 +113,20 @@ Skopiuj:
 Wklej do `deployment/.env`:
 
 ```env
+# Spring Boot datasource configuration (REQUIRED)
+DB_HOST=psql01.mikr.us
+DB_PORT=5432
+DB_NAME=db_xxxxx
+DB_USERNAME=userxxxxx
+DB_PASSWORD=********
+
+# Legacy JDBC URL format (for reference only)
 DATABASE_URL=jdbc:postgresql://psql01.mikr.us:5432/db_xxxxx
 DATABASE_USERNAME=userxxxxx
 DATABASE_PASSWORD=********
 ```
+
+**Ważne:** Spring Boot używa `DB_*` zmiennych (nie `DATABASE_URL`). Obie wersje są w `.env` dla kompatybilności.
 
 ### Krok 3: Wygeneruj JWT secret
 
@@ -138,11 +148,14 @@ Sprawdź przydzielone porty w panelu Mikrus (format: 201xx, 301xx).
 FRONTEND_PORT=30288
 ```
 
-### Krok 5: Ustaw admin email
+### Krok 5: Ustaw admin credentials
 
 ```env
 ADMIN_EMAIL=admin@example.com
+ADMIN_PASSWORD=YourSecurePassword123!
 ```
+
+**Ważne:** Hasło musi mieć minimum 8 znaków (walidacja frontendu).
 
 ---
 
@@ -419,6 +432,30 @@ curl https://srv07-30288.wykr.es/
 ssh root@srvXX.mikr.us -p 10XXX
 cd /opt/photo-map
 docker compose restart
+```
+
+**Ważne:** `docker compose restart` **NIE** wczytuje nowych zmiennych z `.env`. Jeśli zmieniłeś `.env`, użyj:
+
+```bash
+docker compose down && docker compose up -d
+```
+
+### Update Environment Variables (.env)
+
+Po zmianie zmiennych środowiskowych w `deployment/.env`:
+
+```bash
+# 1. Transfer updated .env to VPS
+scp -P 10XXX deployment/.env root@srvXX.mikr.us:/opt/photo-map/
+
+# 2. Recreate containers (restart nie wystarczy!)
+ssh root@srvXX.mikr.us -p 10XXX
+cd /opt/photo-map
+docker compose down
+docker compose up -d
+
+# 3. Verify new env variables
+docker exec photo-map-backend env | grep YOUR_VARIABLE
 ```
 
 ### Stop All Containers
