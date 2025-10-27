@@ -1,17 +1,37 @@
-version: '3.8'
-
 services:
+  nginx:
+    image: nginx:1.27-alpine
+    container_name: photo-map-nginx
+    restart: unless-stopped
+    ports:
+      - "${FRONTEND_PORT:-30288}:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - backend
+      - frontend
+    networks:
+      - photo-map-network
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:80/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
   backend:
     image: photo-map-backend:latest
     container_name: photo-map-backend
     restart: unless-stopped
-    ports:
-      - "${BACKEND_PORT:-8080}:8080"
+    expose:
+      - "8080"
     environment:
       # PostgreSQL (Shared Mikrus service - psql01.mikr.us)
-      - DATABASE_URL=${DATABASE_URL}
-      - DATABASE_USERNAME=${DATABASE_USERNAME}
-      - DATABASE_PASSWORD=${DATABASE_PASSWORD}
+      # Spring Boot datasource configuration
+      - DB_HOST=${DB_HOST}
+      - DB_PORT=${DB_PORT}
+      - DB_NAME=${DB_NAME}
+      - DB_USERNAME=${DB_USERNAME}
+      - DB_PASSWORD=${DB_PASSWORD}
 
       # JWT
       - JWT_SECRET=${JWT_SECRET}
@@ -29,6 +49,7 @@ services:
 
       # Admin
       - ADMIN_EMAIL=${ADMIN_EMAIL}
+      - ADMIN_PASSWORD=${ADMIN_PASSWORD}
     volumes:
       - photo-map-uploads:/app/uploads
     networks:
@@ -44,8 +65,8 @@ services:
     image: photo-map-frontend:latest
     container_name: photo-map-frontend
     restart: unless-stopped
-    ports:
-      - "${FRONTEND_PORT:-30288}:80"
+    expose:
+      - "80"
     depends_on:
       - backend
     networks:

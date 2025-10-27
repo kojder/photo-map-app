@@ -62,30 +62,35 @@ echo ""
 # Step 3: Transfer files to VPS
 echo -e "${GREEN}Step 3: Transferring files to VPS...${NC}"
 
-# SSH options
+# SSH options (ssh uses -p for port)
 SSH_OPTS="-p $SSH_PORT"
+# SCP options (scp uses -P for port)
+SCP_OPTS="-P $SSH_PORT"
+
 if [ -f "$SSH_KEY" ]; then
     SSH_OPTS="$SSH_OPTS -i $SSH_KEY"
+    SCP_OPTS="$SCP_OPTS -i $SSH_KEY"
     echo -e "${BLUE}Using SSH key: $SSH_KEY${NC}"
 fi
 
 # Create remote directory
 ssh $SSH_OPTS root@$SRV_HOST "mkdir -p $REMOTE_PATH"
 
-# Transfer docker-compose.yml
-scp $SSH_OPTS deployment/docker-compose.yml root@$SRV_HOST:$REMOTE_PATH/
+# Transfer docker-compose.yml and nginx.conf
+scp $SCP_OPTS deployment/docker-compose.yml root@$SRV_HOST:$REMOTE_PATH/
+scp $SCP_OPTS deployment/nginx.conf root@$SRV_HOST:$REMOTE_PATH/
 
 # Transfer .env (if exists)
 if [ -f "deployment/.env" ]; then
-    scp $SSH_OPTS deployment/.env root@$SRV_HOST:$REMOTE_PATH/
+    scp $SCP_OPTS deployment/.env root@$SRV_HOST:$REMOTE_PATH/
     echo -e "${GREEN}✓ .env transferred${NC}"
 else
     echo -e "${YELLOW}⚠ deployment/.env not found - you need to create it on VPS${NC}"
 fi
 
 # Transfer Docker images
-scp $SSH_OPTS photo-map-backend.tar.gz root@$SRV_HOST:$REMOTE_PATH/
-scp $SSH_OPTS photo-map-frontend.tar.gz root@$SRV_HOST:$REMOTE_PATH/
+scp $SCP_OPTS photo-map-backend.tar.gz root@$SRV_HOST:$REMOTE_PATH/
+scp $SCP_OPTS photo-map-frontend.tar.gz root@$SRV_HOST:$REMOTE_PATH/
 
 echo -e "${GREEN}✓ Files transferred${NC}"
 echo ""
