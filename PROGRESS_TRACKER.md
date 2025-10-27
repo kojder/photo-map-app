@@ -7,7 +7,7 @@
 
 ## 🔄 Current Status
 
-**Last Updated:** 2025-10-27 (Phase 6: Deployment na Mikrus VPS - Task 6.2 Complete)
+**Last Updated:** 2025-10-27 (Phase 6: Deployment - Documentation Verified ✅)
 
 ### 🎯 Currently Working On
 
@@ -18,6 +18,9 @@
   - [x] deployment/.env.production.example - zmienne środowiskowe (Docker style)
   - [x] Troubleshooting guide - Docker logs, container debugging
   - [x] .ai/features/feature-deployment-mikrus.md - strategia Docker Compose
+  - [x] deployment/MIKRUS_SETUP.md - konkretna konfiguracja marcin288
+  - [x] deployment/VERIFICATION_PROMPT.md - prompt weryfikacyjny
+  - [x] Weryfikacja spójności: porty 30288, hosty srv07/marcin288, domena photos.tojest.dev
 
 - [x] **6.2 Docker Setup** ✅
   - [x] backend/Dockerfile - Spring Boot JAR w openjdk:17-jre-slim
@@ -26,6 +29,7 @@
   - [x] deployment/docker-compose.yml - backend + frontend containers
   - [x] Volume: photo-map-uploads (persistence dla zdjęć)
   - [x] Network: internal (backend-frontend) + external (port 30288)
+  - [x] Scripts: build-images.sh, deploy.sh, deploy-marcin288.sh
 
 - [ ] **6.3 Build Docker Images**
   - [ ] Skrypt deployment/scripts/build-images.sh
@@ -72,6 +76,15 @@
 - ✅ Deployment scripts działają (build-images.sh, deploy.sh)
 
 ### ✅ Last Completed
+
+**Deployment Documentation Verification** (2025-10-27)
+- ✅ Weryfikacja spójności wszystkich plików deployment
+- ✅ Poprawione porty: 20100 → 30288 (11 wystąpień w README.md)
+- ✅ Poprawione hosty: srv41 → srv07/marcin288 (przykłady w skryptach)
+- ✅ Poprawiona subdomena: photos.andrew.tojest.dev → photos.tojest.dev
+- ✅ Wszystkie pliki spójne z konfiguracją VPS marcin288
+- 📝 Commits: 979a756, 0b97f55, ec8def6 (3 commits pushed)
+- 📝 Files: deployment/README.md, .env.production.example, scripts/deploy.sh
 
 **User Permissions Management System** (2025-10-26)
 - ✅ Backend: Migracja V5 - can_view_photos, can_rate kolumny + app_settings tabela
