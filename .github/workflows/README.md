@@ -59,8 +59,10 @@ This directory contains GitHub Actions workflows for CI/CD automation.
 - `actions/upload-artifact@v5` - Artifacts upload
 
 **SonarCloud Projects:**
-- Backend: `kojder_photo-map-app`
-- Frontend: `kojder_photo-map-app-frontend`
+- **Shared project:** `kojder_photo-map-app` (both backend and frontend)
+  - Backend sends Java metrics via Maven plugin
+  - Frontend sends TypeScript metrics via SonarQube Scan Action
+  - Combined coverage reports in one dashboard (monorepo approach for MVP)
 
 ## Troubleshooting
 
@@ -76,10 +78,10 @@ This directory contains GitHub Actions workflows for CI/CD automation.
 
 ### SonarCloud analysis fails
 - Verify `SONAR_TOKEN` secret is configured in repository settings
-- Check SonarCloud project keys match:
-  - Backend: `kojder_photo-map-app`
-  - Frontend: `kojder_photo-map-app-frontend`
+- Check SonarCloud project key: `kojder_photo-map-app` (shared for both backend and frontend)
+- Verify project exists in SonarCloud dashboard: https://sonarcloud.io/project/overview?id=kojder_photo-map-app
 - Ensure coverage reports are generated before SonarCloud step
+- **Note:** Frontend and backend share one SonarCloud project for simplified MVP management
 
 ### Cache not working
 - Check cache keys in workflow file
@@ -132,4 +134,8 @@ npx sonar-scanner -Dsonar.token=$SONAR_TOKEN
 
 ---
 
-**Last Updated:** 2025-10-26
+**Last Updated:** 2025-10-28
+
+**Recent Changes:**
+- 2025-10-28: Merged frontend and backend into one SonarCloud project (`kojder_photo-map-app`) for simplified MVP management
+- 2025-10-26: Initial CI/CD setup with separate SonarCloud projects

@@ -7,9 +7,11 @@
 
 ## 🔄 Current Status
 
-**Last Updated:** 2025-10-27 (Phase 6: Deployment COMPLETE ✅)
+**Last Updated:** 2025-10-28 (Maintenance: GitHub Actions CI/CD fixed ✅)
 
 ### 🎯 Currently Working On
+
+**Maintenance & Bug Fixes** - ✅ CI/CD naprawiony, wszystkie testy przechodzą
 
 **Phase 6: Deployment na Mikrus VPS (Docker Compose)** - ✅ **COMPLETED**
 
@@ -77,6 +79,23 @@
 - ✅ Deployment scripts działają (build-images.sh, deploy.sh)
 
 ### ✅ Last Completed
+
+**GitHub Actions CI/CD Fix - SonarCloud Configuration** (2025-10-28)
+- ✅ **Problem:** GitHub Actions failował na kroku "Frontend - SonarCloud analysis"
+- ✅ **Error:** `Could not find a default branch for project 'kojder_photo-map-app-frontend'`
+- ✅ **Root cause:** Projekt `kojder_photo-map-app-frontend` nie istniał w SonarCloud
+- ✅ **Rozwiązanie:** Połączenie frontend + backend w jeden projekt SonarCloud (monorepo approach)
+- ✅ **Zmiana:** `sonar.projectKey` w frontend/sonar-project.properties: `kojder_photo-map-app-frontend` → `kojder_photo-map-app`
+- ✅ **Rezultat:**
+  - GitHub Actions workflow przechodzi ✅ (4m12s)
+  - Backend + Frontend metryki w jednym dashboardzie SonarCloud
+  - Coverage reports z obu źródeł (JaCoCo + lcov) wysyłane do tego samego projektu
+  - Brak błędów CI przy każdym pushu
+- ✅ **GitHub CLI:** Przetestowano `gh run watch` - działa poprawnie
+- 🎯 **Best practice dla MVP:** Jeden projekt SonarCloud = prostsze zarządzanie
+- 📝 **Files:** frontend/sonar-project.properties (projectKey + projectName)
+- 📝 **Dashboard:** https://sonarcloud.io/project/overview?id=kojder_photo-map-app
+- 📝 **Commit:** 93d3226
 
 **Map Markers Fix - Leaflet Import Issue** (2025-10-27)
 - ✅ **Problem:** Markery nie działały na produkcji (działały lokalnie)
