@@ -1,7 +1,7 @@
 import { Component, OnInit, AfterViewInit, OnDestroy, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
-import * as L from 'leaflet';
+import L from 'leaflet';
 import 'leaflet.markercluster';
 import { Photo } from '../../models/photo.model';
 import { PhotoService } from '../../services/photo.service';
@@ -71,7 +71,7 @@ export class MapComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   ngAfterViewInit(): void {
-    setTimeout(() => this.initMap(), 0);
+    this.initMap();
   }
 
   loadPhotos(): void {
@@ -172,17 +172,23 @@ export class MapComponent implements OnInit, AfterViewInit, OnDestroy {
       }
     }, 200);
 
-    this.updateMarkers();
+    if (this.photos().length > 0 && !this.loading()) {
+      this.updateMarkers();
+    }
   }
 
   updateMarkers(): void {
-    if (!this.map || !this.markerClusterGroup) return;
+    if (!this.map || !this.markerClusterGroup) {
+      return;
+    }
 
     this.markerClusterGroup.clearLayers();
 
     const photosWithGps = this.photos().filter(p => p.gpsLatitude && p.gpsLongitude);
 
-    if (photosWithGps.length === 0) return;
+    if (photosWithGps.length === 0) {
+      return;
+    }
 
     photosWithGps.forEach(photo => {
       const marker = L.marker([photo.gpsLatitude!, photo.gpsLongitude!]);
