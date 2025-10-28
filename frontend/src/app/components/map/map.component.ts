@@ -7,11 +7,12 @@ import { Photo } from '../../models/photo.model';
 import { PhotoService } from '../../services/photo.service';
 import { FilterService } from '../../services/filter.service';
 import { PhotoViewerService } from '../../services/photo-viewer.service';
+import { FilterFabComponent } from '../filter-fab/filter-fab.component';
 
 @Component({
   selector: 'app-map',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, FilterFabComponent],
   templateUrl: './map.component.html',
   styleUrl: './map.component.css'
 })

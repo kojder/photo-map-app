@@ -8,13 +8,13 @@ import { FilterService } from '../../services/filter.service';
 import { PhotoViewerService } from '../../services/photo-viewer.service';
 import { AdminService } from '../../services/admin.service';
 import { PhotoCardComponent } from '../photo-card/photo-card.component';
-import { FilterBarComponent } from '../filter-bar/filter-bar.component';
+import { FilterFabComponent } from '../filter-fab/filter-fab.component';
 import { UploadDialogComponent } from '../upload-dialog/upload-dialog.component';
 
 @Component({
   selector: 'app-gallery',
   standalone: true,
-  imports: [CommonModule, PhotoCardComponent, FilterBarComponent, UploadDialogComponent],
+  imports: [CommonModule, PhotoCardComponent, FilterFabComponent, UploadDialogComponent],
   templateUrl: './gallery.component.html',
   styleUrl: './gallery.component.css'
 })

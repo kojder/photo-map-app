@@ -1,18 +1,35 @@
-<div class="map-container">
-  <div class="map-header bg-white shadow-sm p-4">
-    <h1 class="text-2xl font-bold text-gray-900">Photo Map</h1>
-    @if (errorMessage()) {
-      <div class="mt-2 bg-red-100 border border-red-400 text-red-700 px-4 py-2 rounded">
-        {{ errorMessage() }}
-      </div>
-    }
-    @if (loading()) {
-      <div class="mt-2 text-gray-600">Loading photos...</div>
-    }
-    @if (!loading() && photos().length === 0) {
-      <div class="mt-2 text-gray-500">No photos with GPS data found.</div>
-    }
-  </div>
+<div class="map-container h-screen w-full relative">
+  <!-- Leaflet Map (full screen) -->
+  <div id="map" class="absolute inset-0"></div>
 
-  <div id="map"></div>
+  <!-- FAB Filter Button -->
+  <app-filter-fab></app-filter-fab>
+
+  <!-- Error Notification (floating) -->
+  @if (errorMessage()) {
+    <div class="absolute top-4 left-1/2 transform -translate-x-1/2 z-[1000] max-w-md">
+      <div class="bg-red-50 border-l-4 border-red-500 p-4 rounded-r-lg shadow-lg">
+        <p class="text-sm text-red-800">{{ errorMessage() }}</p>
+      </div>
+    </div>
+  }
+
+  <!-- Loading Notification (floating) -->
+  @if (loading()) {
+    <div class="absolute top-4 left-1/2 transform -translate-x-1/2 z-[1000]">
+      <div class="bg-white px-4 py-2 rounded-lg shadow-lg flex items-center space-x-2">
+        <div class="animate-spin w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full"></div>
+        <span class="text-sm text-gray-700">Loading photos...</span>
+      </div>
+    </div>
+  }
+
+  <!-- No GPS Data Notification (floating) -->
+  @if (!loading() && photos().length === 0) {
+    <div class="absolute top-4 left-1/2 transform -translate-x-1/2 z-[1000]">
+      <div class="bg-white px-4 py-2 rounded-lg shadow-lg">
+        <span class="text-sm text-gray-500">No photos with GPS data found.</span>
+      </div>
+    </div>
+  }
 </div>
