@@ -7,14 +7,28 @@
 
 ## 🔄 Current Status
 
-**Last Updated:** 2025-10-28 (Feature: UI Redesign - COMPLETED & DEPLOYED)
+**Last Updated:** 2025-10-29 (Feature: E2E Tests - Playwright implementation & CI workflow fix)
 
 ### 🎯 Currently Working On
 
-**MVP Complete!** - All core features deployed and operational.
+**E2E Tests - Playwright (GitHub Actions CI verification in progress)**
+
+**Current Status:**
+- ✅ Phase 1: Login tests implemented (2 tests)
+- ✅ Phase 2: Smoke tests implemented (14 tests: Admin, Gallery, Map, Filters, Navigation)
+- ✅ Testy lokalne: 16/16 green (1.5min)
+- ✅ Page Object Models: 5 plików (BasePage, LoginPage, AdminPage, GalleryPage, MapPage, FilterFabPage, NavbarPage)
+- ✅ GitHub Actions workflow naprawiony (backend + frontend startup + health checks)
+- ⏳ **Weryfikacja na GitHub Actions CI w toku** (sprawdzamy czy workflow przechodzi zielono)
+
+**Commits pushed:**
+- be0aaa4 feat(e2e): add Playwright E2E tests setup with first login test
+- 6063f29 feat(e2e): add Phase 2 smoke tests with Page Object Models
+- a28f278 fix(ci): add backend and frontend startup for E2E tests
+- 895bb81 fix(e2e): set reuseExistingServer=true to prevent port conflicts in CI
 
 **Next Planned Actions:**
-1. 🎉 **MVP Complete!** - All core features deployed and operational
+1. ⏳ Zweryfikować status GitHub Actions workflow (czy testy E2E przechodzą na CI)
 2. (Optional) Post-MVP Enhancements:
    - Email System (verification, password reset)
    - Public Photo Sharing (UUID links)
@@ -22,7 +36,7 @@
    - NAS Batch Processing
    - Group & Permissions System
 
-**Blocked By:** None
+**Blocked By:** None (oczekiwanie na wynik GitHub Actions)
 
 **Phase 6: Deployment na Mikrus VPS (Docker Compose)** - ✅ **COMPLETED**
 
@@ -91,6 +105,54 @@
 - ✅ **Docker health checks działają** - wszystkie kontenery "healthy" (nginx, frontend, backend)
 
 ### ✅ Last Completed
+
+**E2E Tests - Playwright Implementation & CI Workflow Fix** (2025-10-29)
+- ✅ **Phase 1: Playwright Setup & Login Tests** (commit be0aaa4)
+  - Playwright + PostgreSQL client (pg) + dotenv installed
+  - Dedicated test database: docker-compose.test.yml (port 5433)
+  - Playwright config: auto-start backend + frontend z health checks
+  - Cleanup fixtures: hybrid approach (before + after tests)
+  - Page Object Models: BasePage, LoginPage
+  - Tests: 2 login tests (admin login flow, form validation)
+  - Backend profile: application-e2e.properties
+  - GitHub Actions job: e2e-tests (needs: build)
+  - Testy lokalne: 2/2 passed (16.2s)
+- ✅ **Phase 2: Smoke Tests dla wszystkich widoków** (commit 6063f29)
+  - Page Object Models: AdminPage, GalleryPage, MapPage, FilterFabPage, NavbarPage
+  - Admin tests (3): panel admin, search input, wyszukiwanie użytkowników
+  - Gallery tests (3): upload button, filter FAB, upload dialog
+  - Map tests (3): kontener mapy, filter FAB, ładowanie Leaflet
+  - Filters tests (3): open/close panel, display inputs, filling dates
+  - Navigation tests (2): full flow (Gallery → Map → Admin → Logout), admin link visibility
+  - Testy lokalne: 16/16 passed (1.5min całkowity czas)
+- ✅ **CI Workflow Fix - Backend & Frontend Startup** (commit a28f278)
+  - **Problem:** E2E testy failowały na GitHub Actions (backend nie działał)
+  - **Root cause:** Workflow tylko buildował backend, ale nie uruchamiał przed testami
+  - **Rozwiązanie:**
+    - Dodano instalację wait-on (health check utility)
+    - Uruchomienie backend w tle: mvn spring-boot:run -Dspring-boot.run.profiles=test
+    - Health check backend: wait-on http://localhost:8080/actuator/health (timeout 60s)
+    - Uruchomienie frontend w tle: npm start
+    - Health check frontend: wait-on http://localhost:4200 (timeout 60s)
+    - Cleanup: zatrzymanie backend + frontend po testach (if: always)
+    - Upload logów: backend.log + frontend.log jako artifacts
+- ✅ **CI Workflow Fix - Port Conflicts Prevention** (commit 895bb81)
+  - **Problem:** Playwright próbował uruchomić własne serwery (konflikt portów)
+  - **Error:** "http://localhost:8080 is already used"
+  - **Root cause:** reuseExistingServer: !process.env.CI = false w CI
+  - **Rozwiązanie:** Zmiana na reuseExistingServer: true (zawsze używaj istniejących)
+- ✅ **Struktura testów:**
+  - fixtures/: database.fixture.ts (cleanup), testData.ts (test user)
+  - pages/: 7 Page Object Models (BasePage + 6 specific pages)
+  - specs/: 5 plików testowych (auth, admin, gallery, map, filters, navigation)
+  - Total: 16 testów E2E (coverage wszystkich głównych widoków aplikacji)
+- 📝 **Files:**
+  - frontend/playwright.config.ts (webServer config z reuseExistingServer)
+  - frontend/tests/e2e/ (fixtures, pages, specs - 439 linii)
+  - docker-compose.test.yml (testowa baza PostgreSQL)
+  - .github/workflows/build.yml (e2e-tests job z backend/frontend startup)
+  - .ai/features/feature-e2e-playwright-tests.md (1171 linii - full spec)
+- 🎯 **Next:** Weryfikacja na GitHub Actions CI (czy workflow przechodzi zielono)
 
 **UI Redesign - Modern Navbar + Floating Filters** (2025-10-28)
 - ✅ **Feature:** Modern navbar with Heroicons icons and FAB filter button
@@ -347,23 +409,11 @@
   - [ ] Commit with message: "fix(gallery): persist rating after page refresh"
 -->
 
-**Next Planned Actions:**
-1. 🎉 **MVP Complete!** - All core features deployed and operational
-2. (Optional) Post-MVP Enhancements:
-   - Email System (verification, password reset)
-   - Public Photo Sharing (UUID links)
-   - Temporal & Spatial Filters
-   - NAS Batch Processing
-   - Group & Permissions System
-
-**Blocked By:** None
-
 ---
 
 ### ✅ Last Completed
 
-**Most Recent:**
-- ✅ **Gallery Rating Filter Fix + Code Quality** (2025-10-25)
+**Gallery Rating Filter Fix + Code Quality** (2025-10-25)
   - ✅ Backend: Added filter params (dateFrom, dateTo, minRating, hasGps) to PhotoController
   - ✅ Backend: PhotoService with JPA Specifications for dynamic filtering
   - ✅ Backend: PhotoSpecification class (hasMinRating, takenAfter, takenBefore, hasGps)
@@ -408,7 +458,7 @@
 
 ## 📊 Project Status
 
-**Overall Progress:** 6/6 phases (100% core MVP) + Photo Viewer + GitHub Copilot + Deployment (In Progress)
+**Overall Progress:** 6/6 phases (100% core MVP) + Photo Viewer + GitHub Copilot + Deployment + E2E Tests (CI verification)
 
 | Phase | Status | Description |
 |------|--------|------|
@@ -419,7 +469,8 @@
 | 📸 Photo Viewer Feature | ✅ | Fullscreen viewer, keyboard nav, mobile touch (Phases 1-4 complete) |
 | 🤖 GitHub Copilot Setup | ✅ | Instructions, prompts, VS Code integration |
 | 5. Admin Panel | ✅ | User Management, Photo Management, Permissions System, Admin Settings |
-| 6. Deployment (Mikrus VPS) | ⏳ | Native (JAR + systemd), Shared PostgreSQL, Nginx, Manual deployment |
+| 6. Deployment (Mikrus VPS) | ✅ | Docker Compose, Shared PostgreSQL, Nginx reverse proxy, SSL (Mikrus proxy) |
+| 🧪 E2E Tests (Playwright) | ⏳ | 16 tests (Auth, Admin, Gallery, Map, Filters, Navigation), GitHub Actions CI (verification) |
 
 **Legend:** 🔜 Pending | ⏳ In Progress | ✅ Completed
 
