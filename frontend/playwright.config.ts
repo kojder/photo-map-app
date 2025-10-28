@@ -36,7 +36,7 @@ export default defineConfig({
       command: 'cd ../backend && ./mvnw spring-boot:run -Dspring-boot.run.profiles=e2e',
       port: 8080,
       timeout: 120 * 1000,
-      reuseExistingServer: !process.env.CI,
+      reuseExistingServer: true,
       env: {
         DB_HOST: 'localhost',
         DB_PORT: '5433',
@@ -52,7 +52,7 @@ export default defineConfig({
       command: 'npm run start',
       port: 4200,
       timeout: 120 * 1000,
-      reuseExistingServer: !process.env.CI,
+      reuseExistingServer: true,
     },
   ],
 });
