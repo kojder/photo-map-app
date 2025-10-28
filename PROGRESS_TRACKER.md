@@ -7,25 +7,11 @@
 
 ## 🔄 Current Status
 
-**Last Updated:** 2025-10-28 (Maintenance: GitHub Actions CI/CD fixed ✅)
+**Last Updated:** 2025-10-28 (Maintenance: Docker Health Checks naprawione ✅)
 
 ### 🎯 Currently Working On
 
-**TODO: Docker Health Checks Fix** - 🔧 Do naprawy jutro
-
-- [ ] **Naprawa Docker health checks dla nginx i frontend**
-  - Problem: nginx healthcheck sprawdza `/actuator/health` (endpoint backendu) - niepoprawny
-  - Problem: frontend healthcheck sprawdza `http://localhost:80/` - frontend nie nasłuchuje na :80
-  - Status: Aplikacja działa poprawnie (https://photos.tojest.dev/), tylko health checki failują
-  - Zasoby VPS: OK (17.5% RAM, 21% dysk, load 0.00)
-  - Do zrobienia:
-    - [ ] Poprawić nginx healthcheck (sprawdzić dostępność nginx, nie /actuator/health)
-    - [ ] Poprawić frontend healthcheck (sprawdzić pliki statyczne w kontenerze)
-    - [ ] Commit zmian w deployment/docker-compose.yml
-    - [ ] Redeploy na VPS
-    - [ ] Weryfikacja: `docker ps` powinien pokazać wszystkie kontenery jako "healthy"
-
-**Maintenance & Bug Fixes** - ✅ CI/CD naprawiony, wszystkie testy przechodzą
+**Maintenance & Bug Fixes** - ✅ All systems operational
 
 **Phase 6: Deployment na Mikrus VPS (Docker Compose)** - ✅ **COMPLETED**
 
@@ -91,8 +77,34 @@
 - ✅ Logi dostępne przez docker logs
 - ✅ Upload photos działa (web + batch) z volume persistence
 - ✅ Deployment scripts działają (build-images.sh, deploy.sh)
+- ✅ **Docker health checks działają** - wszystkie kontenery "healthy" (nginx, frontend, backend)
 
 ### ✅ Last Completed
+
+**Docker Health Checks Fix** (2025-10-28)
+- ✅ **Problem:** Docker health checks failowały dla nginx i frontend (backend OK)
+  - nginx healthcheck sprawdzał `/actuator/health` (backend endpoint) zamiast samego nginx
+  - frontend healthcheck sprawdzał `/` (ładowanie całej Angular SPA) zamiast dedykowanego endpointu
+  - `localhost` w wget był resolvowany do IPv6 `[::1]` powodując "Connection refused"
+- ✅ **Rozwiązanie:**
+  - nginx: zmiana healthcheck na `http://127.0.0.1:80/` (sprawdza nginx dostępność)
+  - frontend: zmiana healthcheck na `http://127.0.0.1:80/health` (dedykowany endpoint z nginx.conf)
+  - Wszędzie: `localhost` → `127.0.0.1` (fix IPv6 resolution)
+- ✅ **Pliki:**
+  - `deployment/docker-compose.yml` - nginx i frontend healthcheck
+  - `frontend/Dockerfile` - HEALTHCHECK directive
+- ✅ **Testy:**
+  - Test lokalny: frontend kontener healthy po 35s ✓
+  - Test produkcja (marcin288): wszystkie 3 kontenery healthy ✓
+- ✅ **Weryfikacja produkcji:**
+  ```
+  photo-map-nginx      Up About a minute (healthy)
+  photo-map-frontend   Up About a minute (healthy)
+  photo-map-backend    Up About a minute (healthy)
+  ```
+- ✅ **Aplikacja działa:** https://photos.tojest.dev/ - backend health: `{"status":"UP"}`
+- 📝 **Commit:** 48665bf
+- 🎯 **Lesson learned:** wget w Alpine Linux preferuje IPv6, zawsze używaj `127.0.0.1` zamiast `localhost` w health checks
 
 **GitHub Actions CI/CD Fix - SonarCloud Configuration** (2025-10-28)
 - ✅ **Problem:** GitHub Actions failował na kroku "Frontend - SonarCloud analysis"
@@ -298,10 +310,13 @@
 -->
 
 **Next Planned Actions:**
-1. Manual testing: Photo Viewer on mobile viewport (Chrome DevTools MCP)
-2. (Optional) Phase 5: Photo Viewer UX Enhancements (loading states, preloading)
-3. (Optional) Phase 5: Admin Panel
-4. (Optional) Phase 6: Deployment na Mikrus VPS
+1. 🎉 **MVP Complete!** - All core features deployed and operational
+2. (Optional) Post-MVP Enhancements:
+   - Email System (verification, password reset)
+   - Public Photo Sharing (UUID links)
+   - Temporal & Spatial Filters
+   - NAS Batch Processing
+   - Group & Permissions System
 
 **Blocked By:** None
 
