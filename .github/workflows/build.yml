@@ -214,9 +214,53 @@ jobs:
         working-directory: frontend
         run: npx playwright install --with-deps chromium
 
+      - name: Install wait-on for health checks
+        run: npm install -g wait-on
+
+      - name: Start Backend in background
+        working-directory: backend
+        run: |
+          nohup mvn spring-boot:run \
+            -Dspring-boot.run.profiles=test \
+            > backend.log 2>&1 &
+          echo $! > backend.pid
+          echo "Backend PID: $(cat backend.pid)"
+
+      - name: Wait for Backend to be ready
+        run: |
+          echo "Waiting for Backend health check..."
+          wait-on -t 60000 http://localhost:8080/actuator/health
+          echo "Backend is ready!"
+
+      - name: Start Frontend in background
+        working-directory: frontend
+        run: |
+          nohup npm start > frontend.log 2>&1 &
+          echo $! > frontend.pid
+          echo "Frontend PID: $(cat frontend.pid)"
+
+      - name: Wait for Frontend to be ready
+        working-directory: frontend
+        run: |
+          echo "Waiting for Frontend..."
+          wait-on -t 60000 http://localhost:4200
+          echo "Frontend is ready!"
+
       - name: Run E2E tests
         working-directory: frontend
         run: npm run test:e2e
+
+      - name: Stop Backend and Frontend
+        if: always()
+        run: |
+          if [ -f backend/backend.pid ]; then
+            echo "Stopping Backend (PID: $(cat backend/backend.pid))..."
+            kill $(cat backend/backend.pid) || true
+          fi
+          if [ -f frontend/frontend.pid ]; then
+            echo "Stopping Frontend (PID: $(cat frontend/frontend.pid))..."
+            kill $(cat frontend/frontend.pid) || true
+          fi
 
       - name: Upload Playwright report
         if: always()
@@ -232,4 +276,20 @@ jobs:
         with:
           name: playwright-test-results
           path: frontend/test-results/
+          retention-days: 7
+
+      - name: Upload Backend logs
+        if: always()
+        uses: actions/upload-artifact@v5
+        with:
+          name: backend-e2e-logs
+          path: backend/backend.log
+          retention-days: 7
+
+      - name: Upload Frontend logs
+        if: always()
+        uses: actions/upload-artifact@v5
+        with:
+          name: frontend-e2e-logs
+          path: frontend/frontend.log
           retention-days: 7
