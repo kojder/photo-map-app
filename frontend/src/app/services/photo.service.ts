@@ -92,37 +92,46 @@ export class PhotoService {
   }
 
   private photoMatchesFilters(photo: Photo, filters: PhotoFilters): boolean {
-    // Check minRating filter
-    if (filters.minRating) {
-      const photoRating = photo.averageRating || 0;
-      if (photoRating < filters.minRating) {
-        return false;
-      }
+    return this.matchesMinRating(photo, filters.minRating) &&
+           this.matchesGpsFilter(photo, filters.hasGps) &&
+           this.matchesDateRange(photo, filters.dateFrom, filters.dateTo);
+  }
+
+  private matchesMinRating(photo: Photo, minRating: number | undefined): boolean {
+    if (!minRating) {
+      return true;
+    }
+    const photoRating = photo.averageRating || 0;
+    return photoRating >= minRating;
+  }
+
+  private matchesGpsFilter(photo: Photo, hasGpsFilter: boolean | undefined): boolean {
+    if (hasGpsFilter === undefined) {
+      return true;
+    }
+    const hasGps = photo.gpsLatitude !== undefined &&
+                   photo.gpsLatitude !== null &&
+                   photo.gpsLongitude !== undefined &&
+                   photo.gpsLongitude !== null;
+    return !hasGpsFilter || hasGps;
+  }
+
+  private matchesDateRange(photo: Photo, dateFrom: string | undefined, dateTo: string | undefined): boolean {
+    if (!photo.takenAt) {
+      return true;
     }
 
-    // Check hasGps filter
-    if (filters.hasGps !== undefined) {
-      const hasGps = photo.gpsLatitude !== undefined && 
-                     photo.gpsLatitude !== null && 
-                     photo.gpsLongitude !== undefined && 
-                     photo.gpsLongitude !== null;
-      if (filters.hasGps && !hasGps) {
-        return false;
-      }
-    }
+    const photoDate = new Date(photo.takenAt);
 
-    // Check date filters
-    if (filters.dateFrom && photo.takenAt) {
-      const photoDate = new Date(photo.takenAt);
-      const filterDate = new Date(filters.dateFrom);
+    if (dateFrom) {
+      const filterDate = new Date(dateFrom);
       if (photoDate < filterDate) {
         return false;
       }
     }
 
-    if (filters.dateTo && photo.takenAt) {
-      const photoDate = new Date(photo.takenAt);
-      const filterDate = new Date(filters.dateTo);
+    if (dateTo) {
+      const filterDate = new Date(dateTo);
       if (photoDate > filterDate) {
         return false;
       }

@@ -17,8 +17,8 @@ export class LoginComponent {
   errorMessage = signal<string | null>(null);
 
   constructor(
-    private fb: FormBuilder,
-    private authService: AuthService,
+    private readonly fb: FormBuilder,
+    private readonly authService: AuthService,
     private router: Router
   ) {
     this.loginForm = this.fb.group({

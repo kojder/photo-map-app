@@ -11,7 +11,7 @@ import { PhotoService } from '../../services/photo.service';
 })
 export class UploadDialogComponent {
   @Output() uploadSuccess = new EventEmitter<void>();
-  @Output() close = new EventEmitter<void>();
+  @Output() dialogClose = new EventEmitter<void>();
 
   selectedFile = signal<File | null>(null);
   preview = signal<string>('');
@@ -94,7 +94,7 @@ export class UploadDialogComponent {
   }
 
   onCancel(): void {
-    this.close.emit();
+    this.dialogClose.emit();
   }
 
   formatFileSize(bytes: number): string {

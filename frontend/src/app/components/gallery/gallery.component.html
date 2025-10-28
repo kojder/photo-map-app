@@ -76,7 +76,7 @@
     @if (showUploadDialog()) {
       <app-upload-dialog
         (uploadSuccess)="onUploadSuccess()"
-        (close)="onUploadClose()"
+        (dialogClose)="onUploadClose()"
       ></app-upload-dialog>
     }
   </div>
