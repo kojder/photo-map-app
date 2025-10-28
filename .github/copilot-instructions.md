@@ -73,7 +73,9 @@ Full-stack photo geolocation app: Angular 18 (standalone) + Spring Boot 3 + Post
 - Test IDs for E2E: `data-testid="component-element"` on all interactive elements
 - Leaflet.js for maps with `leaflet.markercluster` plugin
 
-## Chrome DevTools MCP Integration
+## MCP Server Integrations
+
+### Chrome DevTools MCP
 
 **For frontend verification and debugging**, use Chrome DevTools MCP to give AI "eyes" in the browser.
 
@@ -101,6 +103,81 @@ tail -n 20 scripts/.pid/frontend.log
 - After implementing feature: "Verify login form works on localhost:4200"
 - When bug reported: "Gallery photos not loading - diagnose the issue"
 - Before deployment: "Analyze gallery performance and suggest optimizations"
+
+### SonarCloud API Integration
+
+**For code quality analysis and security scanning**, use SonarCloud REST API directly via curl/Python scripts.
+
+**Configuration:** See `.vscode/SONARCLOUD_API_SETUP.md` for full guide and commands.
+
+**Project details:**
+- Organization: `kojder`
+- Project key: `kojder_photo-map-app`
+- SonarCloud URL: https://sonarcloud.io
+- API Token: Documented in `.vscode/SONARCLOUD_API_SETUP.md` (git-ignored)
+- Frontend config: `frontend/sonar-project.properties`
+- SonarCloud Dashboard: https://sonarcloud.io/project/overview?id=kojder_photo-map-app
+
+**Current Project Status (as of 2025-10-28):**
+- Total Issues: **75 OPEN** (1 Blocker, 1 Critical, 55 Major, 18 Minor)
+- Total Issues (all): **122** (75 OPEN + 42 CLOSED/FIXED)
+- Security Hotspots: **1**
+- Quality Gate: **Passed** ✅
+- Main Issues: Frontend (117 issues) > Backend (6 issues)
+
+**How to Use with Copilot:**
+
+✅ **Request AI to fetch issues via SonarCloud API:**
+```
+Pobierz z SonarCloud blocker i critical issues
+Pobierz wszystkie OPEN issues z SonarCloud
+Zaktualizuj .sonarqube/CURRENT_ISSUES.md z najnowszymi issues
+```
+
+**AI will automatically:**
+1. Use `curl` to call SonarCloud API with authentication token
+2. Parse JSON response with Python
+3. Update `.sonarqube/CURRENT_ISSUES.md` with formatted issues
+4. Show summary of fetched issues
+
+**SonarCloud API Endpoints Used:**
+- **Issues Search:** `GET /api/issues/search`
+  - Filters: `severities`, `statuses`, `componentKeys`, `organization`
+- **Security Hotspots:** `GET /api/hotspots/search`
+- **Metrics:** `GET /api/measures/component`
+
+**SonarQube Issues Workflow (Working File Pattern):**
+
+The project uses `.sonarqube/CURRENT_ISSUES.md` as a working file for tracking and fixing SonarQube issues.
+
+**Step 1: Load Issues**
+```
+User: "Pobierz z sonarqube blocker i critical"
+AI: Calls SonarCloud API via curl
+    → Parses response with Python
+    → Populates .sonarqube/CURRENT_ISSUES.md with detailed issue list
+```
+
+**Step 2: Fix Issues**
+```
+User: "Napraw błędy" or "Napraw blocker issues"
+AI: Fixes issues one by one from CURRENT_ISSUES.md
+    → Removes fixed issues from the file immediately after fix
+    → Documents fixes in commit messages (no "Completed" section in file)
+```
+
+**File structure:**
+- Summary table with counters (Total, Fixed, Remaining)
+- Sections by severity: BLOCKER → CRITICAL → MAJOR → MINOR
+- Each issue with: SonarQube Key, File, Line, Rule, Type, Message, Effort
+- Checkboxes [ ] for tracking progress during fix session
+
+**When to update CURRENT_ISSUES.md:**
+1. Before starting fix session - fetch via API
+2. After each fix - remove fixed issue from file
+3. Periodically - refresh to sync with SonarCloud state
+
+**IMPORTANT:** API token is documented in `.vscode/SONARCLOUD_API_SETUP.md` which is git-ignored. Never commit tokens to repository!
 
 ## Development Workflows
 

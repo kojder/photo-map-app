@@ -173,3 +173,4 @@ $RECYCLE.BIN/
 
 # PID files from start-dev.sh
 scripts/.pid/
+.vscode/SONARCLOUD_API_SETUP.md
