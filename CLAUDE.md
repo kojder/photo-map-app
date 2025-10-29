@@ -13,6 +13,59 @@ This file provides guidance to Claude Code for implementing the Photo Map MVP pr
 
 **Status:** Fresh start - implementation from scratch
 
+## 🔐 CRITICAL: Credentials & Environment Variables
+
+**⚠️ ALWAYS read credentials from `.env` file - NEVER hardcode or guess passwords!**
+
+### Password Policy
+
+**DO:**
+- ✅ **ALWAYS** read `.env` file before using credentials
+- ✅ Use `ADMIN_PASSWORD` value from `.env` (currently: `10xdevsx10`)
+- ✅ Use `TEST_USER_PASSWORD` from `.env` for test users
+- ✅ Verify current values before login tests, curl commands, or documentation examples
+
+**DON'T:**
+- ❌ **NEVER** hardcode passwords (e.g., `admin123`, `password`, etc.)
+- ❌ **NEVER** guess password values from memory
+- ❌ **NEVER** use outdated passwords from old documentation
+- ❌ **NEVER** commit real passwords to Git (only `.env.example` with placeholders)
+
+### Where to find credentials
+
+**Production/Development (.env):**
+```bash
+# Read current admin password
+grep ADMIN_PASSWORD /home/andrew/projects/photo-map-app/.env
+
+# Read test user password
+grep TEST_USER_PASSWORD /home/andrew/projects/photo-map-app/.env
+```
+
+**E2E Tests (frontend/.env.test):**
+```bash
+# E2E tests use their own .env.test
+grep E2E_ADMIN_PASSWORD /home/andrew/projects/photo-map-app/frontend/.env.test
+```
+
+**Before ANY operation involving credentials:**
+1. Read `.env` file first
+2. Use exact value from file
+3. Never assume or guess
+
+### Example: Correct workflow
+
+```bash
+# ❌ WRONG - hardcoded password
+curl -X POST http://localhost:8080/api/auth/login \
+  -d '{"username":"admin@example.com","password":"admin123"}'
+
+# ✅ CORRECT - read from .env first
+ADMIN_PWD=$(grep ADMIN_PASSWORD .env | cut -d'=' -f2)
+curl -X POST http://localhost:8080/api/auth/login \
+  -d "{\"username\":\"admin@example.com\",\"password\":\"$ADMIN_PWD\"}"
+```
+
 ## 📚 Documentation - When to Read What
 
 ### 🤖 Core Context (.ai/) - Always Read
