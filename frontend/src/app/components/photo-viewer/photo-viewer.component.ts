@@ -1,5 +1,7 @@
 import { Component, HostListener, OnDestroy, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { HttpClient } from '@angular/common/http';
+import { DomSanitizer, SafeUrl } from '@angular/platform-browser';
 import { Subject, takeUntil } from 'rxjs';
 import { PhotoViewerService, ViewerState } from '../../services/photo-viewer.service';
 import { Photo } from '../../models/photo.model';
@@ -16,7 +18,7 @@ export class PhotoViewerComponent implements OnInit, OnDestroy {
   
   viewerState: ViewerState | null = null;
   currentPhoto: Photo | null = null;
-  imageUrl: string = '';
+  imageUrl: SafeUrl | null = null;
   isFullscreen: boolean = false;
   isImageLoading: boolean = false;
   showSpinner: boolean = false; // Only show spinner after delay
@@ -34,7 +36,11 @@ export class PhotoViewerComponent implements OnInit, OnDestroy {
   private readonly SPINNER_DELAY: number = 200; // Show spinner only if loading takes > 200ms
   private spinnerTimeout: any = null;
 
-  constructor(private photoViewerService: PhotoViewerService) {}
+  constructor(
+    private photoViewerService: PhotoViewerService,
+    private http: HttpClient,
+    private sanitizer: DomSanitizer
+  ) {}
 
   ngOnInit(): void {
     this.photoViewerService.viewerState$
@@ -55,7 +61,8 @@ export class PhotoViewerComponent implements OnInit, OnDestroy {
               this.showSpinner = true;
             }
           }, this.SPINNER_DELAY);
-          this.imageUrl = `/api/photos/${this.currentPhoto.id}/full`;
+          // Load image as blob to include JWT token in request
+          this.loadFullImage(this.currentPhoto.id);
           // Prevent body scroll when viewer is open
           document.body.style.overflow = 'hidden';
           // Auto-enter fullscreen on mobile
@@ -64,7 +71,11 @@ export class PhotoViewerComponent implements OnInit, OnDestroy {
           this.hideAddressBarOnIOS();
         } else {
           this.currentPhoto = null;
-          this.imageUrl = '';
+          // Revoke object URL to prevent memory leak
+          if (this.imageUrl && typeof this.imageUrl === 'string') {
+            URL.revokeObjectURL(this.imageUrl);
+          }
+          this.imageUrl = null;
           this.isImageLoading = false;
           this.showSpinner = false;
           // Clear spinner timeout if exists
@@ -85,12 +96,45 @@ export class PhotoViewerComponent implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     // Restore body scroll on component destroy
     document.body.style.overflow = '';
+    // Revoke object URL to prevent memory leak
+    if (this.imageUrl && typeof this.imageUrl === 'string') {
+      URL.revokeObjectURL(this.imageUrl);
+    }
     // Clear spinner timeout if exists
     this.clearSpinnerTimeout();
     // Exit fullscreen on component destroy
     this.exitFullscreen();
     this.destroy$.next();
     this.destroy$.complete();
+  }
+
+  /**
+   * Load full resolution image as blob (includes JWT token in request)
+   */
+  private loadFullImage(photoId: number): void {
+    this.http.get(`/api/photos/${photoId}/full`, {
+      responseType: 'blob'
+    }).subscribe({
+      next: (blob) => {
+        // Revoke previous object URL if exists
+        if (this.imageUrl && typeof this.imageUrl === 'string') {
+          URL.revokeObjectURL(this.imageUrl);
+        }
+        const objectUrl = URL.createObjectURL(blob);
+        this.imageUrl = this.sanitizer.bypassSecurityTrustUrl(objectUrl);
+        this.isImageLoading = false;
+        this.showSpinner = false;
+        this.errorMessage.set(null);
+        this.clearSpinnerTimeout();
+      },
+      error: (error) => {
+        console.error('Failed to load photo:', error);
+        this.isImageLoading = false;
+        this.showSpinner = false;
+        this.errorMessage.set('Failed to load photo. The image may be missing or corrupted.');
+        this.clearSpinnerTimeout();
+      }
+    });
   }
 
   /**
@@ -323,26 +367,4 @@ export class PhotoViewerComponent implements OnInit, OnDestroy {
     this.touchStartTarget = null;
   }
 
-  /**
-   * Called when image finishes loading
-   */
-  onImageLoad(): void {
-    this.isImageLoading = false;
-    this.showSpinner = false;
-    this.errorMessage.set(null); // Clear error on successful load
-    // Clear spinner timeout if exists
-    this.clearSpinnerTimeout();
-  }
-
-  /**
-   * Called when image fails to load
-   */
-  onImageError(): void {
-    this.isImageLoading = false;
-    this.showSpinner = false;
-    this.errorMessage.set('Failed to load photo. The image may be missing or corrupted.');
-    // Clear spinner timeout if exists
-    this.clearSpinnerTimeout();
-    console.error('Failed to load photo:', this.imageUrl);
-  }
 }

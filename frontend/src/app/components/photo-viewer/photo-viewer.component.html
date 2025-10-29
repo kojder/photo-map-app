@@ -33,14 +33,14 @@
         }
         
         <!-- Photo image -->
-        <img 
-          [src]="imageUrl" 
-          [alt]="currentPhoto?.originalFilename || 'Photo'"
-          class="photo-viewer-image"
-          (load)="onImageLoad()"
-          (error)="onImageError()"
-          data-testid="viewer-image"
-        />
+        @if (imageUrl) {
+          <img
+            [src]="imageUrl"
+            [alt]="currentPhoto?.originalFilename || 'Photo'"
+            class="photo-viewer-image"
+            data-testid="viewer-image"
+          />
+        }
       </div>
 
       <!-- Navigation buttons -->

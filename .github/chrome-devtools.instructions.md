@@ -180,8 +180,10 @@ cd frontend && ng serve &
 ### Login/Auth Testing
 ```typescript
 // Verify login works
+// IMPORTANT: Read password from .env file first!
+// grep ADMIN_PASSWORD .env → currently: 10xdevsx10
 navigate_page("http://localhost:4200/login")
-fill_form({ email: "admin@photomap.com", password: "admin123" })
+fill_form({ email: "admin@example.com", password: "<read-from-.env>" })
 click("button[type='submit']")
 wait_for("navigation")
 list_console_messages() // Check for errors

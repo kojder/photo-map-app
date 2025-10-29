@@ -130,8 +130,9 @@ export const test = base.extend({
 export const test = base.extend({
   authenticatedPage: async ({ page }, use) => {
     // Logowanie przez API (szybsze)
+    // IMPORTANT: Read from .env.test (E2E_ADMIN_PASSWORD)
     const response = await page.request.post('/api/auth/login', {
-      data: { email: 'admin@example.com', password: 'admin123' }
+      data: { email: 'admin@example.com', password: process.env.E2E_ADMIN_PASSWORD }
     });
     const { token } = await response.json();
 
@@ -349,13 +350,16 @@ DB_USERNAME=photomap_test
 DB_PASSWORD=test123
 
 # Test users (seeded via Flyway migration)
-ADMIN_EMAIL=admin@example.com
-ADMIN_PASSWORD=admin123
-TEST_USER_EMAIL=user@example.com
-TEST_USER_PASSWORD=user123
+E2E_ADMIN_EMAIL=admin@example.com
+E2E_ADMIN_PASSWORD=<read-from-actual-.env.test>
+E2E_USER_EMAIL=user@example.com
+E2E_USER_PASSWORD=<read-from-actual-.env.test>
 ```
 
-**⚠️ WAŻNE:** Dodaj `.env.test` do `.gitignore`!
+**⚠️ WAŻNE:**
+- Dodaj `.env.test` do `.gitignore`!
+- **NEVER hardcode passwords** - always use environment variables
+- Read current values from `frontend/.env.test`
 
 ### 4. Package.json scripts
 
@@ -390,7 +394,8 @@ const testDbConfig = {
 };
 
 async function seedTestUsers(client: Client) {
-  // Admin user (BCrypt hash dla 'admin123')
+  // IMPORTANT: BCrypt hashes must match passwords in .env.test
+  // Admin user (BCrypt hash for E2E_ADMIN_PASSWORD from .env.test)
   await client.query(`
     INSERT INTO users (email, password_hash, role, can_view_photos, can_rate, created_at)
     VALUES
@@ -430,12 +435,12 @@ export { expect } from '@playwright/test';
 export const TEST_USERS = {
   admin: {
     email: 'admin@example.com',
-    password: 'admin123',
+    password: process.env.E2E_ADMIN_PASSWORD!, // Read from .env.test
     role: 'ADMIN',
   },
   regularUser: {
     email: 'user@example.com',
-    password: 'user123',
+    password: process.env.E2E_USER_PASSWORD!, // Read from .env.test
     role: 'USER',
   },
 };
