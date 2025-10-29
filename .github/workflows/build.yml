@@ -91,10 +91,9 @@ jobs:
       # SONARCLOUD ANALYSIS
       # ============================================
       - name: Backend - SonarCloud analysis
-        working-directory: backend
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        run: mvn sonar:sonar -Dsonar.token=${{ secrets.SONAR_TOKEN }}
+        run: mvn -f backend/pom.xml sonar:sonar -Dsonar.token=${{ secrets.SONAR_TOKEN }}
         
       - name: Frontend - SonarCloud analysis
         uses: SonarSource/sonarqube-scan-action@v6
