@@ -1,12 +1,12 @@
 export const TEST_USERS = {
   admin: {
     email: 'admin@example.com',
-    password: 'admin123',
+    password: process.env.ADMIN_PASSWORD || '',
     role: 'ADMIN',
   },
   regularUser: {
     email: 'user@example.com',
-    password: 'user123',
+    password: process.env.TEST_USER_PASSWORD || 'user123',
     role: 'USER',
   },
 };

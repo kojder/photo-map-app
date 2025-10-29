@@ -46,7 +46,7 @@ export default defineConfig({
         DB_PASSWORD: 'test123',
         SECURITY_ENABLED: 'true',
         ADMIN_EMAIL: 'admin@example.com',
-        ADMIN_PASSWORD: 'admin123',
+        ADMIN_PASSWORD: process.env.ADMIN_PASSWORD || '',
         JWT_SECRET: 'e2e-test-secret-key-minimum-32-characters',
       },
     },
