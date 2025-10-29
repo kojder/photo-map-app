@@ -21,7 +21,7 @@ export default defineConfig({
     screenshot: 'only-on-failure',
     video: 'retain-on-failure',
     actionTimeout: 10000,
-    navigationTimeout: 30000,
+    navigationTimeout: process.env.CI ? 60000 : 30000, // 60s for CI, 30s for local
   },
 
   projects: [
