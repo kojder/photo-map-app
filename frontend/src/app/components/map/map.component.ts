@@ -79,7 +79,7 @@ export class MapComponent implements OnInit, AfterViewInit, OnDestroy {
     this.loading.set(true);
     this.errorMessage.set(null);
 
-    const filters = { ...this.filterService.currentFilters(), hasGps: true };
+    const filters = { ...this.filterService.currentFilters(), hasGps: true, size: 10000 };
 
     this.photoService.getAllPhotos(filters).subscribe({
       next: (response) => {

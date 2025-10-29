@@ -60,7 +60,7 @@ export class GalleryComponent implements OnInit {
     this.errorMessage.set(null);
     this.isPermissionError.set(false);
 
-    const filters = this.filterService.currentFilters();
+    const filters = { ...this.filterService.currentFilters(), size: 200 };
 
     this.photoService.getAllPhotos(filters).subscribe({
       next: () => {
