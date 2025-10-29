@@ -357,6 +357,105 @@ Before starting implementation **ALWAYS**:
 - Follow git workflow guidelines (see Git Workflow section)
 - Show progress to user regularly
 
+## 🧪 Pre-commit Test Hook
+
+**Automatyczne uruchamianie testów przed każdym commitem**
+
+### Instalacja (jednorazowa)
+
+```bash
+./scripts/install-hooks.sh
+```
+
+Po instalacji hook będzie aktywny dla wszystkich przyszłych commitów.
+
+### Działanie
+
+Pre-commit hook działa automatycznie przy każdym `git commit`:
+
+1. **Automatyczne uruchomienie**: Hook wywołuje `./scripts/run-all-tests.sh`
+2. **Pełny test suite**: Uruchamia wszystkie testy (frontend unit + backend + E2E)
+3. **Zatrzymanie przy fail**: Jeśli którykolwiek test fail → commit **przerwany**
+4. **Kontynuacja przy success**: Jeśli wszystkie testy pass → commit przechodzi
+
+**Workflow:**
+```
+git commit -m "feat: add feature"
+  ↓
+🧪 Hook uruchamia testy automatycznie
+  ↓
+✅ Wszystkie OK → Commit utworzony
+❌ Fail → Commit przerwany (musisz naprawić)
+```
+
+### Ręczne uruchomienie testów (bez commita)
+
+```bash
+# Uruchom wszystkie testy w dowolnym momencie
+./scripts/run-all-tests.sh
+```
+
+**Zastosowanie:**
+- Przed rozpoczęciem pracy (sprawdzenie stanu)
+- Po dużych zmianach (przed stagowaniem)
+- Debugging (sprawdzenie co nie działa)
+
+### Output skryptu testowego
+
+Skrypt wyświetla szczegółowe summary:
+
+```
+============================================
+  TEST RESULTS SUMMARY
+============================================
+Frontend Unit Tests (Karma):    ✅ PASSED
+Backend Tests (Maven):           ✅ PASSED
+E2E Tests (Playwright):          ✅ PASSED
+============================================
+✓ All tests PASSED - OK to commit!
+
+Coverage reports:
+- frontend/coverage/frontend/index.html
+- backend/target/site/jacoco/index.html
+- frontend/playwright-report/index.html
+```
+
+### Bypass hooka (tylko w awaryjnych sytuacjach!)
+
+```bash
+# Pomiń pre-commit hook
+git commit --no-verify -m "wip: work in progress"
+```
+
+**⚠️ Używaj tylko gdy:**
+- Tworzysz WIP commit (work in progress)
+- Musisz szybko zapisać stan przed większą operacją
+- Masz świadomość że testy failują i naprawisz w następnym commicie
+
+**Nigdy nie bypass dla finalnych commitów do maina!**
+
+### Wytyczne dla Claude Code
+
+**Przed każdym commitem:**
+- ✅ Hook automatycznie uruchomi wszystkie testy
+- ✅ NIE commituj jeśli testy failują - napraw błędy najpierw
+- ✅ Jeśli hook zatrzymał commit → przeanalizuj błędy testów i popraw kod
+- ✅ Możesz uruchomić `./scripts/run-all-tests.sh` ręcznie przed stagowaniem
+- ❌ **NIE używaj `--no-verify`** bez wyraźnej zgody użytkownika
+
+**Kolejność pracy:**
+1. Implementuj feature/fix
+2. (Opcjonalnie) Uruchom `./scripts/run-all-tests.sh` ręcznie
+3. Napraw ewentualne błędy testów
+4. Stage changes: `git add .`
+5. Commit: `git commit -m "..."`
+6. Hook uruchomi się automatycznie
+7. Jeśli fail → wróć do kroku 3
+
+**Pamiętaj:** Hook wymusza quality standard - to dobra praktyka!
+
+---
+
 ## 🎨 Project Conventions
 
 ### Language and Communication
