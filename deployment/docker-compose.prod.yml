@@ -1,0 +1,22 @@
+# Docker Compose Override for Production (Mikrus VPS)
+#
+# This file overrides docker-compose.yml to use /storage bind mount
+# instead of named Docker volume for photo uploads.
+#
+# Usage on Mikrus:
+#   docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d
+#
+# Before first run, prepare /storage/upload on host:
+#   sudo mkdir -p /storage/upload/{input,original,medium,failed}
+#   sudo chown -R 1000:1000 /storage/upload
+#   sudo chmod -R 755 /storage/upload
+
+services:
+  backend:
+    volumes:
+      # Override named volume with bind mount to /storage/upload
+      - /storage/upload:/app/uploads
+
+# Remove named volume definition (not needed with bind mount)
+volumes:
+  photo-map-uploads: null
