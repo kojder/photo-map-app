@@ -7,17 +7,19 @@
 
 ## 🔄 Current Status
 
-**Last Updated:** 2025-10-29 (Tasks: Photo Viewer Fix + Credentials Policy - PUSHED to GitHub)
+**Last Updated:** 2025-10-29 (Tasks: Production Storage Mount + .env Sync)
 
 ### 🎯 Currently Working On
 
-**Awaiting GitHub Actions E2E Test Results** ⏳
+**Production Storage Configuration - READY FOR DEPLOYMENT TEST** ✅
 
 **Status:**
-- ✅ 5 commits pushed to origin/master
-- ✅ Photo Viewer fix completed and tested
-- ✅ Credentials Policy documented in CLAUDE.md
-- ⏳ Waiting for GitHub Actions E2E test results
+- ✅ Created docker-compose.prod.yml with /storage/upload bind mount (246GB)
+- ✅ Updated deploy.sh to use production override automatically
+- ✅ Prepared /storage/upload/ directory structure on Mikrus VPS
+- ✅ Synchronized production .env (ADMIN_PASSWORD, SECURITY_ENABLED, UPLOAD_DIR_*)
+- ✅ Committed: feat(deployment): add production storage mount
+- 🔜 **NEXT:** Test deployment workflow (build-images.sh + deploy-marcin288.sh)
 
 **Completed and Pushed (5 commits):**
 
@@ -126,6 +128,24 @@
 - ✅ **Docker health checks działają** - wszystkie kontenery "healthy" (nginx, frontend, backend)
 
 ### ✅ Last Completed
+
+**Production Storage Mount - /storage/upload Configuration** (2025-10-29)
+- ✅ **Problem:** Docker named volume limited space (~30GB), Mikrus ma duży dysk /storage (246GB)
+- ✅ **Solution:** Bind mount /storage/upload w docker-compose.prod.yml
+- ✅ **Implementation:**
+  - Created docker-compose.prod.yml - overrides named volume with bind mount
+  - Updated deploy.sh - automatically uses docker-compose.prod.yml on production
+  - Prepared /storage/upload/ structure: input/, original/, medium/, failed/
+  - Synchronized production .env - unified ADMIN_PASSWORD (10xdevsx10), added SECURITY_ENABLED=true
+  - Updated MIKRUS_SETUP.md - new Step 3: Storage Setup with verification commands
+- ✅ **Result:**
+  - Upload through browser → /storage/upload/input/ → processed by Spring Integration
+  - Manual upload to /storage/upload/input/ → automatically processed (no duplication)
+  - Files moved (not copied) from input/ → original/, thumbnail to medium/
+  - 246GB available for photos vs ~30GB on Docker volume
+- ✅ **Commit:** 84e3376
+- 📝 **Files:** docker-compose.prod.yml (new), deploy.sh, MIKRUS_SETUP.md
+- 🔜 **Next:** Test deployment workflow on production
 
 **SonarCloud Coverage Fix - Path Mapping Correction** (2025-10-29)
 - ✅ **Problem solved:** Coverage reports pokazywały 0.0% mimo że raporty były generowane
