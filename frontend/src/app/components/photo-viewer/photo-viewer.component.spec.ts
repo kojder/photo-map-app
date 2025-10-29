@@ -5,6 +5,7 @@ import { Router } from '@angular/router';
 import { BehaviorSubject } from 'rxjs';
 import { Photo } from '../../models/photo.model';
 import { ViewerState } from '../../services/photo-viewer.service';
+import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
 
 describe('PhotoViewerComponent', () => {
   let component: PhotoViewerComponent;
@@ -12,6 +13,7 @@ describe('PhotoViewerComponent', () => {
   let photoViewerService: jasmine.SpyObj<PhotoViewerService>;
   let viewerStateSubject: BehaviorSubject<ViewerState>;
   let routerSpy: jasmine.SpyObj<Router>;
+  let httpMock: HttpTestingController;
 
   const mockPhotos: Photo[] = [
     {
@@ -64,7 +66,7 @@ describe('PhotoViewerComponent', () => {
     });
 
     await TestBed.configureTestingModule({
-      imports: [PhotoViewerComponent],
+      imports: [PhotoViewerComponent, HttpClientTestingModule],
       providers: [
         { provide: PhotoViewerService, useValue: photoViewerServiceSpy },
         { provide: Router, useValue: routerSpy }
@@ -72,8 +74,13 @@ describe('PhotoViewerComponent', () => {
     }).compileComponents();
 
     photoViewerService = TestBed.inject(PhotoViewerService) as jasmine.SpyObj<PhotoViewerService>;
+    httpMock = TestBed.inject(HttpTestingController);
     fixture = TestBed.createComponent(PhotoViewerComponent);
     component = fixture.componentInstance;
+  });
+
+  afterEach(() => {
+    httpMock.verify();
   });
 
   it('should create', () => {
@@ -96,7 +103,17 @@ describe('PhotoViewerComponent', () => {
 
       expect(component.viewerState).toEqual(newState);
       expect(component.currentPhoto).toEqual(mockPhotos[1]);
-      expect(component.imageUrl).toBe('/api/photos/2/full');
+      expect(component.isImageLoading).toBe(true);
+
+      const req = httpMock.expectOne('/api/photos/2/full');
+      expect(req.request.method).toBe('GET');
+      expect(req.request.responseType).toBe('blob');
+
+      const blob = new Blob(['fake-image'], { type: 'image/jpeg' });
+      req.flush(blob);
+
+      expect(component.isImageLoading).toBe(false);
+      expect(component.imageUrl).toBeTruthy();
     });
 
     it('should clear photo data when viewer is closed', () => {
@@ -112,6 +129,9 @@ describe('PhotoViewerComponent', () => {
       viewerStateSubject.next(openState);
       fixture.detectChanges();
 
+      const req = httpMock.expectOne('/api/photos/1/full');
+      req.flush(new Blob(['fake-image'], { type: 'image/jpeg' }));
+
       const closedState: ViewerState = {
         isOpen: false,
         photos: [],
@@ -123,7 +143,7 @@ describe('PhotoViewerComponent', () => {
       fixture.detectChanges();
 
       expect(component.currentPhoto).toBeNull();
-      expect(component.imageUrl).toBe('');
+      expect(component.imageUrl).toBeNull();
     });
   });
 
@@ -137,6 +157,9 @@ describe('PhotoViewerComponent', () => {
       };
       viewerStateSubject.next(openState);
       fixture.detectChanges();
+
+      const req = httpMock.expectOne('/api/photos/1/full');
+      req.flush(new Blob(['fake-image'], { type: 'image/jpeg' }));
     });
 
     it('should close viewer on Escape key', () => {
@@ -210,6 +233,8 @@ describe('PhotoViewerComponent', () => {
 
   describe('photoCounter', () => {
     it('should return correct counter string', () => {
+      fixture.detectChanges();
+
       const openState: ViewerState = {
         isOpen: true,
         photos: mockPhotos,
@@ -218,6 +243,9 @@ describe('PhotoViewerComponent', () => {
       };
       viewerStateSubject.next(openState);
       fixture.detectChanges();
+
+      const req = httpMock.expectOne('/api/photos/2/full');
+      req.flush(new Blob(['fake-image'], { type: 'image/jpeg' }));
 
       expect(component.photoCounter).toBe('2 / 2');
     });
@@ -230,6 +258,8 @@ describe('PhotoViewerComponent', () => {
 
   describe('template rendering', () => {
     it('should render viewer when isOpen is true', () => {
+      fixture.detectChanges();
+
       const openState: ViewerState = {
         isOpen: true,
         photos: mockPhotos,
@@ -237,6 +267,10 @@ describe('PhotoViewerComponent', () => {
         sourceRoute: '/gallery'
       };
       viewerStateSubject.next(openState);
+      fixture.detectChanges();
+
+      const req = httpMock.expectOne('/api/photos/1/full');
+      req.flush(new Blob(['fake-image'], { type: 'image/jpeg' }));
       fixture.detectChanges();
 
       const viewerElement = fixture.nativeElement.querySelector('[data-testid="viewer-image"]');
@@ -251,6 +285,8 @@ describe('PhotoViewerComponent', () => {
     });
 
     it('should display correct image URL', () => {
+      fixture.detectChanges();
+
       const openState: ViewerState = {
         isOpen: true,
         photos: mockPhotos,
@@ -260,13 +296,19 @@ describe('PhotoViewerComponent', () => {
       viewerStateSubject.next(openState);
       fixture.detectChanges();
 
+      const req = httpMock.expectOne('/api/photos/2/full');
+      req.flush(new Blob(['fake-image'], { type: 'image/jpeg' }));
+      fixture.detectChanges();
+
       const imgElement = fixture.nativeElement.querySelector('[data-testid="viewer-image"]') as HTMLImageElement;
-      expect(imgElement.src).toContain('/api/photos/2/full');
+      expect(imgElement.src).toBeTruthy();
     });
 
     it('should hide previous button on first photo', () => {
+      fixture.detectChanges();
+
       photoViewerService.isFirstPhoto.and.returnValue(true);
-      
+
       const openState: ViewerState = {
         isOpen: true,
         photos: mockPhotos,
@@ -276,13 +318,19 @@ describe('PhotoViewerComponent', () => {
       viewerStateSubject.next(openState);
       fixture.detectChanges();
 
+      const req = httpMock.expectOne('/api/photos/1/full');
+      req.flush(new Blob(['fake-image'], { type: 'image/jpeg' }));
+      fixture.detectChanges();
+
       const prevButton = fixture.nativeElement.querySelector('[data-testid="viewer-prev-button"]');
       expect(prevButton).toBeFalsy();
     });
 
     it('should hide next button on last photo', () => {
+      fixture.detectChanges();
+
       photoViewerService.isLastPhoto.and.returnValue(true);
-      
+
       const openState: ViewerState = {
         isOpen: true,
         photos: mockPhotos,
@@ -290,6 +338,10 @@ describe('PhotoViewerComponent', () => {
         sourceRoute: '/gallery'
       };
       viewerStateSubject.next(openState);
+      fixture.detectChanges();
+
+      const req = httpMock.expectOne('/api/photos/2/full');
+      req.flush(new Blob(['fake-image'], { type: 'image/jpeg' }));
       fixture.detectChanges();
 
       const nextButton = fixture.nativeElement.querySelector('[data-testid="viewer-next-button"]');
@@ -307,6 +359,9 @@ describe('PhotoViewerComponent', () => {
       };
       viewerStateSubject.next(openState);
       fixture.detectChanges();
+
+      const req = httpMock.expectOne('/api/photos/1/full');
+      req.flush(new Blob(['fake-image'], { type: 'image/jpeg' }));
     });
 
     // Helper function to create mock TouchEvent
@@ -443,6 +498,10 @@ describe('PhotoViewerComponent', () => {
       fixture.detectChanges();
 
       expect(component.isImageLoading).toBe(true);
+
+      // Flush pending HTTP request
+      const req = httpMock.expectOne('/api/photos/1/full');
+      req.flush(new Blob(['fake-image'], { type: 'image/jpeg' }));
     });
 
     it('should not show spinner immediately (no flicker)', () => {
@@ -460,6 +519,10 @@ describe('PhotoViewerComponent', () => {
 
       // Spinner should NOT be visible immediately
       expect(component.showSpinner).toBe(false);
+
+      // Flush pending HTTP request
+      const req = httpMock.expectOne('/api/photos/1/full');
+      req.flush(new Blob(['fake-image'], { type: 'image/jpeg' }));
     });
 
     it('should show spinner after delay if still loading', (done) => {
@@ -481,31 +544,64 @@ describe('PhotoViewerComponent', () => {
         if (component.isImageLoading) {
           expect(component.showSpinner).toBe(true);
         }
+
+        // Flush pending HTTP request before ending test
+        const req = httpMock.expectOne('/api/photos/1/full');
+        req.flush(new Blob(['fake-image'], { type: 'image/jpeg' }));
+
         done();
       }, 250);
     });
 
-    it('should set isImageLoading to false when image loads', () => {
-      component.isImageLoading = true;
-      component.showSpinner = true;
-      
-      component.onImageLoad();
-      
+    it('should set isImageLoading to false when image loads successfully', () => {
+      fixture.detectChanges();
+
+      const newState: ViewerState = {
+        isOpen: true,
+        photos: mockPhotos,
+        currentIndex: 0,
+        sourceRoute: '/gallery'
+      };
+
+      viewerStateSubject.next(newState);
+      fixture.detectChanges();
+
+      expect(component.isImageLoading).toBe(true);
+
+      const req = httpMock.expectOne('/api/photos/1/full');
+      req.flush(new Blob(['fake-image'], { type: 'image/jpeg' }));
+
       expect(component.isImageLoading).toBe(false);
       expect(component.showSpinner).toBe(false);
+      expect(component.errorMessage()).toBeNull();
     });
 
-    it('should set isImageLoading to false when image fails to load', () => {
-      component.isImageLoading = true;
-      component.showSpinner = true;
-      
-      component.onImageError();
-      
+    it('should set isImageLoading to false and show error when image fails to load', () => {
+      fixture.detectChanges();
+
+      const newState: ViewerState = {
+        isOpen: true,
+        photos: mockPhotos,
+        currentIndex: 0,
+        sourceRoute: '/gallery'
+      };
+
+      viewerStateSubject.next(newState);
+      fixture.detectChanges();
+
+      expect(component.isImageLoading).toBe(true);
+
+      const req = httpMock.expectOne('/api/photos/1/full');
+      req.error(new ProgressEvent('error'));
+
       expect(component.isImageLoading).toBe(false);
       expect(component.showSpinner).toBe(false);
+      expect(component.errorMessage()).toBeTruthy();
     });
 
     it('should set isImageLoading to false when viewer closes', () => {
+      fixture.detectChanges();
+
       // First open the viewer
       const openState: ViewerState = {
         isOpen: true,
@@ -517,6 +613,9 @@ describe('PhotoViewerComponent', () => {
       fixture.detectChanges();
 
       expect(component.isImageLoading).toBe(true);
+
+      const req = httpMock.expectOne('/api/photos/1/full');
+      req.flush(new Blob(['fake-image'], { type: 'image/jpeg' }));
 
       // Then close it
       const closedState: ViewerState = {
@@ -533,6 +632,8 @@ describe('PhotoViewerComponent', () => {
     });
 
     it('should reset isImageLoading when navigating to next photo', () => {
+      fixture.detectChanges();
+
       // Open viewer with first photo
       const state1: ViewerState = {
         isOpen: true,
@@ -546,7 +647,8 @@ describe('PhotoViewerComponent', () => {
       expect(component.isImageLoading).toBe(true);
 
       // Simulate image loaded
-      component.onImageLoad();
+      const req1 = httpMock.expectOne('/api/photos/1/full');
+      req1.flush(new Blob(['fake-image'], { type: 'image/jpeg' }));
       expect(component.isImageLoading).toBe(false);
 
       // Navigate to next photo
@@ -561,6 +663,9 @@ describe('PhotoViewerComponent', () => {
 
       // Loading state should be reset
       expect(component.isImageLoading).toBe(true);
+
+      const req2 = httpMock.expectOne('/api/photos/2/full');
+      req2.flush(new Blob(['fake-image-2'], { type: 'image/jpeg' }));
     });
 
     it('should not show spinner if image loads before delay', (done) => {
@@ -578,8 +683,9 @@ describe('PhotoViewerComponent', () => {
 
       // Simulate fast image load (before 200ms delay)
       setTimeout(() => {
-        component.onImageLoad();
-        
+        const req = httpMock.expectOne('/api/photos/1/full');
+        req.flush(new Blob(['fake-image'], { type: 'image/jpeg' }));
+
         // Wait a bit more to ensure spinner timeout didn't trigger
         setTimeout(() => {
           expect(component.showSpinner).toBe(false);

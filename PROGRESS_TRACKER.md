@@ -7,46 +7,51 @@
 
 ## 🔄 Current Status
 
-**Last Updated:** 2025-10-29 (Tasks: E2E Tests Fix + Security Fix - COMMITED, awaiting push)
+**Last Updated:** 2025-10-29 (Tasks: Photo Viewer Fix + Credentials Policy - PUSHED to GitHub)
 
 ### 🎯 Currently Working On
 
-**Photo Viewer Fix - Failed to load full resolution images** 🔧
+**Awaiting GitHub Actions E2E Test Results** ⏳
 
 **Status:**
-- 2 commits ready (not pushed yet)
-- E2E + Security fixes completed and tested
-- Photo viewer bug discovered during manual testing
-- Next: Fix photo-viewer endpoint issue
+- ✅ 5 commits pushed to origin/master
+- ✅ Photo Viewer fix completed and tested
+- ✅ Credentials Policy documented in CLAUDE.md
+- ⏳ Waiting for GitHub Actions E2E test results
 
-**Completed (Uncommitted - 2 commits):**
+**Completed and Pushed (5 commits):**
 
-**Commit 1: E2E Tests Fix**
+**Commit 1-3: E2E + Security Fixes** (previous session)
 1. ✅ Playwright config: timeout 90s dla CI, Playwright-managed servers
-2. ✅ GitHub workflow: usunięte manual startup (57 linii), włączone E2E testy
+2. ✅ GitHub workflow: usunięte manual startup, włączone E2E testy
 3. ✅ AdminInitializer: wyłączony w profilu e2e (`@Profile("!e2e")`)
-4. ✅ database.fixture.ts: prawidłowy BCrypt hash dla admin password
+4. ✅ Security: usunięte hardcoded hasła, GitHub Secrets
+5. ✅ database.fixture.ts: dynamiczny BCrypt hash
 
-**Commit 2: Security Fix**
-1. ✅ Usunięte wszystkie hardcoded hasła z repo
-2. ✅ GitHub Secret: ADMIN_PASSWORD ustawiony
-3. ✅ Dynamiczne generowanie BCrypt hash (bcryptjs)
-4. ✅ Wszystkie zmienne przez process.env/GitHub Secrets
+**Commit 4: Photo Viewer Fix**
+1. ✅ Load full image as blob via HttpClient (includes JWT token)
+2. ✅ Added `loadFullImage()` method with error handling
+3. ✅ Memory management - revoke object URLs on cleanup
+4. ✅ Changed `imageUrl` type: `string` → `SafeUrl | null`
+5. ✅ Removed unused `onImageLoad()` and `onImageError()` handlers
+
+**Commit 5: Credentials Policy Documentation**
+1. ✅ CLAUDE.md: added "CRITICAL: Credentials & Environment Variables" section
+2. ✅ Clear policy: ALWAYS read passwords from `.env`, NEVER hardcode
+3. ✅ Removed all hardcoded passwords from documentation (.ai/, .github/)
+4. ✅ Updated PROGRESS_TRACKER: `Admin123!` → `10xdevsx10`
+5. ✅ Examples: correct workflow with `grep ADMIN_PASSWORD .env`
 
 **Testy lokalne (ALL PASSED):**
 - ✅ Backend Unit Tests: 43/43 passed
 - ✅ Frontend Unit Tests: 163/163 passed (77.6% coverage)
 - ✅ E2E Tests: 16/16 passed (1.4m)
-
-**Odkryty Bug:**
-- Photo Viewer: 404 na /api/photos/{id}/full
-- Wymaga naprawy przed pushem
+- ✅ Photo Viewer: manual test in Chrome DevTools - 200 OK on /api/photos/1/full
 
 **Next Steps:**
-1. Fix photo-viewer endpoint issue
-2. Test manual w przeglądarce
-3. Push both commits
-4. Verify on GitHub Actions
+1. ⏳ Wait for GitHub Actions E2E results
+2. If tests pass → Phase complete
+3. If tests fail → debug and fix
 
 **SonarCloud Status:**
 - Backend: **49.9% coverage**, 2k LOC (Java), Security A, Maintainability A
