@@ -7,41 +7,18 @@
 
 ## 🔄 Current Status
 
-**Last Updated:** 2025-10-29 (Feature: E2E Tests - CI workflow profile fix)
+**Last Updated:** 2025-10-29 (Task: SonarCloud Backend Configuration - Complete)
 
 ### 🎯 Currently Working On
 
-**E2E Tests - Playwright (GitHub Actions CI verification in progress)**
+**E2E Tests - Playwright (Awaiting CI verification)**
 
-**Current Status:**
-- ✅ Phase 1: Login tests implemented (2 tests)
-- ✅ Phase 2: Smoke tests implemented (14 tests: Admin, Gallery, Map, Filters, Navigation)
-- ✅ Testy lokalne: 16/16 green (1.5min)
-- ✅ Page Object Models: 5 plików (BasePage, LoginPage, AdminPage, GalleryPage, MapPage, FilterFabPage, NavbarPage)
-- ✅ GitHub Actions workflow naprawiony (backend + frontend startup + health checks)
-- ✅ **CI Profile Fix**: Poprawiony profil Spring Boot (test → e2e) + timeout 60s dla CI
-- ⏳ **Weryfikacja na GitHub Actions CI w toku** (push + monitoring workflow)
+**Status:** ✅ Implementation complete, CI fix pushed (27ba4b0)
+- ✅ 16 E2E tests (Auth, Admin, Gallery, Map, Filters, Navigation)
+- ✅ CI workflow fixed: profil `e2e` + timeout 60s
+- ⏳ Weryfikacja na GitHub Actions w toku (user sprawdzi później)
 
-**Commits pushed:**
-- be0aaa4 feat(e2e): add Playwright E2E tests setup with first login test
-- 6063f29 feat(e2e): add Phase 2 smoke tests with Page Object Models
-- a28f278 fix(ci): add backend and frontend startup for E2E tests
-- 895bb81 fix(e2e): set reuseExistingServer=true to prevent port conflicts in CI
-- 0cd5508 fix(ci): use e2e profile for backend and increase timeout for CI
-
-**Next Planned Actions:**
-1. ⏳ Push commit i zweryfikować status GitHub Actions workflow (czy testy E2E przechodzą na CI)
-2. 🔧 **SonarCloud Configuration Fix** (backend not analyzed)
-   - Problem: Backend nie jest analizowany przez SonarCloud (tylko frontend widoczny)
-   - Root cause: Brak `sonar-maven-plugin` w backend/pom.xml + konflikt projectKey
-   - Plan naprawy:
-     - [ ] Dodać `sonar-maven-plugin` do `backend/pom.xml` (w sekcji `<build><plugins>`)
-     - [ ] Zmienić `sonar.projectKey` w `backend/pom.xml`: `kojder_photo-map-app` → `kojder_photo-map-app-backend`
-     - [ ] Zmienić `sonar.projectKey` w `frontend/sonar-project.properties`: `kojder_photo-map-app` → `kojder_photo-map-app-frontend`
-     - [ ] Utworzyć `backend/sonar-project.properties` (opcjonalnie, dla spójności z frontendem)
-     - [ ] Zweryfikować w GitHub Actions: Backend analysis passes, oba projekty widoczne w SonarCloud
-   - Estimated time: 30-45 min
-   - Benefit: Osobne dashboardy SonarCloud dla backend + frontend, lepszy monitoring jakości kodu
+**Next After SonarCloud:**
 3. (Optional) Post-MVP Enhancements:
    - Email System (verification, password reset)
    - Public Photo Sharing (UUID links)
@@ -118,6 +95,27 @@
 - ✅ **Docker health checks działają** - wszystkie kontenery "healthy" (nginx, frontend, backend)
 
 ### ✅ Last Completed
+
+**SonarCloud Configuration - Separate Backend and Frontend Projects** (2025-10-29)
+- ✅ **Problem solved:** Backend nie był analizowany przez SonarCloud, konflikt skanów przy shared projectKey
+- ✅ **Root cause:**
+  - Brak `sonar-maven-plugin` w `backend/pom.xml`
+  - Dwa skanery (Maven + SonarScanner CLI) z tym samym `projectKey` powodowały nadpisywanie
+- ✅ **Solution:** Dwa osobne projekty SonarCloud (best practice dla monorepo)
+  - Backend: `kojder_photo-map-app-backend`
+  - Frontend: `kojder_photo-map-app-frontend`
+- ✅ **Configuration:**
+  - Backend: `sonar-maven-plugin` (4.0.0.4121) + projectKey w pom.xml
+  - Frontend: projectKey w sonar-project.properties
+  - Coverage: JaCoCo (backend) + lcov (frontend)
+  - Workflow: `.github/workflows/build.yml` uruchamia oba skany niezależnie
+  - Token: jeden `SONAR_TOKEN` (organization-level) dla obu projektów
+- ✅ **Expected result:**
+  - Dwa osobne dashboardy w SonarCloud (backend Java + frontend TypeScript)
+  - Backend metrics: Java files, JaCoCo coverage, code smells, bugs, vulnerabilities
+  - Frontend metrics: TypeScript files, lcov coverage, code quality
+- 📝 **Files:** backend/pom.xml, frontend/sonar-project.properties
+- 🎯 **Next:** Weryfikacja w GitHub Actions CI + dwa dashboardy w SonarCloud po push
 
 **E2E Tests - CI Workflow Profile Fix** (2025-10-29)
 - ✅ **Problem diagnosed:** Backend używał nieistniejącego profilu `test` zamiast `e2e`

@@ -30,7 +30,8 @@
 		<java.version>17</java.version>
 		
 		<!-- SonarCloud Configuration -->
-		<sonar.projectKey>kojder_photo-map-app</sonar.projectKey>
+		<sonar.projectKey>kojder_photo-map-app-backend</sonar.projectKey>
+		<sonar.projectName>Photo Map App - Backend</sonar.projectName>
 		<sonar.organization>kojder</sonar.organization>
 		<sonar.host.url>https://sonarcloud.io</sonar.host.url>
 		<sonar.java.source>17</sonar.java.source>
@@ -184,6 +185,13 @@
 						</goals>
 					</execution>
 				</executions>
+			</plugin>
+
+			<!-- SonarCloud Maven Plugin for Code Quality Analysis -->
+			<plugin>
+				<groupId>org.sonarsource.scanner.maven</groupId>
+				<artifactId>sonar-maven-plugin</artifactId>
+				<version>4.0.0.4121</version>
 			</plugin>
 		</plugins>
 	</build>
