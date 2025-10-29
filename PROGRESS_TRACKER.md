@@ -314,12 +314,12 @@
 - ✅ Docker volumes: photo-map-uploads persistent storage configured
 - ✅ SSL: Automatic via Mikrus proxy (*.wykr.es wildcard certificate)
 - ✅ Auto-restart: Docker restart policy unless-stopped
-- ✅ Login working: admin@example.com / Admin123! (JWT token generated successfully)
+- ✅ Login working: admin@example.com / 10xdevsx10 (JWT token generated successfully)
 - 🐛 Issues resolved:
   - Fixed deploy.sh: scp port flag changed from `-p` to `-P`
   - Fixed docker-compose.yml: added DB_HOST, DB_PORT, DB_NAME, DB_USERNAME, DB_PASSWORD, ADMIN_PASSWORD
   - Fixed Flyway baseline: manually executed V1 migration due to shared database (n8n tables present)
-  - Fixed admin password: changed from "admin" (5 chars) to "Admin123!" (8 chars) - frontend validation requires minLength(8)
+  - Fixed admin password: changed from "admin" (5 chars) to "10xdevsx10" (10 chars) - frontend validation requires minLength(8)
   - Fixed env reload: `docker compose down && up -d` required for new environment variables (restart doesn't reload .env)
 - ⚠️ Known issues:
   - Photo upload fails with "Upload failed. Please try again." error (backend logs needed)
