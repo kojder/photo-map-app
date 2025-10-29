@@ -7,19 +7,26 @@
 
 ## 🔄 Current Status
 
-**Last Updated:** 2025-10-29 (Tasks: Production Storage Mount + .env Sync)
+**Last Updated:** 2025-10-29 (Tasks: Production Storage Mount - Deployment Test Completed)
 
 ### 🎯 Currently Working On
 
-**Production Storage Configuration - READY FOR DEPLOYMENT TEST** ✅
+**Production Storage Configuration - DEPLOYMENT TEST COMPLETED** ✅
 
 **Status:**
 - ✅ Created docker-compose.prod.yml with /storage/upload bind mount (246GB)
 - ✅ Updated deploy.sh to use production override automatically
 - ✅ Prepared /storage/upload/ directory structure on Mikrus VPS
 - ✅ Synchronized production .env (ADMIN_PASSWORD, SECURITY_ENABLED, UPLOAD_DIR_*)
-- ✅ Committed: feat(deployment): add production storage mount
-- 🔜 **NEXT:** Test deployment workflow (build-images.sh + deploy-marcin288.sh)
+- ✅ Committed: feat(deployment): add production storage mount (84e3376)
+- ✅ **Deployment workflow tested:** build-images.sh + deploy-marcin288.sh
+- ✅ **Verification completed:**
+  - docker inspect confirms bind mount: /storage/upload → /app/uploads (Type: bind, RW: true)
+  - Application accessible: https://photos.tojest.dev/ (Angular + backend healthy)
+  - Manual upload test: test_photo.jpg → auto-processed (GPS extracted, thumbnail generated)
+  - Backend logs: photo processed successfully (id=79, GPS: 50.73/14.58)
+  - Gallery displays photos correctly (new photo visible with thumbnail)
+- 🎉 **RESULT:** Production deployment with /storage/upload (246GB) działa poprawnie!
 
 **Completed and Pushed (5 commits):**
 
@@ -129,7 +136,7 @@
 
 ### ✅ Last Completed
 
-**Production Storage Mount - /storage/upload Configuration** (2025-10-29)
+**Production Storage Mount - Deployment Test Completed** (2025-10-29)
 - ✅ **Problem:** Docker named volume limited space (~30GB), Mikrus ma duży dysk /storage (246GB)
 - ✅ **Solution:** Bind mount /storage/upload w docker-compose.prod.yml
 - ✅ **Implementation:**
@@ -138,14 +145,24 @@
   - Prepared /storage/upload/ structure: input/, original/, medium/, failed/
   - Synchronized production .env - unified ADMIN_PASSWORD (10xdevsx10), added SECURITY_ENABLED=true
   - Updated MIKRUS_SETUP.md - new Step 3: Storage Setup with verification commands
+- ✅ **Deployment Workflow Test:**
+  - Step 1: Build images → backend 251MB, frontend 53.5MB (15s backend JAR, 12s Angular build)
+  - Step 2: Deploy → SCP transfer, docker load, docker compose up -d with prod override
+  - Step 3: Verify bind mount → docker inspect confirms /storage/upload → /app/uploads (bind, RW)
+  - Step 4: Verify application → https://photos.tojest.dev/ (Angular + backend healthy)
+  - Step 5: Manual upload test → test_photo.jpg (4.9MB) uploaded to /storage/upload/input/
+  - Step 6: Processing verified → auto-processed in 15s, GPS extracted, thumbnail generated (22KB)
+  - Step 7: Backend logs → "Photo processed successfully: id=79, GPS: 50.73/14.58"
+  - Step 8: Gallery test → 20 photos displayed, new photo visible with working thumbnail
 - ✅ **Result:**
-  - Upload through browser → /storage/upload/input/ → processed by Spring Integration
-  - Manual upload to /storage/upload/input/ → automatically processed (no duplication)
-  - Files moved (not copied) from input/ → original/, thumbnail to medium/
-  - 246GB available for photos vs ~30GB on Docker volume
+  - Upload through browser → /storage/upload/input/ → processed by Spring Integration ✅
+  - Manual upload to /storage/upload/input/ → automatically processed (no duplication) ✅
+  - Files moved (not copied) from input/ → original/, thumbnail to medium/ ✅
+  - 246GB available for photos vs ~30GB on Docker volume ✅
+  - Deployment scripts work end-to-end without manual intervention ✅
 - ✅ **Commit:** 84e3376
 - 📝 **Files:** docker-compose.prod.yml (new), deploy.sh, MIKRUS_SETUP.md
-- 🔜 **Next:** Test deployment workflow on production
+- 🎉 **Status:** Production deployment fully verified and operational!
 
 **SonarCloud Coverage Fix - Path Mapping Correction** (2025-10-29)
 - ✅ **Problem solved:** Coverage reports pokazywały 0.0% mimo że raporty były generowane
