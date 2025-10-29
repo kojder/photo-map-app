@@ -12,7 +12,7 @@ NC='\033[0m' # No Color
 PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 
 echo ""
-echo "Installing git pre-commit hook..."
+echo "Installing git pre-push hook..."
 echo ""
 
 # Check if .git directory exists
@@ -24,19 +24,19 @@ fi
 # Create hooks directory if it doesn't exist
 mkdir -p "$PROJECT_ROOT/.git/hooks"
 
-# Copy pre-commit hook
-cp "$PROJECT_ROOT/scripts/git-hooks/pre-commit" "$PROJECT_ROOT/.git/hooks/pre-commit"
+# Copy pre-push hook
+cp "$PROJECT_ROOT/scripts/git-hooks/pre-push" "$PROJECT_ROOT/.git/hooks/pre-push"
 
 # Make it executable
-chmod +x "$PROJECT_ROOT/.git/hooks/pre-commit"
+chmod +x "$PROJECT_ROOT/.git/hooks/pre-push"
 
-echo -e "${GREEN}✅ Git pre-commit hook installed successfully!${NC}"
+echo -e "${GREEN}✅ Git pre-push hook installed successfully!${NC}"
 echo ""
-echo "Hook location: ${BLUE}.git/hooks/pre-commit${NC}"
+echo "Hook location: ${BLUE}.git/hooks/pre-push${NC}"
 echo ""
-echo "From now on, all tests will run automatically before each commit."
+echo "From now on, all tests will run automatically before each push."
 echo ""
 echo "Commands:"
 echo "  - Run tests manually: ${BLUE}./scripts/run-all-tests.sh${NC}"
-echo "  - Bypass hook (not recommended): ${BLUE}git commit --no-verify${NC}"
+echo "  - Bypass hook (not recommended): ${BLUE}git push --no-verify${NC}"
 echo ""
