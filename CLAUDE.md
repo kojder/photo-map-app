@@ -357,9 +357,9 @@ Before starting implementation **ALWAYS**:
 - Follow git workflow guidelines (see Git Workflow section)
 - Show progress to user regularly
 
-## 🧪 Pre-commit Test Hook
+## 🧪 Pre-push Test Hook
 
-**Automatyczne uruchamianie testów przed każdym commitem**
+**Automatyczne uruchamianie testów przed każdym pushem do remote**
 
 ### Instalacja (jednorazowa)
 
@@ -367,28 +367,33 @@ Before starting implementation **ALWAYS**:
 ./scripts/install-hooks.sh
 ```
 
-Po instalacji hook będzie aktywny dla wszystkich przyszłych commitów.
+Po instalacji hook będzie aktywny dla wszystkich przyszłych pushów.
 
 ### Działanie
 
-Pre-commit hook działa automatycznie przy każdym `git commit`:
+Pre-push hook działa automatycznie przy każdym `git push`:
 
 1. **Automatyczne uruchomienie**: Hook wywołuje `./scripts/run-all-tests.sh`
 2. **Pełny test suite**: Uruchamia wszystkie testy (frontend unit + backend + E2E)
-3. **Zatrzymanie przy fail**: Jeśli którykolwiek test fail → commit **przerwany**
-4. **Kontynuacja przy success**: Jeśli wszystkie testy pass → commit przechodzi
+3. **Zatrzymanie przy fail**: Jeśli którykolwiek test fail → push **przerwany**
+4. **Kontynuacja przy success**: Jeśli wszystkie testy pass → push przechodzi
 
 **Workflow:**
 ```
-git commit -m "feat: add feature"
+git push
   ↓
 🧪 Hook uruchamia testy automatycznie
   ↓
-✅ Wszystkie OK → Commit utworzony
-❌ Fail → Commit przerwany (musisz naprawić)
+✅ Wszystkie OK → Push wykonany
+❌ Fail → Push przerwany (musisz naprawić)
 ```
 
-### Ręczne uruchomienie testów (bez commita)
+**Dlaczego pre-push zamiast pre-commit?**
+- ✅ Commit jest szybki (lokalna operacja, wielokrotna)
+- ✅ Push weryfikowany testami (przed wysłaniem na remote)
+- ✅ Mniej frustracji - testy tylko raz przed pushem, nie przy każdym commicie
+
+### Ręczne uruchomienie testów (bez pusha)
 
 ```bash
 # Uruchom wszystkie testy w dowolnym momencie
@@ -397,7 +402,8 @@ git commit -m "feat: add feature"
 
 **Zastosowanie:**
 - Przed rozpoczęciem pracy (sprawdzenie stanu)
-- Po dużych zmianach (przed stagowaniem)
+- Po dużych zmianach (przed commitowaniem)
+- Przed pushem (weryfikacja lokalna)
 - Debugging (sprawdzenie co nie działa)
 
 ### Output skryptu testowego
@@ -412,7 +418,7 @@ Frontend Unit Tests (Karma):    ✅ PASSED
 Backend Tests (Maven):           ✅ PASSED
 E2E Tests (Playwright):          ✅ PASSED
 ============================================
-✓ All tests PASSED - OK to commit!
+✓ All tests PASSED - OK to push!
 
 Coverage reports:
 - frontend/coverage/frontend/index.html
@@ -423,36 +429,36 @@ Coverage reports:
 ### Bypass hooka (tylko w awaryjnych sytuacjach!)
 
 ```bash
-# Pomiń pre-commit hook
-git commit --no-verify -m "wip: work in progress"
+# Pomiń pre-push hook
+git push --no-verify
 ```
 
 **⚠️ Używaj tylko gdy:**
-- Tworzysz WIP commit (work in progress)
-- Musisz szybko zapisać stan przed większą operacją
-- Masz świadomość że testy failują i naprawisz w następnym commicie
+- Masz pewność że testy przejdą na CI/CD
+- Musisz szybko wypchnąć hotfix (i naprawisz testy w następnym commicie)
+- Świadomie pushujesz WIP branch (nie main!)
 
-**Nigdy nie bypass dla finalnych commitów do maina!**
+**Nigdy nie bypass dla pushów do main/mastera!**
 
 ### Wytyczne dla Claude Code
 
-**Przed każdym commitem:**
+**Przed każdym pushem:**
 - ✅ Hook automatycznie uruchomi wszystkie testy
-- ✅ NIE commituj jeśli testy failują - napraw błędy najpierw
-- ✅ Jeśli hook zatrzymał commit → przeanalizuj błędy testów i popraw kod
-- ✅ Możesz uruchomić `./scripts/run-all-tests.sh` ręcznie przed stagowaniem
+- ✅ NIE pushuj jeśli testy failują - napraw błędy najpierw
+- ✅ Jeśli hook zatrzymał push → przeanalizuj błędy testów i popraw kod
+- ✅ Możesz uruchomić `./scripts/run-all-tests.sh` ręcznie przed pushem
 - ❌ **NIE używaj `--no-verify`** bez wyraźnej zgody użytkownika
 
 **Kolejność pracy:**
 1. Implementuj feature/fix
-2. (Opcjonalnie) Uruchom `./scripts/run-all-tests.sh` ręcznie
-3. Napraw ewentualne błędy testów
-4. Stage changes: `git add .`
-5. Commit: `git commit -m "..."`
-6. Hook uruchomi się automatycznie
-7. Jeśli fail → wróć do kroku 3
+2. Stage changes: `git add .`
+3. Commit lokalnie: `git commit -m "..."` (szybko, bez testów)
+4. (Opcjonalnie) Uruchom `./scripts/run-all-tests.sh` ręcznie
+5. Napraw ewentualne błędy testów
+6. Push: `git push` (hook uruchomi się automatycznie)
+7. Jeśli fail → wróć do kroku 5
 
-**Pamiętaj:** Hook wymusza quality standard - to dobra praktyka!
+**Pamiętaj:** Hook wymusza quality standard przed wysłaniem na remote - to dobra praktyka!
 
 ---
 

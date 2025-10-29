@@ -140,7 +140,7 @@ Coverage reports:
 
 ### `install-hooks.sh`
 
-Instaluje git pre-commit hook, który automatycznie uruchamia wszystkie testy przed każdym commitem.
+Instaluje git pre-push hook, który automatycznie uruchamia wszystkie testy przed każdym pushem do remote.
 
 **Podstawowe użycie (jednorazowa instalacja):**
 ```bash
@@ -148,18 +148,23 @@ Instaluje git pre-commit hook, który automatycznie uruchamia wszystkie testy pr
 ```
 
 **Funkcje:**
-- ✅ Kopiuje pre-commit hook do `.git/hooks/`
+- ✅ Kopiuje pre-push hook do `.git/hooks/`
 - ✅ Ustawia uprawnienia wykonywalne
 - ✅ Wyświetla instrukcje użycia
 
-**Działanie pre-commit hooka:**
+**Działanie pre-push hooka:**
 - Hook wywołuje `./scripts/run-all-tests.sh` automatycznie
-- Jeśli testy FAIL → commit **przerwany**
-- Jeśli testy PASS → commit przechodzi
+- Jeśli testy FAIL → push **przerwany**
+- Jeśli testy PASS → push przechodzi
+
+**Dlaczego pre-push zamiast pre-commit?**
+- ✅ Commit jest szybki (lokalna operacja, wielokrotna)
+- ✅ Push weryfikowany testami (przed wysłaniem na remote)
+- ✅ Mniej frustracji - testy tylko raz przed pushem
 
 **Bypass hooka (tylko w awaryjnych sytuacjach):**
 ```bash
-git commit --no-verify -m "wip: work in progress"
+git push --no-verify
 ```
 
 **Przykład workflow:**
@@ -167,16 +172,19 @@ git commit --no-verify -m "wip: work in progress"
 # 1. Zainstaluj hook (raz)
 ./scripts/install-hooks.sh
 
-# 2. Normalny commit
+# 2. Normalny commit (bez testów - szybko)
 git add .
 git commit -m "feat: add feature"
+
+# 3. Push (hook uruchamia testy)
+git push
   ↓
 🧪 Hook uruchamia testy automatycznie
   ↓
-✅ Wszystkie OK → Commit utworzony
-❌ Fail → Commit przerwany
+✅ Wszystkie OK → Push wykonany
+❌ Fail → Push przerwany
 
-# 3. Jeśli fail - napraw kod i spróbuj ponownie
+# 4. Jeśli fail - napraw kod i spróbuj ponownie
 ```
 
 ---
