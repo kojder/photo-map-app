@@ -7,27 +7,46 @@
 
 ## 🔄 Current Status
 
-**Last Updated:** 2025-10-29 (Task: E2E Tests Fix - IN PROGRESS)
+**Last Updated:** 2025-10-29 (Tasks: E2E Tests Fix + Security Fix - COMMITED, awaiting push)
 
 ### 🎯 Currently Working On
 
-**E2E Tests - Fixing timeout and authentication issues** 🔧
+**Photo Viewer Fix - Failed to load full resolution images** 🔧
 
 **Status:**
-- Root causes identified and fixed
-- Changes ready for commit
-- Next: Commit + test on GitHub Actions
+- 2 commits ready (not pushed yet)
+- E2E + Security fixes completed and tested
+- Photo viewer bug discovered during manual testing
+- Next: Fix photo-viewer endpoint issue
 
-**Fixes Applied:**
+**Completed (Uncommitted - 2 commits):**
+
+**Commit 1: E2E Tests Fix**
 1. ✅ Playwright config: timeout 90s dla CI, Playwright-managed servers
 2. ✅ GitHub workflow: usunięte manual startup (57 linii), włączone E2E testy
 3. ✅ AdminInitializer: wyłączony w profilu e2e (`@Profile("!e2e")`)
-4. ✅ database.fixture.ts: prawidłowy BCrypt hash dla "admin123"
+4. ✅ database.fixture.ts: prawidłowy BCrypt hash dla admin password
+
+**Commit 2: Security Fix**
+1. ✅ Usunięte wszystkie hardcoded hasła z repo
+2. ✅ GitHub Secret: ADMIN_PASSWORD ustawiony
+3. ✅ Dynamiczne generowanie BCrypt hash (bcryptjs)
+4. ✅ Wszystkie zmienne przez process.env/GitHub Secrets
+
+**Testy lokalne (ALL PASSED):**
+- ✅ Backend Unit Tests: 43/43 passed
+- ✅ Frontend Unit Tests: 163/163 passed (77.6% coverage)
+- ✅ E2E Tests: 16/16 passed (1.4m)
+
+**Odkryty Bug:**
+- Photo Viewer: 404 na /api/photos/{id}/full
+- Wymaga naprawy przed pushem
 
 **Next Steps:**
-- Commit all changes (4 files)
-- Push and verify on GitHub Actions
-- Update PROGRESS_TRACKER after success
+1. Fix photo-viewer endpoint issue
+2. Test manual w przeglądarce
+3. Push both commits
+4. Verify on GitHub Actions
 
 **SonarCloud Status:**
 - Backend: **49.9% coverage**, 2k LOC (Java), Security A, Maintainability A
