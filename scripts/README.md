@@ -88,13 +88,110 @@ Zatrzymuje backend i frontend z graceful shutdown.
 
 ---
 
+### `run-all-tests.sh`
+
+Uruchamia wszystkie testy: frontend unit, backend i E2E.
+
+**Podstawowe użycie:**
+```bash
+./scripts/run-all-tests.sh
+```
+
+**Funkcje:**
+- ✅ Automatycznie sprawdza i uruchamia PostgreSQL testową (port 5433)
+- ✅ Uruchamia po kolei:
+  - Frontend Unit Tests (Karma): `npm run test:coverage`
+  - Backend Tests (Maven): `./mvnw test`
+  - E2E Tests (Playwright): `npm run test:e2e`
+- ✅ Zatrzymuje się przy pierwszym fail
+- ✅ Wyświetla szczegółowe summary z wynikami
+- ✅ Pokazuje ścieżki do coverage reports
+- ✅ Exit code 0 (sukces) lub 1 (fail)
+
+**Output:**
+```
+============================================
+  TEST RESULTS SUMMARY
+============================================
+Frontend Unit Tests (Karma):    ✅ PASSED
+Backend Tests (Maven):           ✅ PASSED
+E2E Tests (Playwright):          ✅ PASSED
+============================================
+✓ All tests PASSED - OK to commit!
+
+Coverage reports:
+- frontend/coverage/frontend/index.html
+- backend/target/site/jacoco/index.html
+- frontend/playwright-report/index.html
+```
+
+**Wymagania:**
+- Docker (dla PostgreSQL testowej)
+- Maven wrapper w `backend/mvnw`
+- npm/Node.js dla frontendu
+
+**Zastosowanie:**
+- Przed commitem (ręcznie lub przez pre-commit hook)
+- Po większych zmianach w kodzie
+- Weryfikacja stanu przed pull requestem
+- CI/CD pipeline
+
+---
+
+### `install-hooks.sh`
+
+Instaluje git pre-commit hook, który automatycznie uruchamia wszystkie testy przed każdym commitem.
+
+**Podstawowe użycie (jednorazowa instalacja):**
+```bash
+./scripts/install-hooks.sh
+```
+
+**Funkcje:**
+- ✅ Kopiuje pre-commit hook do `.git/hooks/`
+- ✅ Ustawia uprawnienia wykonywalne
+- ✅ Wyświetla instrukcje użycia
+
+**Działanie pre-commit hooka:**
+- Hook wywołuje `./scripts/run-all-tests.sh` automatycznie
+- Jeśli testy FAIL → commit **przerwany**
+- Jeśli testy PASS → commit przechodzi
+
+**Bypass hooka (tylko w awaryjnych sytuacjach):**
+```bash
+git commit --no-verify -m "wip: work in progress"
+```
+
+**Przykład workflow:**
+```bash
+# 1. Zainstaluj hook (raz)
+./scripts/install-hooks.sh
+
+# 2. Normalny commit
+git add .
+git commit -m "feat: add feature"
+  ↓
+🧪 Hook uruchamia testy automatycznie
+  ↓
+✅ Wszystkie OK → Commit utworzony
+❌ Fail → Commit przerwany
+
+# 3. Jeśli fail - napraw kod i spróbuj ponownie
+```
+
+---
+
 ## 📂 Struktura
 
 ```
 scripts/
 ├── start-dev.sh       # Uruchamianie aplikacji
 ├── stop-dev.sh        # Zatrzymywanie aplikacji
+├── run-all-tests.sh   # Uruchamianie wszystkich testów
+├── install-hooks.sh   # Instalacja git pre-commit hooka
 ├── README.md          # Ta dokumentacja
+├── git-hooks/         # Templates git hooków
+│   └── pre-commit     # Pre-commit hook (kopiowany do .git/hooks/)
 └── .pid/              # PID files i logi (gitignored)
     ├── backend.pid
     ├── frontend.pid
