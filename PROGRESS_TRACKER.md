@@ -7,7 +7,7 @@
 
 ## 🔄 Current Status
 
-**Last Updated:** 2025-10-29 (Feature: E2E Tests - Playwright implementation & CI workflow fix)
+**Last Updated:** 2025-10-29 (Feature: E2E Tests - CI workflow profile fix)
 
 ### 🎯 Currently Working On
 
@@ -19,17 +19,30 @@
 - ✅ Testy lokalne: 16/16 green (1.5min)
 - ✅ Page Object Models: 5 plików (BasePage, LoginPage, AdminPage, GalleryPage, MapPage, FilterFabPage, NavbarPage)
 - ✅ GitHub Actions workflow naprawiony (backend + frontend startup + health checks)
-- ⏳ **Weryfikacja na GitHub Actions CI w toku** (sprawdzamy czy workflow przechodzi zielono)
+- ✅ **CI Profile Fix**: Poprawiony profil Spring Boot (test → e2e) + timeout 60s dla CI
+- ⏳ **Weryfikacja na GitHub Actions CI w toku** (push + monitoring workflow)
 
 **Commits pushed:**
 - be0aaa4 feat(e2e): add Playwright E2E tests setup with first login test
 - 6063f29 feat(e2e): add Phase 2 smoke tests with Page Object Models
 - a28f278 fix(ci): add backend and frontend startup for E2E tests
 - 895bb81 fix(e2e): set reuseExistingServer=true to prevent port conflicts in CI
+- 0cd5508 fix(ci): use e2e profile for backend and increase timeout for CI
 
 **Next Planned Actions:**
-1. ⏳ Zweryfikować status GitHub Actions workflow (czy testy E2E przechodzą na CI)
-2. (Optional) Post-MVP Enhancements:
+1. ⏳ Push commit i zweryfikować status GitHub Actions workflow (czy testy E2E przechodzą na CI)
+2. 🔧 **SonarCloud Configuration Fix** (backend not analyzed)
+   - Problem: Backend nie jest analizowany przez SonarCloud (tylko frontend widoczny)
+   - Root cause: Brak `sonar-maven-plugin` w backend/pom.xml + konflikt projectKey
+   - Plan naprawy:
+     - [ ] Dodać `sonar-maven-plugin` do `backend/pom.xml` (w sekcji `<build><plugins>`)
+     - [ ] Zmienić `sonar.projectKey` w `backend/pom.xml`: `kojder_photo-map-app` → `kojder_photo-map-app-backend`
+     - [ ] Zmienić `sonar.projectKey` w `frontend/sonar-project.properties`: `kojder_photo-map-app` → `kojder_photo-map-app-frontend`
+     - [ ] Utworzyć `backend/sonar-project.properties` (opcjonalnie, dla spójności z frontendem)
+     - [ ] Zweryfikować w GitHub Actions: Backend analysis passes, oba projekty widoczne w SonarCloud
+   - Estimated time: 30-45 min
+   - Benefit: Osobne dashboardy SonarCloud dla backend + frontend, lepszy monitoring jakości kodu
+3. (Optional) Post-MVP Enhancements:
    - Email System (verification, password reset)
    - Public Photo Sharing (UUID links)
    - Temporal & Spatial Filters
@@ -105,6 +118,17 @@
 - ✅ **Docker health checks działają** - wszystkie kontenery "healthy" (nginx, frontend, backend)
 
 ### ✅ Last Completed
+
+**E2E Tests - CI Workflow Profile Fix** (2025-10-29)
+- ✅ **Problem diagnosed:** Backend używał nieistniejącego profilu `test` zamiast `e2e`
+- ✅ **Root cause:** Profile 'test' nie istnieje → backend używał domyślnego application.properties
+  - Domyślny port: 5432 (zamiast 5433 gdzie jest testowa baza PostgreSQL w CI)
+  - Domyślna baza: photomap (zamiast photomap_test)
+  - Backend nie mógł połączyć się z bazą → wszystkie testy timeoutowały
+- ✅ **Fix 1:** Zmiana profilu w workflow: `-Dspring-boot.run.profiles=test` → `e2e`
+- ✅ **Fix 2:** Zwiększenie navigationTimeout: 30s → 60s dla CI (30s lokalnie)
+- ✅ **Result:** 15/16 failujących testów powinno teraz przejść zielono
+- 📝 **Commit:** 0cd5508 fix(ci): use e2e profile for backend and increase timeout for CI
 
 **E2E Tests - Playwright Implementation & CI Workflow Fix** (2025-10-29)
 - ✅ **Phase 1: Playwright Setup & Login Tests** (commit be0aaa4)
