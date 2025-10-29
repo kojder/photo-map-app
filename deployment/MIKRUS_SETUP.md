@@ -48,7 +48,47 @@ curl https://photos.tojest.dev/
 
 ---
 
-## 📦 Step 3: PostgreSQL Credentials
+## 💾 Step 3: Storage Setup
+
+**Photo uploads używają /storage mount (246GB disk)**
+
+Folder `/storage/upload/` został już przygotowany na VPS:
+
+```bash
+/storage/upload/
+├── input/      # Incoming photos (buffer)
+├── original/   # Original uploaded photos
+├── medium/     # Medium-sized thumbnails
+└── failed/     # Failed processing photos
+```
+
+**Konfiguracja:**
+- **Named volume** (docker-compose.yml) - dla testów lokalnych
+- **Bind mount** (docker-compose.prod.yml) - dla produkcji na Mikrus
+
+Deploy script automatycznie używa `docker-compose.prod.yml` → pliki trafiają do `/storage/upload/`
+
+**Weryfikacja montowania:**
+```bash
+# Sprawdź czy /storage/upload działa
+ssh -i ~/.ssh/id_ed25519_mikrus -p 10288 root@marcin288.mikrus.xyz \
+  'ls -lah /storage/upload/'
+
+# Sprawdź czy backend widzi folder
+ssh -i ~/.ssh/id_ed25519_mikrus -p 10288 root@marcin288.mikrus.xyz \
+  'docker exec photo-map-backend ls -la /app/uploads/'
+```
+
+**Czyszczenie starych plików z named volume (OPCJONALNE):**
+```bash
+# Usuń stary named volume (tylko jeśli nie ma tam ważnych plików)
+ssh -i ~/.ssh/id_ed25519_mikrus -p 10288 root@marcin288.mikrus.xyz \
+  'cd /opt/photo-map && docker compose down && docker volume rm photo-map_photo-map-uploads'
+```
+
+---
+
+## 📦 Step 4: PostgreSQL Credentials
 
 1. **Panel:** https://mikr.us/panel/?a=postgres
 2. **Pobierz credentials:**
@@ -74,7 +114,7 @@ curl https://photos.tojest.dev/
 
 ---
 
-## 🚀 Step 4: Deployment Workflow
+## 🚀 Step 5: Deployment Workflow
 
 ### Pierwsza instalacja:
 
@@ -98,7 +138,7 @@ curl https://photos.tojest.dev/
 
 ---
 
-## ✅ Step 5: Weryfikacja
+## ✅ Step 6: Weryfikacja
 
 ```bash
 # Check containers status (na VPS)

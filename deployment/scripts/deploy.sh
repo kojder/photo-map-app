@@ -76,8 +76,9 @@ fi
 # Create remote directory
 ssh $SSH_OPTS root@$SRV_HOST "mkdir -p $REMOTE_PATH"
 
-# Transfer docker-compose.yml and nginx.conf
+# Transfer docker-compose.yml, docker-compose.prod.yml, and nginx.conf
 scp $SCP_OPTS deployment/docker-compose.yml root@$SRV_HOST:$REMOTE_PATH/
+scp $SCP_OPTS deployment/docker-compose.prod.yml root@$SRV_HOST:$REMOTE_PATH/
 scp $SCP_OPTS deployment/nginx.conf root@$SRV_HOST:$REMOTE_PATH/
 
 # Transfer .env (if exists)
@@ -107,11 +108,11 @@ EOF
 echo -e "${GREEN}✓ Images loaded on VPS${NC}"
 echo ""
 
-# Step 5: Start Docker Compose
+# Step 5: Start Docker Compose (with production override)
 echo -e "${GREEN}Step 5: Starting Docker Compose...${NC}"
 ssh $SSH_OPTS root@$SRV_HOST << EOF
 cd $REMOTE_PATH
-docker compose up -d
+docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d
 echo "✓ Containers started"
 docker compose ps
 EOF
