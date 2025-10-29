@@ -7,17 +7,27 @@
 
 ## 🔄 Current Status
 
-**Last Updated:** 2025-10-29 (Task: SonarCloud Coverage Fix - COMPLETED)
+**Last Updated:** 2025-10-29 (Task: E2E Tests Fix - IN PROGRESS)
 
 ### 🎯 Currently Working On
 
-**MVP Complete - All Core Features Implemented ✅**
+**E2E Tests - Fixing timeout and authentication issues** 🔧
 
-**Status:** All 6 MVP phases completed + E2E Tests + Deployment + SonarCloud CI/CD
+**Status:**
+- Root causes identified and fixed
+- Changes ready for commit
+- Next: Commit + test on GitHub Actions
 
-**Next Optional Enhancements:**
-- E2E Tests - enable and debug timeout issues (currently disabled: `if: false`)
-- Post-MVP features (Public Sharing, Temporal Filters, NAS Batch Processing)
+**Fixes Applied:**
+1. ✅ Playwright config: timeout 90s dla CI, Playwright-managed servers
+2. ✅ GitHub workflow: usunięte manual startup (57 linii), włączone E2E testy
+3. ✅ AdminInitializer: wyłączony w profilu e2e (`@Profile("!e2e")`)
+4. ✅ database.fixture.ts: prawidłowy BCrypt hash dla "admin123"
+
+**Next Steps:**
+- Commit all changes (4 files)
+- Push and verify on GitHub Actions
+- Update PROGRESS_TRACKER after success
 
 **SonarCloud Status:**
 - Backend: **49.9% coverage**, 2k LOC (Java), Security A, Maintainability A
