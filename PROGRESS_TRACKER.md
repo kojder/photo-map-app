@@ -7,40 +7,23 @@
 
 ## 🔄 Current Status
 
-**Last Updated:** 2025-10-29 (Task: SonarCloud Coverage Fix)
+**Last Updated:** 2025-10-29 (Task: SonarCloud Coverage Fix - COMPLETED)
 
 ### 🎯 Currently Working On
 
-**SonarCloud Coverage Reports - Fix 0.0% Coverage**
+**MVP Complete - All Core Features Implemented ✅**
 
-**Problem:**
-- ✅ Oba projekty SonarCloud aktywne (backend + frontend)
-- ✅ Code quality metrics działają (Security A, Maintainability A)
-- ❌ Coverage reports: **0.0%** (czerwona ikona)
+**Status:** All 6 MVP phases completed + E2E Tests + Deployment + SonarCloud CI/CD
 
-**Root Cause (do zdiagnozowania):**
-- Ścieżki do raportów coverage mogą być niepoprawne w konfiguracji
-- Raporty mogą nie być generowane w oczekiwanej lokalizacji
-- SonarCloud może nie znajdować plików coverage
+**Next Optional Enhancements:**
+- E2E Tests - enable and debug timeout issues (currently disabled: `if: false`)
+- Post-MVP features (Public Sharing, Temporal Filters, NAS Batch Processing)
 
-**Expected Paths:**
-- Backend: `target/site/jacoco/jacoco.xml` (JaCoCo XML)
-- Frontend: `coverage/frontend/lcov.info` (lcov)
-
-**Plan Naprawy:**
-1. [ ] Sprawdzić logi GitHub Actions (Backend/Frontend SonarCloud analysis steps)
-2. [ ] Zweryfikować czy raporty coverage są generowane (artifacts/logs)
-3. [ ] Poprawić ścieżki w konfiguracji jeśli potrzeba
-4. [ ] Push + weryfikacja w SonarCloud dashboards
-
-**Current Status:**
-- SonarCloud dashboards: https://sonarcloud.io/projects?search=kojder_photo-map-app
-- Backend: 2k LOC (Java), Quality Gate: Not computed
-- Frontend: 3.3k LOC (TypeScript), Quality Gate: Not computed
-
-**Next After Coverage Fix:**
-- (Optional) E2E Tests - debugowanie timeout issues
-- (Optional) Post-MVP Enhancements
+**SonarCloud Status:**
+- Backend: **49.9% coverage**, 2k LOC (Java), Security A, Maintainability A
+- Frontend: **56.1% coverage**, 3.3k LOC (TypeScript), Security A, Maintainability A
+- Quality Gates: Active, coverage reports working correctly
+- Dashboards: https://sonarcloud.io/projects?search=kojder_photo-map-app
 
 **Phase 6: Deployment na Mikrus VPS (Docker Compose)** - ✅ **COMPLETED**
 
@@ -109,6 +92,20 @@
 - ✅ **Docker health checks działają** - wszystkie kontenery "healthy" (nginx, frontend, backend)
 
 ### ✅ Last Completed
+
+**SonarCloud Coverage Fix - Path Mapping Correction** (2025-10-29)
+- ✅ **Problem solved:** Coverage reports pokazywały 0.0% mimo że raporty były generowane
+- ✅ **Root cause:**
+  - Backend SonarCloud analysis uruchamiany z `working-directory: backend`
+  - Nieprawidłowe ścieżki bazowe → SonarCloud nie mógł zmapować coverage do plików
+  - Tylko 1/53 plików było mapowanych → wszystko pokazywało 0.0%
+- ✅ **Solution:** Zmiana workflow - uruchomienie z project root + parametr `-f backend/pom.xml`
+- ✅ **Result (commit 194393b):**
+  - ✅ Backend: 0.0% → **49.9% coverage** (678 lines to cover, 310 uncovered)
+  - ✅ Frontend: 0.0% → **56.1% coverage** (764 lines to cover, 333 uncovered)
+  - ✅ Quality Gates teraz działają z prawidłowymi metrykami
+- 📝 **Files:** .github/workflows/build.yml (usunięto working-directory, dodano -f backend/pom.xml)
+- 🎯 **Impact:** CI/CD coverage monitoring teraz w pełni funkcjonalny
 
 **SonarCloud Configuration - Separate Backend and Frontend Projects** (2025-10-29)
 - ✅ **Problem solved:** Backend nie był analizowany przez SonarCloud, konflikt skanów przy shared projectKey
