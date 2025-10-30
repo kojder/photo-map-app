@@ -17,7 +17,22 @@ export class FilterService {
 
   applyFilters(filters: Partial<PhotoFilters>): void {
     const currentFilters = this.filtersSubject.value;
-    const newFilters = { ...currentFilters, ...filters, page: 0 };
+    
+    // Start with current filters
+    const newFilters = { ...currentFilters, page: 0 };
+    
+    // Remove minRating if explicitly set to null/undefined
+    if (filters.hasOwnProperty('minRating') && (filters.minRating === null || filters.minRating === undefined)) {
+      delete (newFilters as any).minRating;
+    }
+    
+    // Apply new filter values (excluding null/undefined/empty)
+    Object.entries(filters).forEach(([key, value]) => {
+      if (value !== undefined && value !== null && value !== '') {
+        (newFilters as any)[key] = value;
+      }
+    });
+    
     this.filtersSubject.next(newFilters);
   }
 

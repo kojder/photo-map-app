@@ -11,27 +11,28 @@
 
 ### 🎯 Currently Working On
 
-**✅ SonarCloud CRITICAL Issues - All Fixed**
+_No active tasks - ready for next feature or bug fix_
 
-**Status:**
-- ✅ All 8 CRITICAL issues from backend fixed
-- ✅ All backend tests passing (74/74)
-- ✅ Backend starts without errors
-- ✅ Changes committed
+---
 
-**Fixed Issues:**
-1. ✅ Duplicate string "Photo not found or access denied" (PhotoController)
-2. ✅ Duplicate string "User not found" (UserService)
-3. ✅ Transactional method call via 'this' (UserService)
-4. ✅ Static access for TAG_DATETIME_ORIGINAL (PhotoProcessingService)
-5. ✅ Transactional method call via 'this' (SettingsService line 47)
-6. ✅ Transactional method call via 'this' (SettingsService line 42)
-7. ✅ Empty test method (PhotoMapBackendApplicationTests)
-8. ✅ Duplicate string "Photo not found" (PhotoService)
+### ✅ Last Completed
 
-**Important Workflow Addition:**
-- After each SonarQube fix: `./mvnw test` + `./scripts/start-dev.sh` + check logs + `./scripts/stop-dev.sh`
-- Ensures no regression and runtime stability
+**🐛 Filter Rating "All" Bug - Fixed** (2025-10-30)
+
+**Problem:** When user changed from specific rating (e.g., 3+) back to "All", photos remained filtered
+
+**Root Cause:** `FilterFabComponent.onFilterChange()` wasn't passing `minRating: null` to `FilterService` when "All" was selected
+
+**Solution:** Always include `minRating` in filters object (even when null), so `FilterService.applyFilters()` can detect reset and remove filter
+
+**Verification:** Tested with Chrome DevTools MCP:
+- Set filter to "3+" → only 1 photo with rating ≥3 shown ✅
+- Change to "All" → all photos shown (including unrated) ✅
+- Network request confirms no `minRating` parameter sent ✅
+
+---
+
+**SonarCloud CRITICAL Issues - All Fixed** (2025-10-30)
 
 ---
 

@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, signal, computed } from '@angular/core';
+import { Component, OnInit, OnDestroy, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Subscription } from 'rxjs';
@@ -38,17 +38,17 @@ export class FilterFabComponent implements OnInit, OnDestroy {
     this.filterSubscription?.unsubscribe();
   }
 
-  hasActiveFilters = computed(() => {
+  hasActiveFilters(): boolean {
     return !!this.dateFrom || !!this.dateTo || this.minRating !== null;
-  });
+  }
 
-  activeFilterCount = computed(() => {
+  activeFilterCount(): number {
     let count = 0;
     if (this.dateFrom) count++;
     if (this.dateTo) count++;
     if (this.minRating !== null) count++;
     return count;
-  });
+  }
 
   toggleFilters(): void {
     this.filtersOpen.update(value => !value);
@@ -62,7 +62,9 @@ export class FilterFabComponent implements OnInit, OnDestroy {
     const filters: any = {};
     if (this.dateFrom) filters.dateFrom = this.dateFrom;
     if (this.dateTo) filters.dateTo = this.dateTo;
-    if (this.minRating !== null) filters.minRating = this.minRating;
+    
+    // Always include minRating (even if null) so FilterService can detect when user selects "All"
+    filters.minRating = this.minRating;
 
     this.filterService.applyFilters(filters);
   }
