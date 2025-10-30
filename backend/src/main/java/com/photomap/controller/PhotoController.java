@@ -42,6 +42,8 @@ import java.util.UUID;
 @Slf4j
 public class PhotoController {
 
+    private static final String ERROR_PHOTO_NOT_FOUND_OR_ACCESS_DENIED = "Photo not found or access denied";
+
     private final PhotoService photoService;
     private final PhotoRepository photoRepository;
     private final UserRepository userRepository;
@@ -134,7 +136,7 @@ public class PhotoController {
         }
 
         final Photo photo = photoService.getPhotoById(id, currentUser.getId())
-                .orElseThrow(() -> new IllegalArgumentException("Photo not found or access denied"));
+                .orElseThrow(() -> new IllegalArgumentException(ERROR_PHOTO_NOT_FOUND_OR_ACCESS_DENIED));
 
         return ResponseEntity.ok(mapToPhotoResponse(photo, currentUser.getId()));
     }
@@ -153,7 +155,7 @@ public class PhotoController {
             }
 
             photo = photoService.getPhotoById(id, currentUser.getId())
-                    .orElseThrow(() -> new IllegalArgumentException("Photo not found or access denied"));
+                    .orElseThrow(() -> new IllegalArgumentException(ERROR_PHOTO_NOT_FOUND_OR_ACCESS_DENIED));
         }
 
         String thumbnailFilename = photo.getThumbnailFilename();
@@ -192,7 +194,7 @@ public class PhotoController {
             }
 
             photo = photoService.getPhotoById(id, currentUser.getId())
-                    .orElseThrow(() -> new IllegalArgumentException("Photo not found or access denied"));
+                    .orElseThrow(() -> new IllegalArgumentException(ERROR_PHOTO_NOT_FOUND_OR_ACCESS_DENIED));
         }
 
         final Path filePath = Paths.get(originalDirectory, photo.getFilename());

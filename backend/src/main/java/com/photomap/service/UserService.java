@@ -17,17 +17,14 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 public class UserService {
 
+    private static final String ERROR_USER_NOT_FOUND = "User not found";
+
     private final UserRepository userRepository;
     private final PhotoRepository photoRepository;
 
     public UserService(final UserRepository userRepository, final PhotoRepository photoRepository) {
         this.userRepository = userRepository;
         this.photoRepository = photoRepository;
-    }
-
-    @Transactional(readOnly = true)
-    public Page<UserAdminResponse> listAllUsers(final Pageable pageable) {
-        return listAllUsers(pageable, null);
     }
 
     @Transactional(readOnly = true)
@@ -53,7 +50,7 @@ public class UserService {
     @Transactional
     public UserResponse changeUserRole(final Long userId, final UpdateRoleRequest request) {
         final User user = userRepository.findById(userId)
-                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+                .orElseThrow(() -> new IllegalArgumentException(ERROR_USER_NOT_FOUND));
 
         user.setRole(request.role());
         final User savedUser = userRepository.save(user);
@@ -74,7 +71,7 @@ public class UserService {
         final String currentUserEmail = authentication.getName();
 
         final User userToDelete = userRepository.findById(userId)
-                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+                .orElseThrow(() -> new IllegalArgumentException(ERROR_USER_NOT_FOUND));
 
         if (userToDelete.getEmail().equals(currentUserEmail)) {
             throw new IllegalArgumentException("Cannot delete yourself");
@@ -86,7 +83,7 @@ public class UserService {
     @Transactional
     public UserResponse updateUserPermissions(final Long userId, final UpdatePermissionsRequest request) {
         final User user = userRepository.findById(userId)
-                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+                .orElseThrow(() -> new IllegalArgumentException(ERROR_USER_NOT_FOUND));
 
         user.setCanViewPhotos(request.canViewPhotos());
         user.setCanRate(request.canRate());

@@ -36,14 +36,4 @@ public class SettingsService {
             appSettingsRepository.save(newSetting);
         }
     }
-
-    @Transactional(readOnly = true)
-    public String getAdminContactEmail() {
-        return getSetting("admin_contact_email");
-    }
-
-    @Transactional
-    public void updateAdminContactEmail(final String email) {
-        updateSetting("admin_contact_email", email);
-    }
 }

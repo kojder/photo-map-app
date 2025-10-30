@@ -19,7 +19,7 @@ public class PublicController {
 
     @GetMapping("/settings")
     public ResponseEntity<AppSettingsResponse> getPublicSettings() {
-        final String adminContactEmail = settingsService.getAdminContactEmail();
+        final String adminContactEmail = settingsService.getSetting("admin_contact_email");
         return ResponseEntity.ok(new AppSettingsResponse(adminContactEmail));
     }
 }

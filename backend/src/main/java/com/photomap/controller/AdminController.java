@@ -77,7 +77,7 @@ public class AdminController {
 
     @GetMapping("/settings")
     public ResponseEntity<AppSettingsResponse> getSettings() {
-        final String adminContactEmail = settingsService.getAdminContactEmail();
+        final String adminContactEmail = settingsService.getSetting("admin_contact_email");
         return ResponseEntity.ok(new AppSettingsResponse(adminContactEmail));
     }
 
@@ -85,7 +85,7 @@ public class AdminController {
     public ResponseEntity<AppSettingsResponse> updateSettings(
             @Valid @RequestBody final UpdateSettingsRequest request) {
 
-        settingsService.updateAdminContactEmail(request.adminContactEmail());
+        settingsService.updateSetting("admin_contact_email", request.adminContactEmail());
         return ResponseEntity.ok(new AppSettingsResponse(request.adminContactEmail()));
     }
 
