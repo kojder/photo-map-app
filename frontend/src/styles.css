@@ -1,3 +1,6 @@
+/* Flatpickr default theme - must be imported before Tailwind */
+@import 'flatpickr/dist/flatpickr.min.css';
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -10,4 +13,50 @@ html, body {
   padding: 0;
   width: 100%;
   height: 100%;
+}
+
+/* Flatpickr custom styling (Tailwind theme integration) */
+.flatpickr-calendar {
+  @apply shadow-2xl rounded-lg border-0;
+}
+
+.flatpickr-months {
+  @apply rounded-t-lg;
+}
+
+.flatpickr-current-month {
+  @apply text-gray-900;
+}
+
+.flatpickr-day {
+  @apply text-gray-700 hover:bg-blue-100 rounded-lg;
+}
+
+.flatpickr-day.selected {
+  @apply bg-blue-600 text-white hover:bg-blue-700;
+}
+
+.flatpickr-day.today {
+  @apply border-blue-600;
+}
+
+.flatpickr-day.today:not(.selected) {
+  @apply text-blue-600;
+}
+
+.flatpickr-months .flatpickr-month {
+  @apply bg-white;
+}
+
+.flatpickr-months .flatpickr-prev-month:hover,
+.flatpickr-months .flatpickr-next-month:hover {
+  @apply text-blue-600;
+}
+
+.flatpickr-weekdays {
+  @apply bg-gray-50;
+}
+
+.flatpickr-weekday {
+  @apply text-gray-600 font-medium;
 }

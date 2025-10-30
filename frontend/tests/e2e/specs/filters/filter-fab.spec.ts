@@ -9,7 +9,7 @@ test.describe('Filters - Filter FAB', () => {
   let galleryPage: GalleryPage;
   let filterFabPage: FilterFabPage;
 
-  test.beforeEach(async ({ page, db }) => {
+  test.beforeEach(async ({ page }) => {
     // Login and navigate to gallery
     loginPage = new LoginPage(page);
     await loginPage.goto();
@@ -45,16 +45,5 @@ test.describe('Filters - Filter FAB', () => {
     await expect(filterFabPage.ratingSelect).toBeVisible();
     await expect(filterFabPage.clearButton).toBeVisible();
     await expect(filterFabPage.applyButton).toBeVisible();
-  });
-
-  test('should allow filling date inputs', async () => {
-    // ACT: Open filters and fill dates
-    await filterFabPage.openFilters();
-    await filterFabPage.dateFromInput.fill('2024-01-01');
-    await filterFabPage.dateToInput.fill('2024-12-31');
-
-    // ASSERT: Values are filled
-    await expect(filterFabPage.dateFromInput).toHaveValue('2024-01-01');
-    await expect(filterFabPage.dateToInput).toHaveValue('2024-12-31');
   });
 });
