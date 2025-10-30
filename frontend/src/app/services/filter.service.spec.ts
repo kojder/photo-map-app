@@ -51,6 +51,52 @@ describe('FilterService', () => {
         done();
       });
     });
+
+    it('should remove minRating filter when explicitly set to null (bug fix)', (done) => {
+      // First apply a rating filter
+      service.applyFilters({ minRating: 3 });
+
+      // Then reset it to null (user selects "All")
+      service.applyFilters({ minRating: null } as any);
+
+      service.filters$.subscribe(filters => {
+        expect(filters.minRating).toBeUndefined();
+        done();
+      });
+    });
+
+    it('should remove minRating but keep other filters when set to null', (done) => {
+      // Apply multiple filters
+      service.applyFilters({ minRating: 4, dateFrom: '2024-01-01' });
+
+      // Reset only minRating
+      service.applyFilters({ minRating: null } as any);
+
+      service.filters$.subscribe(filters => {
+        expect(filters.minRating).toBeUndefined();
+        expect(filters.dateFrom).toBe('2024-01-01');
+        done();
+      });
+    });
+
+    it('should handle undefined minRating the same as null', (done) => {
+      service.applyFilters({ minRating: 5 });
+      service.applyFilters({ minRating: undefined });
+
+      service.filters$.subscribe(filters => {
+        expect(filters.minRating).toBeUndefined();
+        done();
+      });
+    });
+
+    it('should not add empty string values to filters', (done) => {
+      service.applyFilters({ dateFrom: '' });
+
+      service.filters$.subscribe(filters => {
+        expect(filters.dateFrom).toBeUndefined();
+        done();
+      });
+    });
   });
 
   describe('clearFilters', () => {
