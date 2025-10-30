@@ -2,6 +2,7 @@ package com.photomap.service;
 
 import com.drew.imaging.ImageMetadataReader;
 import com.drew.metadata.Metadata;
+import com.drew.metadata.exif.ExifDirectoryBase;
 import com.drew.metadata.exif.ExifSubIFDDirectory;
 import com.drew.metadata.exif.GpsDirectory;
 import com.photomap.model.Photo;
@@ -115,7 +116,7 @@ public class PhotoProcessingService {
 
             ExifSubIFDDirectory exifDirectory = metadata.getFirstDirectoryOfType(ExifSubIFDDirectory.class);
             if (exifDirectory != null) {
-                Date dateTaken = exifDirectory.getDate(ExifSubIFDDirectory.TAG_DATETIME_ORIGINAL);
+                Date dateTaken = exifDirectory.getDate(ExifDirectoryBase.TAG_DATETIME_ORIGINAL);
                 if (dateTaken != null) {
                     photo.setTakenAt(dateTaken.toInstant());
                     log.info("Extracted date taken: {}", photo.getTakenAt());

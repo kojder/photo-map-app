@@ -79,7 +79,7 @@ class UserServiceTest {
         when(photoRepository.countByUserId(1L)).thenReturn(5L);
         when(photoRepository.countByUserId(2L)).thenReturn(3L);
 
-        Page<UserAdminResponse> result = userService.listAllUsers(pageable);
+        Page<UserAdminResponse> result = userService.listAllUsers(pageable, null);
 
         assertThat(result).isNotNull();
         assertThat(result.getContent()).hasSize(2);

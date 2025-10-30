@@ -10,6 +10,7 @@ class PhotoMapBackendApplicationTests {
 
 	@Test
 	void contextLoads() {
+		// Context loads successfully - verifies that Spring application context can be created
 	}
 
 }

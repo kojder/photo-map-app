@@ -27,6 +27,8 @@ import java.util.Optional;
 @Slf4j
 public class PhotoService {
 
+    private static final String ERROR_PHOTO_NOT_FOUND = "Photo not found";
+
     private final PhotoRepository photoRepository;
     private final RatingRepository ratingRepository;
 
@@ -73,7 +75,7 @@ public class PhotoService {
     @Transactional
     public void deletePhoto(final Long photoId, final Long userId) throws IOException {
         final Photo photo = photoRepository.findById(photoId)
-                .orElseThrow(() -> new IllegalArgumentException("Photo not found"));
+                .orElseThrow(() -> new IllegalArgumentException(ERROR_PHOTO_NOT_FOUND));
 
         if (photo.getUser() != null && !photo.getUser().getId().equals(userId)) {
             throw new IllegalArgumentException("User does not own this photo");
@@ -87,7 +89,7 @@ public class PhotoService {
     @Transactional
     public void deletePhotoByAdmin(final Long photoId) throws IOException {
         final Photo photo = photoRepository.findById(photoId)
-                .orElseThrow(() -> new IllegalArgumentException("Photo not found"));
+                .orElseThrow(() -> new IllegalArgumentException(ERROR_PHOTO_NOT_FOUND));
 
         deletePhotoFiles(photo);
         photoRepository.delete(photo);
@@ -97,7 +99,7 @@ public class PhotoService {
     @Transactional
     public Rating ratePhoto(final Long photoId, final Long userId, final Integer ratingValue) {
         final Photo photo = photoRepository.findById(photoId)
-                .orElseThrow(() -> new IllegalArgumentException("Photo not found"));
+                .orElseThrow(() -> new IllegalArgumentException(ERROR_PHOTO_NOT_FOUND));
 
         if (ratingValue < 1 || ratingValue > 5) {
             throw new IllegalArgumentException("Rating must be between 1 and 5");

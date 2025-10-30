@@ -11,23 +11,27 @@
 
 ### 🎯 Currently Working On
 
-**E2E Tests - CI Verification** ⏳
+**✅ SonarCloud CRITICAL Issues - All Fixed**
 
 **Status:**
-- ✅ 16 E2E tests implemented (Playwright): Auth, Admin, Gallery, Map, Filters, Navigation
-- ✅ All tests passing locally (1.4m execution time)
-- ⏳ GitHub Actions CI workflow verification in progress
-- ⏳ Debugging timeout issues on CI environment
+- ✅ All 8 CRITICAL issues from backend fixed
+- ✅ All backend tests passing (74/74)
+- ✅ Backend starts without errors
+- ✅ Changes committed
 
-**Next Steps:**
-1. Wait for GitHub Actions E2E results
-2. If tests pass → Phase complete
-3. If tests fail → debug and fix (likely timeout/profile issues)
+**Fixed Issues:**
+1. ✅ Duplicate string "Photo not found or access denied" (PhotoController)
+2. ✅ Duplicate string "User not found" (UserService)
+3. ✅ Transactional method call via 'this' (UserService)
+4. ✅ Static access for TAG_DATETIME_ORIGINAL (PhotoProcessingService)
+5. ✅ Transactional method call via 'this' (SettingsService line 47)
+6. ✅ Transactional method call via 'this' (SettingsService line 42)
+7. ✅ Empty test method (PhotoMapBackendApplicationTests)
+8. ✅ Duplicate string "Photo not found" (PhotoService)
 
-**SonarCloud Status:**
-- Backend: **49.9% coverage**, 2k LOC (Java), Security A, Maintainability A
-- Frontend: **56.1% coverage**, 3.3k LOC (TypeScript), Security A, Maintainability A
-- Quality Gates: Active and working correctly
+**Important Workflow Addition:**
+- After each SonarQube fix: `./mvnw test` + `./scripts/start-dev.sh` + check logs + `./scripts/stop-dev.sh`
+- Ensures no regression and runtime stability
 
 ---
 
