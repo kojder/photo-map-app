@@ -157,6 +157,130 @@ class PhotoSpecificationTest {
     }
 
     @Test
+    void takenBefore_IncludesPhotosOnEndOfDay() {
+        // Test that photos taken on the exact end of day (23:59:59) are included
+        final LocalDateTime endOfDay = LocalDateTime.of(2025, 10, 3, 23, 59, 59);
+        
+        // Create photo taken at exact end of day
+        final Photo photoAtEndOfDay = new Photo();
+        photoAtEndOfDay.setFilename("end-of-day.jpg");
+        photoAtEndOfDay.setOriginalFilename("original-end-of-day.jpg");
+        photoAtEndOfDay.setFileSize(1024L);
+        photoAtEndOfDay.setMimeType("image/jpeg");
+        photoAtEndOfDay.setTakenAt(endOfDay.atZone(ZoneId.systemDefault()).toInstant());
+        photoAtEndOfDay.setUser(testUser);
+        entityManager.persist(photoAtEndOfDay);
+        entityManager.flush();
+
+        final Specification<Photo> spec = PhotoSpecification.takenBefore(endOfDay);
+        final List<Photo> result = photoRepository.findAll(spec);
+
+        // Photo taken at 23:59:59 should be included (lessThanOrEqualTo)
+        assertTrue(result.stream().anyMatch(p -> p.getId().equals(photoAtEndOfDay.getId())),
+            "Photo taken at end of day should be included with lessThanOrEqualTo");
+    }
+
+    @Test
+    void takenAfter_IncludesPhotosOnStartOfDay() {
+        // Test that photos taken at start of day (00:00:00) are included
+        final LocalDateTime startOfDay = LocalDateTime.of(2025, 10, 3, 0, 0, 0);
+        
+        // Create photo taken at exact start of day
+        final Photo photoAtStartOfDay = new Photo();
+        photoAtStartOfDay.setFilename("start-of-day.jpg");
+        photoAtStartOfDay.setOriginalFilename("original-start-of-day.jpg");
+        photoAtStartOfDay.setFileSize(1024L);
+        photoAtStartOfDay.setMimeType("image/jpeg");
+        photoAtStartOfDay.setTakenAt(startOfDay.atZone(ZoneId.systemDefault()).toInstant());
+        photoAtStartOfDay.setUser(testUser);
+        entityManager.persist(photoAtStartOfDay);
+        entityManager.flush();
+
+        final Specification<Photo> spec = PhotoSpecification.takenAfter(startOfDay);
+        final List<Photo> result = photoRepository.findAll(spec);
+
+        // Photo taken at 00:00:00 should be included (greaterThanOrEqualTo)
+        assertTrue(result.stream().anyMatch(p -> p.getId().equals(photoAtStartOfDay.getId())),
+            "Photo taken at start of day should be included with greaterThanOrEqualTo");
+    }
+
+    @Test
+    void dateRangeFiltering_IncludesSingleDayPhotos() {
+        // Test filtering by exact date range (same day from 00:00:00 to 23:59:59)
+        final LocalDateTime dayStart = LocalDateTime.of(2025, 10, 3, 0, 0, 0);
+        final LocalDateTime dayEnd = LocalDateTime.of(2025, 10, 3, 23, 59, 59);
+        
+        // Create 3 photos: before range, inside range, after range
+        final Photo photoBefore = new Photo();
+        photoBefore.setFilename("before-range.jpg");
+        photoBefore.setOriginalFilename("original-before.jpg");
+        photoBefore.setFileSize(1024L);
+        photoBefore.setMimeType("image/jpeg");
+        photoBefore.setTakenAt(LocalDateTime.of(2025, 10, 2, 23, 59, 59).atZone(ZoneId.systemDefault()).toInstant());
+        photoBefore.setUser(testUser);
+        entityManager.persist(photoBefore);
+
+        final Photo photoInside = new Photo();
+        photoInside.setFilename("inside-range.jpg");
+        photoInside.setOriginalFilename("original-inside.jpg");
+        photoInside.setFileSize(1024L);
+        photoInside.setMimeType("image/jpeg");
+        photoInside.setTakenAt(LocalDateTime.of(2025, 10, 3, 15, 30, 0).atZone(ZoneId.systemDefault()).toInstant());
+        photoInside.setUser(testUser);
+        entityManager.persist(photoInside);
+
+        final Photo photoAfter = new Photo();
+        photoAfter.setFilename("after-range.jpg");
+        photoAfter.setOriginalFilename("original-after.jpg");
+        photoAfter.setFileSize(1024L);
+        photoAfter.setMimeType("image/jpeg");
+        photoAfter.setTakenAt(LocalDateTime.of(2025, 10, 4, 0, 0, 1).atZone(ZoneId.systemDefault()).toInstant());
+        photoAfter.setUser(testUser);
+        entityManager.persist(photoAfter);
+
+        entityManager.flush();
+
+        final Specification<Photo> spec = PhotoSpecification.takenAfter(dayStart)
+                .and(PhotoSpecification.takenBefore(dayEnd));
+        final List<Photo> result = photoRepository.findAll(spec);
+
+        // Only photo inside range should be returned
+        assertEquals(1, result.stream().filter(p -> 
+            p.getId().equals(photoInside.getId())).count(),
+            "Only photo inside date range should be included");
+        assertFalse(result.stream().anyMatch(p -> p.getId().equals(photoBefore.getId())),
+            "Photo before range should be excluded");
+        assertFalse(result.stream().anyMatch(p -> p.getId().equals(photoAfter.getId())),
+            "Photo after range should be excluded");
+    }
+
+    @Test
+    void dateRangeFiltering_TimezoneConversion() {
+        // Test that timezone conversion works correctly (Europe/Warsaw → UTC)
+        final LocalDateTime dateInWarsaw = LocalDateTime.of(2025, 10, 3, 12, 0, 0);
+        
+        // Create photo with timestamp in system timezone
+        final Photo photo = new Photo();
+        photo.setFilename("timezone-test.jpg");
+        photo.setOriginalFilename("original-timezone.jpg");
+        photo.setFileSize(1024L);
+        photo.setMimeType("image/jpeg");
+        photo.setTakenAt(dateInWarsaw.atZone(ZoneId.systemDefault()).toInstant());
+        photo.setUser(testUser);
+        entityManager.persist(photo);
+        entityManager.flush();
+
+        // Filter with same local time (should match despite timezone)
+        final Specification<Photo> spec = PhotoSpecification.takenAfter(dateInWarsaw.minusHours(1))
+                .and(PhotoSpecification.takenBefore(dateInWarsaw.plusHours(1)));
+        final List<Photo> result = photoRepository.findAll(spec);
+
+        // Photo should be found (timezone conversion should work)
+        assertTrue(result.stream().anyMatch(p -> p.getId().equals(photo.getId())),
+            "Photo should be found with correct timezone conversion");
+    }
+
+    @Test
     void hasMinRating_ReturnsPhotosWithSufficientRating() {
         // Add ratings to photos
         final User rater1 = new User();

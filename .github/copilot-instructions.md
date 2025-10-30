@@ -73,6 +73,18 @@ Full-stack photo geolocation app: Angular 18 (standalone) + Spring Boot 3 + Post
 - Test IDs for E2E: `data-testid="component-element"` on all interactive elements
 - Leaflet.js for maps with `leaflet.markercluster` plugin
 
+**Internationalization & Localization:**
+- **Browser locale detection** - Angular LOCALE_ID configured via `getBrowserLocale()` factory
+- **Supported locales:** en-US, pl-PL, de-DE, fr-FR, es-ES (registered in `app.config.ts`)
+- **DatePipe auto-formatting** - All dates format according to browser locale automatically
+- **Fallback:** Polish (pl-PL) when `navigator.language` unavailable
+- **Future-ready:** Code prepared for user preference override (see comments in `getBrowserLocale()`)
+- **Example formats:**
+  - en-US: "10/3/25, 5:51 PM" (M/d/yy, h:mm a)
+  - pl-PL: "3.10.2025, 17:51" (d.MM.yyyy, HH:mm)
+  - de-DE: "3.10.25, 17:51" (d.MM.yy, HH:mm)
+- **Files:** `app.config.ts` (providers), `app.config.spec.ts` (tests)
+
 ## MCP Server Integrations
 
 ### Chrome DevTools MCP

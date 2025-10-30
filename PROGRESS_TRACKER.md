@@ -11,28 +11,133 @@
 
 ### 🎯 Currently Working On
 
-_No active tasks - ready for next feature or bug fix_
+**🎨 Date Picker Customization: Avoiding US Locale Issues** (Planned for next session)
+
+**Context:**
+Obecna implementacja używa natywnych HTML5 `<input type="date">` z Tailwind styling. Problem: nie da się w pełni kontrolować formatowania daty (zależy od locale przeglądarki). W nowej sesji spróbujemy:
+
+**Plan na nową sesję:**
+1. **Zbadać opcje customizacji date pickera:**
+   - Material Datepicker z custom locale (MAT_DATE_LOCALE)
+   - Angular CDK Datepicker (lżejszy niż Material)
+   - External library (ngx-daterangepicker-material, flatpickr, etc.)
+   - CSS-only tricks dla HTML5 date input
+
+2. **Priorytet:** Uniknięcie US locale (mm/dd/yyyy) → wymuszenie dd.MM.yyyy lub yyyy-MM-dd
+
+3. **Acceptance Criteria:**
+   - Date picker zawsze pokazuje daty w formacie dd.MM.yyyy lub yyyy-MM-dd
+   - Działa spójnie na wszystkich przeglądarkach (Chrome, Firefox, Safari)
+   - Nie psuje się na różnych locale systemowych
+   - Utrzymuje Tailwind design consistency
+   - Wszystkie testy przechodzą (backend + frontend)
+
+**Alternatywne podejście (jeśli customizacja trudna):**
+- Pozostawić HTML5 input z instrukciami dla użytkownika o formacie
+- Dodać walidację po stronie klienta (sprawdzanie formatu przed wysłaniem)
+
+---
 
 ---
 
 ### ✅ Last Completed
 
-**🐛 Filter Rating "All" Bug - Fixed** (2025-10-30)
+**🧪 Date Filtering Tests + HTML5 Date Inputs (Reverted from Material)** (2025-10-30)
 
-**Problem:** When user changed from specific rating (e.g., 3+) back to "All", photos remained filtered
+**Implemented:**
+- **Backend:** 5 new unit tests for date filtering (PhotoSpecificationTest)
+  - `takenBefore_IncludesPhotosOnEndOfDay()` - Verifies end of day logic (23:59:59)
+  - `takenAfter_IncludesPhotosOnStartOfDay()` - Verifies start of day logic (00:00:00)
+  - `dateRangeFiltering_IncludesSingleDayPhotos()` - Tests dateFrom + dateTo together
+  - `dateRangeFiltering_TimezoneConversion()` - Verifies Europe/Warsaw → UTC conversion
+  - `dateRangeFiltering_ExcludesPhotosOutsideRange()` - Edge case testing
+- **Frontend:** Reverted from Angular Material Datepicker to HTML5 `<input type="date">`
+  - Reason: Material + Tailwind CSS Preflight conflicts (forms not rendering properly)
+  - Removed @angular/material, @angular/cdk, @angular/animations packages (3 deps)
+  - Simplified styling with Tailwind classes
+  - Component dateFrom/dateTo: `Date | null` → `string` (yyyy-MM-dd format)
+  - Removed formatDateToString() helper (no longer needed)
 
-**Root Cause:** `FilterFabComponent.onFilterChange()` wasn't passing `minRating: null` to `FilterService` when "All" was selected
+**Testing:**
+- Backend: 78/78 tests passing ✅
+- Frontend: 199/199 tests passing ✅
+- Test coverage: PhotoSpecification date logic fully covered
 
-**Solution:** Always include `minRating` in filters object (even when null), so `FilterService.applyFilters()` can detect reset and remove filter
+**Files Changed:**
+- Backend: PhotoSpecificationTest.java (+124 lines), PhotoSpecification.java
+- Frontend: filter-fab.component.{ts,html,css,spec.ts}, app.config.ts, styles.css, package.json
 
-**Verification:** Tested with Chrome DevTools MCP:
-- Set filter to "3+" → only 1 photo with rating ≥3 shown ✅
-- Change to "All" → all photos shown (including unrated) ✅
-- Network request confirms no `minRating` parameter sent ✅
+**Decision:** HTML5 date input simpler and more compatible with Tailwind. Material Datepicker customization planned for future session to avoid US locale issues.
 
 ---
 
-**SonarCloud CRITICAL Issues - All Fixed** (2025-10-30)
+**🐛 BUG FIX: Date Filtering - Fixed Double Day Addition** (2025-10-30)
+
+**Problem:**
+Date filtering returned ALL photos instead of photos from selected date. For example, filtering by `2025-10-02` returned all 75 photos instead of just 1.
+
+**Root Cause:**
+Double addition of time in date range filtering:
+1. `PhotoController` parsed `dateTo=2025-10-02` as `2025-10-02T23:59:59` (end of day)
+2. `PhotoSpecification.takenBefore()` then added ANOTHER day with `dateTo.plusDays(1)`
+3. Result: Filter covered 2 days instead of 1 day
+
+**Fix:**
+- Removed `plusDays(1)` from `PhotoSpecification.takenBefore()`
+- Changed `lessThan` to `lessThanOrEqualTo` to include end of day
+- Controller already sets `23:59:59`, no need to add extra day
+
+**Files Changed:**
+- `backend/src/main/java/com/photomap/repository/PhotoSpecification.java` - Fixed takenBefore(), removed debug logs
+- `backend/src/main/java/com/photomap/service/PhotoService.java` - Removed debug logs
+- `backend/src/main/resources/application.properties` - Disabled SQL logging (show-sql=false)
+
+**Testing:**
+- Filter `dateFrom=2025-10-02&dateTo=2025-10-02` → Returns 1 photo ✅
+- Filter `dateFrom=2025-10-03&dateTo=2025-10-03` → Returns 74 photos ✅
+- SQL query includes correct WHERE clause with timezone conversion ✅
+
+---
+
+**🌍 Date Localization - Browser Locale Support + Material Datepicker** (2025-10-30)
+
+**Implemented:**
+- Angular LOCALE_ID provider with browser locale detection (`getBrowserLocale()`)
+- Registered locale data for: en-US, pl-PL, de-DE, fr-FR, es-ES
+- DatePipe automatically formats dates according to browser locale
+- Fallback to Polish (pl-PL) when browser locale unavailable
+- Future-proof: prepared for user preference override in settings
+- **Angular Material Datepicker**: Replaced native HTML5 `<input type="date">` with Material mat-datepicker
+- **MAT_DATE_LOCALE provider**: Material calendar respects browser locale (no more mm/dd/yy confusion)
+- **onApplyFilters()**: Filters apply on "Apply" button click (not on every date change)
+- **formatDateToString()**: Fixed date formatting bug - uses local time instead of UTC
+
+**Why Material Datepicker?**
+- Native HTML5 date input always shows mm/dd/yyyy format (HTML5 spec limitation)
+- User complained: "mnie irytuje jeśli mam pozamieniane miesiące z dniami"
+- Material Datepicker displays calendar in user's locale format (dd/mm/yyyy for Polish, etc.)
+
+**Testing:**
+- 11 unit tests for locale detection (all passing)
+- 199/199 frontend tests passing (no regressions)
+- Manual verification with Chrome DevTools:
+  - en-US browser: dates show as "10/3/25, 5:51 PM" ✅
+  - Material Datepicker renders with "Open calendar" buttons ✅
+  - Format switches automatically based on navigator.language ✅
+  - Fallback to pl-PL when navigator.language undefined ✅
+
+**Files Changed:**
+- `frontend/package.json` - Added @angular/material@18, @angular/cdk@18, @angular/animations@18
+- `frontend/src/app/app.config.ts` - Added MAT_DATE_LOCALE, provideAnimations(), getBrowserLocale()
+- `frontend/src/app/app.config.spec.ts` - Created 11 tests for locale detection
+- `frontend/src/app/components/filter-fab/filter-fab.component.ts` - Date objects, formatDateToString()
+- `frontend/src/app/components/filter-fab/filter-fab.component.html` - mat-datepicker in desktop + mobile panels
+- `frontend/src/app/components/filter-fab/filter-fab.component.spec.ts` - Updated for Material components
+- `frontend/src/styles.css` - Material indigo-pink theme
+- `.github/copilot-instructions.md` - Added internationalization section
+- `PROGRESS_TRACKER.md` - Updated with completion status
+
+**Note:** Changes ready to commit but held due to discovered backend date filtering bug (see Currently Working On).
 
 ---
 

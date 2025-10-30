@@ -43,10 +43,9 @@ public class PhotoSpecification {
             if (dateTo == null) {
                 return criteriaBuilder.conjunction();
             }
-            // Add 1 day to include the entire end date
-            final LocalDateTime endOfDay = dateTo.plusDays(1);
-            final Instant instant = endOfDay.atZone(ZoneId.systemDefault()).toInstant();
-            return criteriaBuilder.lessThan(root.get("takenAt"), instant);
+            // PhotoController already sets dateTo to end of day (23:59:59), so no need to add a day
+            final Instant instant = dateTo.atZone(ZoneId.systemDefault()).toInstant();
+            return criteriaBuilder.lessThanOrEqualTo(root.get("takenAt"), instant);
         };
     }
 
