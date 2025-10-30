@@ -58,6 +58,11 @@ export class FilterFabComponent implements OnInit, OnDestroy {
     this.filtersOpen.set(false);
   }
 
+  onApplyFilters(): void {
+    this.onFilterChange();
+    this.closeFilters();
+  }
+
   onFilterChange(): void {
     const filters: any = {};
     if (this.dateFrom) filters.dateFrom = this.dateFrom;
