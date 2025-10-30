@@ -44,9 +44,9 @@ Photo Map MVP to full-stack aplikacja (Angular 18 + Spring Boot 3 + PostgreSQL) 
 - **Batch upload** - możliwość wrzucenia wielu zdjęć bezpośrednio do folderu `input/` (scp/ftp)
 - Asynchroniczne przetwarzanie - upload i przetwarzanie oddzielone
 - Automatyczna ekstrakcja EXIF (GPS, data, rozmiar)
-- Automatyczne generowanie miniatur (3 rozmiary: 150px, 400px, 800px)
+- Automatyczne generowanie miniatur (medium 300px dla galerii i mapy)
 - Walidacja formatu i rozmiaru (max 10MB)
-- Struktura folderów: `input/`, `original/`, `small/`, `medium/`, `large/`, `failed/`
+- Struktura folderów: `input/`, `original/` (full res), `medium/` (300px), `failed/`
 - Error handling - błędne zdjęcia w `failed/` + error log
 
 > **Note:** HEIC/HEIF support excluded from MVP scope (see tech-stack.md for rationale)

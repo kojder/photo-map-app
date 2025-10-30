@@ -121,10 +121,8 @@ Stack for MVP:
 - **Formats:** JPEG, PNG, TIFF, HEIC/HEIF
 
 #### Thumbnailator 0.4.20
-- **Thumbnail sizes:**
-  - Small: 150x150px (gallery thumbnails, map markers)
-  - Medium: 400x400px (photo preview)
-  - Large: 800x800px (detailed view)
+- **Thumbnail size:** Medium 300x300px (gallery grid + map markers)
+- **Full resolution:** Original files served for fullscreen viewer
 - **Quality:** preserve image quality
 - **Formats:** JPEG, PNG
 
@@ -140,10 +138,8 @@ Stack for MVP:
 ```
 uploads/
 ├── input/      # Drop zone for new photos (web upload or scp/ftp)
-├── original/   # Processed originals
-├── small/      # 150px thumbnails
-├── medium/     # 400px thumbnails
-├── large/      # 800px thumbnails
+├── original/   # Processed originals (full resolution, fullscreen viewer)
+├── medium/     # 300px thumbnails (gallery + map)
 └── failed/     # Failed processing + error logs
 ```
 

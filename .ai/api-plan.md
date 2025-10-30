@@ -141,8 +141,8 @@ REST API dla Photo Map MVP zapewnia endpointy do:
 4. **Background processing (Spring Integration):**
    - Poller detects file in `input/` (10s interval)
    - Extract EXIF metadata (GPS, camera, date)
-   - Generate 3 thumbnails (150px, 400px, 800px)
-   - Move original to `original/`, thumbnails to `small/`, `medium/`, `large/`
+   - Generate thumbnail (medium 300px for gallery + map)
+   - Move original to `original/`, thumbnail to `medium/`
    - Save metadata to database (user_id = admin)
    - On error: move to `failed/` + error log
 
