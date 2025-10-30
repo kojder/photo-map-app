@@ -259,6 +259,12 @@ docker-compose up -d
 5. If approved → commit with Conventional Commits message
 6. **NEVER auto-push - ALWAYS ask user first**
 
+**File Staging Rule - CRITICAL:**
+- **ALL untracked/modified files should be committed** unless explicitly in `.gitignore`
+- Run `git status` and stage ALL changes (don't cherry-pick files)
+- Exception: Temporary files, build artifacts, IDE configs (should be in `.gitignore`)
+- User expects complete changesets in commits, not partial updates
+
 ### PROGRESS_TRACKER.md Workflow - CRITICAL
 
 **Structure (top to bottom):**
