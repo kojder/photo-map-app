@@ -243,6 +243,20 @@ uploads/
 **Opis:** "W tym samym miesiącu w innych latach", "W tej samej lokalizacji"
 **Szczegóły:** `.ai/features/feature-temporal-spatial-filters.md`
 
+### Gallery Photo Card Optimization
+**Status:** 🔜 Post-MVP
+**Czas:** 4-6h
+**Opis:** Optymalizacja widoku zdjęcia w galerii - focus na samym zdjęciu
+**Features:**
+- Główny widok: samo zdjęcie (bez białego tła z nazwą pliku i buttonami)
+- Rating: małe gwiazdki overlay na zdjęciu (kliknięcie → menu z akcjami: zmiana ratingu, delete)
+- Checkbox: małe pole do zaznaczania (na zdjęciu) dla akcji grupowych
+- Akcje grupowe (bulk rating, bulk delete): do implementacji w przyszłości
+**UI Changes:**
+- PhotoCardComponent: zdjęcie full-size w card, overlay controls
+- Rating menu: context menu/popover trigger
+- Selection mode: checkbox visible on hover lub zawsze (TBD)
+
 ### NAS Batch Processing
 **Status:** 🔜 Post-MVP
 **Czas:** 7-11 days
