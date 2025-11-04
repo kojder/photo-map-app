@@ -1,7 +1,7 @@
 # Product Requirements Document - Photo Map MVP
 
-**Version:** 4.0 (Requirements Only)
-**Date:** 2025-10-19
+**Version:** 5.0 (Requirements Only)
+**Date:** 2025-11-04
 **Status:** 📋 Ready for Implementation
 **Project Type:** MVP (Minimum Viable Product)
 
@@ -11,172 +11,172 @@
 
 ## 1. Executive Summary
 
-Photo Map MVP to full-stack aplikacja (Angular 18 + Spring Boot 3 + PostgreSQL) do zarządzania zdjęciami z geolokalizacją.
+Photo Map MVP is a full-stack application (Angular 18 + Spring Boot 3 + PostgreSQL) for managing photos with geolocation.
 
 ### Core Capabilities
 
-1. **Upload i Przetwarzanie** - Upload zdjęć z automatyczną ekstrakcją EXIF i generowaniem miniatur
-2. **Wizualizacja** - Galeria siatki i mapa (Leaflet.js) z markerami GPS
-3. **Interakcja** - Ocena zdjęć (1-5 gwiazdek) i zaawansowane filtrowanie
-4. **Bezpieczeństwo** - Autentykacja JWT, hashowanie haseł (BCrypt)
-5. **Administracja** - Panel admina do zarządzania użytkownikami
+1. **Upload and Processing** - Photo upload with automatic EXIF extraction and thumbnail generation
+2. **Visualization** - Gallery grid and map (Leaflet.js) with GPS markers
+3. **Interaction** - Photo rating (1-5 stars) and advanced filtering
+4. **Security** - JWT authentication, password hashing (BCrypt)
+5. **Administration** - Admin panel for user management
 
 ---
 
 ## 2. Core Features
 
-### 2.1. Autentykacja Użytkowników
+### 2.1. User Authentication
 
-**Wymagania:**
-- Rejestracja (email + password)
-- Login z JWT token
-- Hasła hashowane (BCrypt)
-- Role: USER (domyślna), ADMIN
+**Requirements:**
+- Registration (email + password)
+- Login with JWT token
+- Passwords hashed (BCrypt)
+- Roles: USER (default), ADMIN
 
 **User Stories:**
-- **US-AUTH-001:** Jako użytkownik mogę się zarejestrować aby mieć konto
-- **US-AUTH-002:** Jako użytkownik mogę się zalogować aby uzyskać dostęp
+- **US-AUTH-001:** As a user, I can register to create an account
+- **US-AUTH-002:** As a user, I can log in to access the application
 
-### 2.2. Upload Zdjęć
+### 2.2. Photo Upload
 
-**Wymagania:**
-- Upload pojedynczych plików (JPEG, PNG) przez interfejs web
-- **Batch upload** - możliwość wrzucenia wielu zdjęć bezpośrednio do folderu `input/` (scp/ftp)
-- Asynchroniczne przetwarzanie - upload i przetwarzanie oddzielone
-- Automatyczna ekstrakcja EXIF (GPS, data, rozmiar)
-- Automatyczne generowanie miniatur (medium 300px dla galerii i mapy)
-- Walidacja formatu i rozmiaru (max 10MB)
-- Struktura folderów: `input/`, `original/` (full res), `medium/` (300px), `failed/`
-- Error handling - błędne zdjęcia w `failed/` + error log
+**Requirements:**
+- Single file upload (JPEG, PNG) through web interface
+- **Batch upload** - ability to drop multiple photos directly into `input/` folder (scp/ftp)
+- Asynchronous processing - upload and processing are separate
+- Automatic EXIF extraction (GPS, date, size)
+- Automatic thumbnail generation (medium 300px for gallery and map)
+- Format and size validation (max 10MB)
+- Folder structure: `input/`, `original/` (full res), `medium/` (300px), `failed/`
+- Error handling - failed photos moved to `failed/` with error log
 
 > **Note:** HEIC/HEIF support excluded from MVP scope (see tech-stack.md for rationale)
 
 **User Stories:**
-- **US-UPLOAD-001:** Jako użytkownik mogę uploadować zdjęcia przez web (202 Accepted - kolejkowane)
-- **US-UPLOAD-002:** Jako użytkownik mogę wrzucić wiele zdjęć bezpośrednio do `input/` (batch)
-- **US-UPLOAD-003:** System automatycznie ekstraktuje dane GPS i datę w tle
-- **US-UPLOAD-004:** System generuje 3 rozmiary miniatur (150px, 400px, 800px)
-- **US-UPLOAD-005:** System przenosi błędne zdjęcia do `failed/` z opisem błędu
+- **US-UPLOAD-001:** As a user, I can upload photos through the web interface (202 Accepted - queued)
+- **US-UPLOAD-002:** As a user, I can drop multiple photos directly into `input/` folder (batch)
+- **US-UPLOAD-003:** System automatically extracts GPS and date in the background
+- **US-UPLOAD-004:** System generates 3 thumbnail sizes (150px, 400px, 800px)
+- **US-UPLOAD-005:** System moves failed photos to `failed/` with error description
 
-### 2.3. Galeria Zdjęć
+### 2.3. Photo Gallery
 
-**Wymagania:**
-- Responsywna siatka zdjęć (1-5 kolumn, mobile-first)
-- Lazy loading dla wydajności
-- Wyświetlanie: miniatura, nazwa, rozmiar, ocena, data
-- Sortowanie: data, nazwa, ocena
-- Paginacja (20 zdjęć na stronę)
-
-**User Stories:**
-- **US-GAL-001:** Jako użytkownik mogę przeglądać galerie w siatce
-- **US-GAL-002:** Jako użytkownik widzę miniatury dla szybkiego ładowania
-- **US-GAL-003:** Jako użytkownik mogę sortować zdjęcia
-
-### 2.4. Mapa Zdjęć
-
-**Wymagania:**
-- Interaktywna mapa (Leaflet.js + OpenStreetMap)
-- Markery GPS dla zdjęć z danymi lokalizacji
-- Clustering markerów dla skupisk zdjęć
-- Popupy z miniaturą, nazwą, datą, oceną
-- Automatyczne dopasowanie widoku (fitBounds)
-- Statystyki: "X of Y photos have GPS"
+**Requirements:**
+- Responsive photo grid (1-5 columns, mobile-first)
+- Lazy loading for performance
+- Display: thumbnail, name, size, rating, date
+- Sorting: date, name, rating
+- Pagination (20 photos per page)
 
 **User Stories:**
-- **US-MAP-001:** Jako użytkownik mogę zobaczyć zdjęcia na mapie
-- **US-MAP-002:** Jako użytkownik widzę clustering dla wielu zdjęć w jednym miejscu
-- **US-MAP-003:** Jako użytkownik klikam marker aby zobaczyć szczegóły
+- **US-GAL-001:** As a user, I can browse the gallery in a grid layout
+- **US-GAL-002:** As a user, I see thumbnails for fast loading
+- **US-GAL-003:** As a user, I can sort photos
 
-### 2.5. System Ocen
+### 2.4. Photo Map
 
-**Wymagania:**
-- Ocena 1-5 (gwiazdki, liczby całkowite)
-- Zdjęcia mogą być bez oceny (rating nullable)
-- Inline rating w galerii
-- Rating w popup'ach mapy
-- Edycja i usuwanie ocen (możliwość wyczyszczenia ratingu)
-- Sortowanie po ocenie
+**Requirements:**
+- Interactive map (Leaflet.js + OpenStreetMap)
+- GPS markers for photos with location data
+- Marker clustering for photo clusters
+- Popups with thumbnail, name, date, rating
+- Automatic view fitting (fitBounds)
+- Statistics: "X of Y photos have GPS"
 
 **User Stories:**
-- **US-RAT-001:** Jako użytkownik mogę ocenić zdjęcie 1-5 gwiazdek
-- **US-RAT-002:** Jako użytkownik mogę zmienić ocenę
-- **US-RAT-003:** Jako użytkownik mogę wyczyścić ocenę ze zdjęcia (usunąć rating)
-- **US-RAT-004:** Jako użytkownik widzę oceny w galerii i na mapie
+- **US-MAP-001:** As a user, I can view photos on a map
+- **US-MAP-002:** As a user, I see clustering for multiple photos in one location
+- **US-MAP-003:** As a user, I can click a marker to see details
+
+### 2.5. Rating System
+
+**Requirements:**
+- Rating 1-5 (stars, integers)
+- Photos can have no rating (rating nullable)
+- Inline rating in gallery
+- Rating in map popups
+- Edit and delete ratings (ability to clear rating)
+- Sort by rating
+
+**User Stories:**
+- **US-RAT-001:** As a user, I can rate a photo 1-5 stars
+- **US-RAT-002:** As a user, I can change a rating
+- **US-RAT-003:** As a user, I can clear a rating from a photo (remove rating)
+- **US-RAT-004:** As a user, I can see ratings in the gallery and on the map
 
 **Business Rules:**
-- Jeden użytkownik może wystawić tylko jedną ocenę na zdjęcie (może ją edytować)
+- One user can submit only one rating per photo (can edit it)
 
 **Personalized Rating Display:**
-- API zwraca `averageRating`, `totalRatings`, `userRating`
-- **Co widzi użytkownik:**
-  - Jeśli user ocenił zdjęcie → widzi **swoją ocenę** (backend zwraca `averageRating` = `userRating`)
-  - Jeśli user NIE ocenił → widzi **średnią ocen innych użytkowników** (backend oblicza średnią bez current user)
-  - Jeśli nikt nie ocenił → zdjęcie **nie ma oceny** (`averageRating` = null)
-- Frontend wyświetla `averageRating` z kontekstem: "(your rating)" lub "(X ratings)"
+- API returns `averageRating`, `totalRatings`, `userRating`
+- **What user sees:**
+  - If user rated the photo → sees **their rating** (backend returns `averageRating` = `userRating`)
+  - If user did NOT rate → sees **average rating of other users** (backend calculates average without current user)
+  - If nobody rated → photo **has no rating** (`averageRating` = null)
+- Frontend displays `averageRating` with context: "(your rating)" or "(X ratings)"
 
-### 2.6. Filtrowanie
+### 2.6. Filtering
 
-**Wymagania:**
-- **Rating Filter:** min-max ocena (np. 4-5 gwiazdek dla ulubionych)
-- **Date Filter:** zakres dat z precyzją do dnia
-- **Combined Filters:** rating AND date razem
-- Real-time update listy zdjęć
+**Requirements:**
+- **Rating Filter:** min-max rating (e.g., 4-5 stars for favorites)
+- **Date Filter:** date range with day precision
+- **Combined Filters:** rating AND date together
+- Real-time update of photo list
 - Clear filter option
-- Licznik przefiltrowanych zdjęć
+- Filtered photo counter
 
 **User Stories:**
-- **US-FIL-001:** Jako użytkownik mogę filtrować po ocenie
-- **US-FIL-002:** Jako użytkownik mogę filtrować po dacie
-- **US-FIL-003:** Jako użytkownik mogę używać wielu filtrów jednocześnie
+- **US-FIL-001:** As a user, I can filter by rating
+- **US-FIL-002:** As a user, I can filter by date
+- **US-FIL-003:** As a user, I can use multiple filters simultaneously
 
-### 2.7. Panel Administracyjny
+### 2.7. Admin Panel
 
-**Wymagania:**
-- Lista wszystkich użytkowników (widoczna tylko dla ADMIN)
-- Informacje: ID, email, rola, data rejestracji, liczba zdjęć
-- Możliwość zmiany roli użytkownika (USER ↔ ADMIN)
+**Requirements:**
+- List of all users (visible only to ADMIN)
+- Information: ID, email, role, registration date, photo count
+- Ability to change user role (USER ↔ ADMIN)
 - Endpoint: `GET /api/admin/users`, `PUT /api/admin/users/{id}/role`
 
 **User Stories:**
-- **US-ADMIN-001:** Jako admin mogę zobaczyć listę użytkowników
-- **US-ADMIN-002:** Jako admin mogę zmienić rolę użytkownika
+- **US-ADMIN-001:** As an admin, I can view the list of users
+- **US-ADMIN-002:** As an admin, I can change user roles
 
 ---
 
 ## 3. Non-Functional Requirements
 
-### 3.1. Responsywność (RWD)
+### 3.1. Responsiveness (RWD)
 
 **Breakpoints:**
-- Mobile (< 640px): 1 kolumna galerii
-- Tablet (640-1024px): 2-3 kolumny
-- Desktop (> 1024px): 4-5 kolumn
+- Mobile (< 640px): 1 column gallery
+- Tablet (640-1024px): 2-3 columns
+- Desktop (> 1024px): 4-5 columns
 
 **Mobile-First:** Touch-friendly controls, full-screen map
 
-### 3.2. Wydajność
+### 3.2. Performance
 
-- Initial load < 3 sekundy
-- Lazy loading obrazów
-- Miniatury zamiast full-size w galerii
-- Paginacja dla dużych kolekcji
-- Debounce dla filtrów
+- Initial load < 3 seconds
+- Lazy loading of images
+- Thumbnails instead of full-size in gallery
+- Pagination for large collections
+- Debounce for filters
 
-### 3.3. Bezpieczeństwo
+### 3.3. Security
 
 - JWT authentication
-- Hasła hashowane (BCrypt)
-- Walidacja inputów (frontend + backend)
+- Passwords hashed (BCrypt)
+- Input validation (frontend + backend)
 - CORS configuration
 
-### 3.4. Testowanie
+### 3.4. Testing
 
-- Unit testy dla serwisów (coverage > 50%)
-- Integration testy dla API endpoints
-- E2E testy dla critical flows (opcjonalne)
-- **Test IDs:** Wszystkie interactive elements mają `data-testid` attributes
-- **Konwencja naming:** kebab-case, format `component-element` lub `component-element-action`
-  - Przykłady: `gallery-photo-card`, `upload-photo-btn`, `map-marker-popup`, `login-email-input`, `photo-card-rate-btn`, `filter-clear-btn`
+- Unit tests for services (coverage > 50%)
+- Integration tests for API endpoints
+- E2E tests for critical flows (optional)
+- **Test IDs:** All interactive elements have `data-testid` attributes
+- **Naming convention:** kebab-case, format `component-element` or `component-element-action`
+  - Examples: `gallery-photo-card`, `upload-photo-btn`, `map-marker-popup`, `login-email-input`, `photo-card-rate-btn`, `filter-clear-btn`
 
 ### 3.5. Browser Support
 
@@ -189,48 +189,48 @@ Photo Map MVP to full-stack aplikacja (Angular 18 + Spring Boot 3 + PostgreSQL) 
 
 ## 4. Success Criteria
 
-MVP jest sukcesem jeśli:
+MVP is successful if:
 
-✅ **Funkcjonalne:**
-1. Użytkownicy mogą się zarejestrować i zalogować
-2. Użytkownicy mogą uploadować zdjęcia (JPEG, PNG, HEIC)
-3. System automatycznie ekstraktuje EXIF i generuje miniatury
-4. Galeria wyświetla zdjęcia w responsywnej siatce
-5. Mapa wyświetla zdjęcia z GPS i clustering działa
-6. Użytkownicy mogą oceniać zdjęcia i filtrować po ocenie/dacie
-7. Admin może zarządzać użytkownikami
-8. Layout jest zoptymalizowany dla mobile i desktop
+✅ **Functional:**
+1. Users can register and log in
+2. Users can upload photos (JPEG, PNG, HEIC)
+3. System automatically extracts EXIF and generates thumbnails
+4. Gallery displays photos in a responsive grid
+5. Map displays photos with GPS and clustering works
+6. Users can rate photos and filter by rating/date
+7. Admin can manage users
+8. Layout is optimized for mobile and desktop
 
-✅ **Techniczne:**
-1. Angular 18 standalone + Spring Boot 3 + PostgreSQL działają razem
-2. JWT authentication działa poprawnie
-3. Leaflet.js integracja jest płynna
-4. RxJS state management jest jasny i maintainable
-5. Testy backend > 50% coverage
-6. Brak błędów w konsoli
-7. Performance targets spełnione
+✅ **Technical:**
+1. Angular 18 standalone + Spring Boot 3 + PostgreSQL work together
+2. JWT authentication works correctly
+3. Leaflet.js integration is smooth
+4. RxJS state management is clear and maintainable
+5. Backend tests > 50% coverage
+6. No errors in console
+7. Performance targets met
 
 ✅ **UX:**
-1. Użytkownicy wykonują core tasks intuicyjnie
-2. Interface jest czysty i przejrzysty
-3. Mobile experience jest przyjazny dla dotyku
-4. Brak major usability issues
+1. Users perform core tasks intuitively
+2. Interface is clean and clear
+3. Mobile experience is touch-friendly
+4. No major usability issues
 
 ---
 
 ## 5. Out of Scope (Not in MVP)
 
 ❌ **Advanced Features:**
-- Edycja zdjęć (crop, filters, rotation)
+- Photo editing (crop, filters, rotation)
 - Batch operations (bulk delete, move)
 - Photo sharing (public links, social media)
-- Comments lub annotations
-- Face recognition lub tagging
+- Comments or annotations
+- Face recognition or tagging
 - Albums/collections
 - Export data (ZIP download)
 
 ❌ **Performance Features:**
-- Service Workers lub PWA
+- Service Workers or PWA
 - Offline mode
 - CDN integration
 - Image optimization pipeline (progressive JPEG, WebP)
@@ -309,4 +309,4 @@ Tables:
 **Document Purpose:** Technical requirements for Claude Code implementation
 **Related:** `.decisions/prd-context.md` (business context, future vision)
 **Document Status:** ✅ Ready for Implementation
-**Last Updated:** 2025-10-19
+**Last Updated:** 2025-11-04

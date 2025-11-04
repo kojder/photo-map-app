@@ -11,43 +11,50 @@
 
 ### 🎯 Currently Working On
 
-**📚 Feature Documentation Translation - English Standardization**
+**📚 Core Documentation Update - .ai/ Implementation Specs (English Translation + Sync with Implementation)**
 
-**Goal:** Translate all Polish feature documentation to English for consistency and global accessibility.
+**Goal:** Update core `.ai/` documentation to match actual implementation, translate to English, and ensure consistency across all spec files.
 
 **Context:**
-All files in `.ai/features/` have `**Status:**` marker but 7 of them are in Polish. Need to translate to English while preserving all technical content, decisions, and structure.
+Core implementation specs in `.ai/` directory need updates:
+1. Some files partially in Polish (ui-plan.md, prd.md)
+2. Missing implemented features (user permissions, app_settings table, admin endpoints)
+3. Need to reflect actual codebase state (4 DB tables, not 3; additional endpoints)
 
 **Progress Checklist:**
 
-**Already in English (no action needed):**
-- [x] feature-admin-initializer.md
-- [x] feature-e2e-playwright-tests.md
-- [x] feature-github-actions-sonarcloud.md
-- [x] feature-photo-viewer.md
+**Phase 1: API & Database Specs (✅ COMPLETED)**
+- [x] `.ai/api-plan.md` (v1.0 → v2.0) - Translate + add missing endpoints (auth/me, admin permissions, settings, public)
+- [x] `.ai/db-plan.md` (v1.0 → v2.0) - Translate + add user permissions columns + app_settings table + migrations V2-V5
 
-**To translate (Polish → English):**
-- [x] feature-deployment-mikrus.md
-- [x] feature-email-system.md
-- [x] feature-map-photo-caching.md
-- [x] feature-nas-batch-processing.md
-- [x] feature-public-sharing.md
-- [x] feature-temporal-spatial-filters.md
-- [x] feature-ui-redesign-navbar-filters.md
+**Phase 2: UI & Requirements Specs (⏳ PENDING - After /clear)**
+- [ ] `.ai/ui-plan.md` - Translate Polish fragments to English
+- [ ] `.ai/prd.md` - Translate Polish sections to English
+- [ ] `.ai/tech-stack.md` - ✅ Already in English (no changes needed)
 
-**Translation Strategy:**
-1. Translate all Polish text to English
-2. Preserve all technical terms, code snippets, file paths
-3. Keep markdown structure and formatting identical
-4. Maintain Status markers and metadata
-5. Review translated file before moving to next one
+**Translation & Update Strategy:**
+1. Read entire file to understand structure
+2. Translate all Polish text to English (preserve technical terms)
+3. Verify against actual implementation (check controllers, models, services)
+4. Update version number and date
+5. Keep markdown structure and formatting identical
+6. Review before moving to next file
 
 **Acceptance Criteria:**
-- All 7 files translated to English
+- All `.ai/*.md` files in English
+- Documentation matches actual implementation (Phase 1-6 complete)
+- Version numbers updated (v2.0 where changed)
 - Technical accuracy preserved
 - No broken markdown formatting
-- Consistent terminology across all files
-- Single commit after all translations complete
+- Single commit after all files updated
+
+**Next Action After /clear:**
+Run this prompt:
+```
+Kontynuuj aktualizację dokumentacji .ai/ - przetłumacz ui-plan.md i prd.md na angielski.
+Status: api-plan.md i db-plan.md już zaktualizowane (v2.0), staged do commitu.
+Zostały: ui-plan.md (częściowo PL) i prd.md (większość PL).
+```
 
 ---
 
@@ -66,6 +73,44 @@ Po zakończeniu cleanup'u dokumentacji:
 ---
 
 ### ✅ Last Completed
+
+**📚 Core Documentation Update - Phase 1: API & Database Specs** (2025-11-04)
+
+**Updated Files:**
+- `.ai/api-plan.md` (v1.0 → v2.0, 17.6KB) - Full English translation + missing endpoints
+- `.ai/db-plan.md` (v1.0 → v2.0, 10.7KB) - Full English translation + missing schema elements
+
+**Changes in api-plan.md:**
+- ✅ Translated entire document from Polish to English
+- ✅ Added **GET /api/auth/me** endpoint (get current user)
+- ✅ Updated **UserResponse** DTO - added `canViewPhotos`, `canRate` fields
+- ✅ Added **UserAdminResponse** DTO - includes `totalPhotos`, `canViewPhotos`, `canRate`
+- ✅ Added **PhotoAdminResponse** DTO - includes `userId`, `userEmail`
+- ✅ Added **AppSettingsResponse** DTO - admin contact email
+- ✅ Added admin endpoints: `/api/admin/users/{id}/permissions`, `/api/admin/settings`, `/api/admin/photos`
+- ✅ Added **GET /api/public/admin-contact** public endpoint
+- ✅ Added `searchEmail` query parameter to `GET /api/admin/users`
+- ✅ Documented personalized rating logic (calculateDisplayRating)
+- ✅ Added Configuration Properties section
+- ✅ Updated authorization rules table with permission requirements
+
+**Changes in db-plan.md:**
+- ✅ Translated entire document from Polish to English
+- ✅ Updated **users** table - added 5 new columns:
+  - `must_change_password` (V2 migration)
+  - `can_upload`, `can_rate`, `is_active` (V3 migration)
+  - `can_view_photos` (V5 migration)
+- ✅ Updated **photos** table - `user_id` now NULLABLE (V4 migration, batch upload support)
+- ✅ Added new **app_settings** table (V5 migration) - key-value store
+- ✅ Added `users_role_idx` index (V2 migration)
+- ✅ Added `idx_app_settings_key` index (V5 migration)
+- ✅ Documented Permissions System section
+- ✅ Updated Migration Strategy with V2-V5 details
+- ✅ Updated JPA Entity Requirements for all schema changes
+
+**Status:** Phase 1 complete, files ready for commit. Phase 2 (ui-plan.md, prd.md) pending after /clear.
+
+---
 
 **🔧 GitHub Actions CI/CD + SonarCloud Integration** (2025-10-28)
 

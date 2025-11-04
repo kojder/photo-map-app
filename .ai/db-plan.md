@@ -1,7 +1,7 @@
 # Database Schema - Photo Map MVP
 
-**Version:** 1.0
-**Date:** 2025-10-19
+**Version:** 2.0
+**Date:** 2025-11-04
 **Database:** PostgreSQL 15
 **ORM:** Spring Data JPA + Hibernate
 
@@ -9,19 +9,20 @@
 
 ## Overview
 
-Database schema dla Photo Map MVP składa się z 3 głównych tabel:
-- **users** - Użytkownicy systemu (auth, roles)
-- **photos** - Zdjęcia z metadanymi EXIF i GPS
-- **ratings** - Oceny zdjęć (1-10 stars)
+Database schema for Photo Map MVP consists of 4 main tables:
+- **users** - System users (auth, roles, permissions)
+- **photos** - Photos with EXIF metadata and GPS
+- **ratings** - Photo ratings (1-5 stars)
+- **app_settings** - Global application settings
 
 **Design Principles:**
-- Normalizacja - 3NF
-- Foreign keys z ON DELETE CASCADE dla data integrity
-- Indexes na często używanych kolumnach (user_id, GPS coordinates)
-- Timestamps (created_at, updated_at) dla audytu
-- Soft deletes NIE są używane (hard deletes dla prostoty MVP)
-- Password hashing: BCrypt (~60 znaków)
-- UUID-based filenames dla zdjęć
+- Normalization - 3NF
+- Foreign keys with ON DELETE CASCADE for data integrity
+- Indexes on frequently used columns (user_id, GPS coordinates, dates)
+- Timestamps (created_at, updated_at) for audit trail
+- Soft deletes NOT used (hard deletes for MVP simplicity)
+- Password hashing: BCrypt (~60 characters)
+- UUID-based filenames for photos
 
 ---
 
@@ -29,87 +30,122 @@ Database schema dla Photo Map MVP składa się z 3 głównych tabel:
 
 ### 1. users
 
-**Opis:** Użytkownicy systemu z autentykacją i rolami.
+**Description:** System users with authentication, roles, and permissions.
 
-**Kolumny:**
+**Columns:**
 - `id` - BIGSERIAL PRIMARY KEY (auto-increment)
-- `email` - VARCHAR(255) UNIQUE NOT NULL (używany do logowania)
-- `password_hash` - VARCHAR(255) NOT NULL (BCrypt hash, ~60 znaków)
-- `role` - VARCHAR(50) NOT NULL DEFAULT 'USER' (wartości: USER | ADMIN)
+- `email` - VARCHAR(255) UNIQUE NOT NULL (used for login)
+- `password_hash` - VARCHAR(255) NOT NULL (BCrypt hash, ~60 characters)
+- `role` - VARCHAR(50) NOT NULL DEFAULT 'USER' (values: USER | ADMIN)
+- `must_change_password` - BOOLEAN NOT NULL DEFAULT FALSE (force password change on next login)
+- `can_upload` - BOOLEAN NOT NULL DEFAULT TRUE (permission to upload photos)
+- `can_rate` - BOOLEAN NOT NULL DEFAULT TRUE (permission to rate photos)
+- `can_view_photos` - BOOLEAN NOT NULL DEFAULT TRUE (permission to view photos)
+- `is_active` - BOOLEAN NOT NULL DEFAULT TRUE (account active status)
 - `created_at` - TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-- `updated_at` - TIMESTAMP DEFAULT CURRENT_TIMESTAMP (trigger auto-update)
+- `updated_at` - TIMESTAMP DEFAULT CURRENT_TIMESTAMP (auto-update via trigger)
 
 **Constraints:**
 - `email` - UNIQUE, NOT NULL
 - `role` - CHECK (role IN ('USER', 'ADMIN'))
 
 **Indexes:**
-- `users_email_idx` - UNIQUE INDEX na `email` (login queries)
+- `users_email_idx` - UNIQUE INDEX on `email` (login queries)
+- `users_role_idx` - INDEX on `role` (admin queries)
+
+**Permissions System:**
+- `can_view_photos` - Controls access to photo list and viewing endpoints
+- `can_rate` - Controls ability to rate photos
+- `can_upload` - Controls ability to upload new photos
+- `is_active` - Account enabled/disabled status
 
 ---
 
 ### 2. photos
 
-**Opis:** Zdjęcia z metadanymi EXIF, GPS i thumbnails.
+**Description:** Photos with EXIF metadata, GPS, and thumbnails.
 
-**Kolumny:**
+**Columns:**
 - `id` - BIGSERIAL PRIMARY KEY (auto-increment)
-- `user_id` - BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE (owner zdjęcia)
-- `filename` - VARCHAR(500) NOT NULL (UUID-based, np. `a1b2c3d4-e5f6.jpg`)
-- `original_filename` - VARCHAR(500) NOT NULL (oryginalna nazwa, np. `IMG_1234.JPG`)
-- `file_size` - BIGINT NOT NULL (rozmiar w bajtach)
-- `mime_type` - VARCHAR(100) NOT NULL (np. `image/jpeg`, `image/png`, `image/heic`)
-- `thumbnail_filename` - VARCHAR(500) NULLABLE (generated thumbnails)
-- `gps_latitude` - DECIMAL(10, 8) NULLABLE (szerokość geograficzna: -90 do 90)
-- `gps_longitude` - DECIMAL(11, 8) NULLABLE (długość geograficzna: -180 do 180)
-- `taken_at` - TIMESTAMP NULLABLE (data wykonania zdjęcia z EXIF)
+- `user_id` - BIGINT NULLABLE REFERENCES users(id) ON DELETE CASCADE (photo owner, null for batch uploads)
+- `filename` - VARCHAR(500) NOT NULL (UUID-based, e.g., `a1b2c3d4-e5f6.jpg` or `{userId}_{uuid}.jpg`)
+- `original_filename` - VARCHAR(500) NOT NULL (original name, e.g., `IMG_1234.JPG`)
+- `file_size` - BIGINT NOT NULL (size in bytes)
+- `mime_type` - VARCHAR(100) NOT NULL (e.g., `image/jpeg`, `image/png`)
+- `thumbnail_filename` - VARCHAR(500) NULLABLE (generated thumbnail filename)
+- `gps_latitude` - DECIMAL(10, 8) NULLABLE (latitude: -90 to 90)
+- `gps_longitude` - DECIMAL(11, 8) NULLABLE (longitude: -180 to 180)
+- `taken_at` - TIMESTAMP NULLABLE (photo taken date from EXIF)
 - `uploaded_at` - TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-- `updated_at` - TIMESTAMP DEFAULT CURRENT_TIMESTAMP (trigger auto-update)
+- `updated_at` - TIMESTAMP DEFAULT CURRENT_TIMESTAMP (auto-update via trigger)
 
 **Constraints:**
-- `user_id` - NOT NULL, FOREIGN KEY
 - `filename` - NOT NULL
 - `gps_latitude` - CHECK (gps_latitude BETWEEN -90 AND 90)
 - `gps_longitude` - CHECK (gps_longitude BETWEEN -180 AND 180)
 
 **Indexes:**
-- `photos_user_id_idx` - INDEX na `user_id` (query: "moje zdjęcia")
-- `photos_gps_idx` - INDEX na `(gps_latitude, gps_longitude)` (query: "zdjęcia w okolicy")
-- `photos_taken_at_idx` - INDEX na `taken_at` (filtrowanie po dacie)
-- `photos_uploaded_at_idx` - INDEX na `uploaded_at` (sortowanie)
+- `photos_user_id_idx` - INDEX on `user_id` (query: "my photos")
+- `photos_gps_idx` - INDEX on `(gps_latitude, gps_longitude)` (query: "photos in area")
+- `photos_taken_at_idx` - INDEX on `taken_at` (date filtering)
+- `photos_uploaded_at_idx` - INDEX on `uploaded_at` (sorting)
 
 **ON DELETE CASCADE:**
-- Usunięcie użytkownika → usunięcie wszystkich jego zdjęć
+- User deletion → delete all their photos
+
+**Note:** `user_id` is NULLABLE to support batch uploads via scp/ftp where photos are uploaded directly to `input/` folder without web interface authentication.
 
 ---
 
 ### 3. ratings
 
-**Opis:** Oceny zdjęć przez użytkowników (1-5 gwiazdek).
+**Description:** Photo ratings by users (1-5 stars).
 
-**Kolumny:**
+**Columns:**
 - `id` - BIGSERIAL PRIMARY KEY (auto-increment)
-- `photo_id` - BIGINT NOT NULL REFERENCES photos(id) ON DELETE CASCADE (oceniane zdjęcie)
-- `user_id` - BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE (użytkownik oceniający)
-- `rating` - INTEGER NOT NULL (ocena 1-5 gwiazdek)
+- `photo_id` - BIGINT NOT NULL REFERENCES photos(id) ON DELETE CASCADE (rated photo)
+- `user_id` - BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE (rating user)
+- `rating` - INTEGER NOT NULL (rating 1-5 stars)
 - `created_at` - TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 
 **Constraints:**
 - `photo_id` - NOT NULL, FOREIGN KEY
 - `user_id` - NOT NULL, FOREIGN KEY
 - `rating` - CHECK (rating BETWEEN 1 AND 5)
-- `UNIQUE(photo_id, user_id)` - Jeden użytkownik może ocenić dane zdjęcie tylko raz
+- `UNIQUE(photo_id, user_id)` - One user can rate a photo only once
 
-**Uwaga:** Zdjęcia bez ocen - jeśli zdjęcie nie ma żadnego rekordu w tabeli ratings, znaczy że nie zostało jeszcze ocenione. Użytkownik może usunąć swoją ocenę (DELETE rating record).
+**Note:** Photos without ratings - if a photo has no records in the ratings table, it means it hasn't been rated yet. Users can delete their rating (DELETE rating record).
 
 **Indexes:**
-- `ratings_photo_id_idx` - INDEX na `photo_id` (query: "oceny dla zdjęcia")
-- `ratings_user_id_idx` - INDEX na `user_id` (query: "oceny użytkownika")
-- `ratings_photo_user_unique_idx` - UNIQUE INDEX na `(photo_id, user_id)` (przez constraint)
+- `ratings_photo_id_idx` - INDEX on `photo_id` (query: "ratings for photo")
+- `ratings_user_id_idx` - INDEX on `user_id` (query: "user ratings")
+- `ratings_photo_user_unique_idx` - UNIQUE INDEX on `(photo_id, user_id)` (via constraint)
 
 **ON DELETE CASCADE:**
-- Usunięcie zdjęcia → usunięcie wszystkich jego ocen
-- Usunięcie użytkownika → usunięcie wszystkich jego ocen
+- Photo deletion → delete all its ratings
+- User deletion → delete all their ratings
+
+---
+
+### 4. app_settings
+
+**Description:** Global application settings (key-value store).
+
+**Columns:**
+- `id` - BIGSERIAL PRIMARY KEY (auto-increment)
+- `setting_key` - VARCHAR(255) NOT NULL UNIQUE (setting identifier)
+- `setting_value` - TEXT NULLABLE (setting value)
+- `created_at` - TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+- `updated_at` - TIMESTAMP DEFAULT CURRENT_TIMESTAMP (auto-update via trigger)
+
+**Constraints:**
+- `setting_key` - UNIQUE, NOT NULL
+
+**Indexes:**
+- `idx_app_settings_key` - INDEX on `setting_key` (fast lookup)
+
+**Default Settings:**
+- `admin_contact_email` - Contact email displayed to users (default: `admin@photomap.local`)
 
 ---
 
@@ -122,24 +158,26 @@ users (1) ----< (N) photos
   |                   |
   |                   |
   +----< (N) ratings >----+
+
+app_settings (standalone table)
 ```
 
-**Relacje:**
+**Relations:**
 1. **users → photos** (1:N)
-   - Jeden użytkownik może mieć wiele zdjęć
-   - Jedno zdjęcie należy do jednego użytkownika
+   - One user can have many photos
+   - One photo belongs to one user (or null for batch uploads)
    - Foreign key: `photos.user_id → users.id`
    - ON DELETE CASCADE
 
 2. **photos → ratings** (1:N)
-   - Jedno zdjęcie może mieć wiele ocen
-   - Jedna ocena dotyczy jednego zdjęcia
+   - One photo can have many ratings
+   - One rating refers to one photo
    - Foreign key: `ratings.photo_id → photos.id`
    - ON DELETE CASCADE
 
 3. **users → ratings** (1:N)
-   - Jeden użytkownik może wystawić wiele ocen
-   - Jedna ocena jest wystawiona przez jednego użytkownika
+   - One user can give many ratings
+   - One rating is given by one user
    - Foreign key: `ratings.user_id → users.id`
    - ON DELETE CASCADE
 
@@ -147,11 +185,12 @@ users (1) ----< (N) photos
 
 ## Indexes Summary
 
-**Purpose:** Optymalizacja zapytań dla MVP.
+**Purpose:** Query optimization for MVP.
 
 | Index Name | Table | Columns | Type | Rationale |
 |------------|-------|---------|------|-----------|
 | `users_email_idx` | users | email | UNIQUE | Login queries |
+| `users_role_idx` | users | role | INDEX | Admin user queries |
 | `photos_user_id_idx` | photos | user_id | INDEX | "My photos" queries |
 | `photos_gps_idx` | photos | (gps_latitude, gps_longitude) | INDEX | Map viewport queries |
 | `photos_taken_at_idx` | photos | taken_at | INDEX | Date filtering |
@@ -159,6 +198,7 @@ users (1) ----< (N) photos
 | `ratings_photo_id_idx` | ratings | photo_id | INDEX | Photo ratings queries |
 | `ratings_user_id_idx` | ratings | user_id | INDEX | User ratings queries |
 | `ratings_photo_user_unique_idx` | ratings | (photo_id, user_id) | UNIQUE | One rating per user per photo |
+| `idx_app_settings_key` | app_settings | setting_key | INDEX | Settings lookup |
 
 ---
 
@@ -172,6 +212,7 @@ users (1) ----< (N) photos
 | gps_longitude CHECK | photos | CHECK | BETWEEN -180 AND 180 |
 | rating CHECK | ratings | CHECK | BETWEEN 1 AND 5 |
 | (photo_id, user_id) UNIQUE | ratings | UNIQUE | One rating per user per photo |
+| setting_key UNIQUE | app_settings | UNIQUE | One value per setting key |
 
 ---
 
@@ -180,7 +221,10 @@ users (1) ----< (N) photos
 ### User Entity
 - **Package:** `com.photomap.model`
 - **Annotations:** `@Entity`, `@Table(name = "users")`, `@Data` (Lombok)
-- **Fields:** id, email, passwordHash, role (enum: USER/ADMIN), createdAt, updatedAt
+- **Fields:**
+  - id, email, passwordHash, role (enum: USER/ADMIN)
+  - mustChangePassword, canUpload, canRate, canViewPhotos, isActive
+  - createdAt, updatedAt
 - **Timestamps:** `@CreationTimestamp`, `@UpdateTimestamp` (Hibernate)
 - **Relationships:**
   - `@OneToMany` → photos (cascade ALL, orphanRemoval)
@@ -188,22 +232,31 @@ users (1) ----< (N) photos
 
 ### Photo Entity
 - **Package:** `com.photomap.model`
-- **Annotations:** `@Entity`, `@Table` z indexes, `@Data`
-- **Fields:** id, user, filename, originalFilename, fileSize, mimeType, thumbnailFilename, gpsLatitude, gpsLongitude, takenAt, uploadedAt, updatedAt
-- **Types:** `BigDecimal` dla GPS coordinates, `Instant` dla timestamps
+- **Annotations:** `@Entity`, `@Table` with indexes, `@Data`
+- **Fields:**
+  - id, user, filename, originalFilename, fileSize, mimeType
+  - thumbnailFilename, gpsLatitude, gpsLongitude
+  - takenAt, uploadedAt, updatedAt
+- **Types:** `BigDecimal` for GPS coordinates, `Instant` for timestamps
 - **Relationships:**
-  - `@ManyToOne(LAZY)` → user (NOT NULL)
+  - `@ManyToOne(LAZY)` → user (NULLABLE - supports batch uploads)
   - `@OneToMany` → ratings (cascade ALL, orphanRemoval)
-- **Indexes:** JPA `@Index` annotations dla user_id, GPS, taken_at, uploaded_at
+- **Indexes:** JPA `@Index` annotations for user_id, GPS, taken_at, uploaded_at
 
 ### Rating Entity
 - **Package:** `com.photomap.model`
-- **Annotations:** `@Entity`, `@Table` z uniqueConstraint i indexes, `@Data`
+- **Annotations:** `@Entity`, `@Table` with uniqueConstraint and indexes, `@Data`
 - **Fields:** id, photo, user, rating, createdAt
 - **Relationships:**
   - `@ManyToOne(LAZY)` → photo (NOT NULL)
   - `@ManyToOne(LAZY)` → user (NOT NULL)
-- **Constraints:** `@UniqueConstraint` na (photo_id, user_id)
+- **Constraints:** `@UniqueConstraint` on (photo_id, user_id)
+
+### AppSettings Entity
+- **Package:** `com.photomap.model`
+- **Annotations:** `@Entity`, `@Table(name = "app_settings")`, `@Data`
+- **Fields:** id, settingKey, settingValue, createdAt, updatedAt
+- **Timestamps:** `@CreationTimestamp`, `@UpdateTimestamp` (Hibernate)
 
 ---
 
@@ -213,15 +266,23 @@ users (1) ----< (N) photos
 
 **Convention:**
 - `V1__initial_schema.sql` - Initial schema (users, photos, ratings)
-- `V2__add_xyz.sql` - Kolejne migracje
+- `V2__add_admin_security.sql` - Add must_change_password + users_role_idx
+- `V3__add_user_permissions.sql` - Add can_upload, can_rate, is_active
+- `V4__make_user_id_nullable.sql` - Make photos.user_id NULLABLE
+- `V5__add_can_view_photos_and_settings.sql` - Add can_view_photos + app_settings table
 
 **Migration Flow:**
-1. Create tables (users → photos → ratings) z foreign keys
-2. Create indexes (email, user_id, GPS, dates)
-3. Create trigger function `update_updated_at_column()`
-4. Attach triggers do users i photos dla auto-update `updated_at`
+1. V1: Create tables (users → photos → ratings) with foreign keys
+2. V1: Create indexes (email, user_id, GPS, dates)
+3. V1: Create trigger function `update_updated_at_column()`
+4. V1: Attach triggers to users and photos for auto-update `updated_at`
+5. V2: Add must_change_password column + users_role_idx
+6. V3: Add can_upload, can_rate, is_active columns
+7. V4: Make photos.user_id NULLABLE (batch upload support)
+8. V5: Add can_view_photos + app_settings table + idx_app_settings_key
 
 ---
 
-**Dokument przygotowany dla:** Claude Code - Photo Map MVP Implementation
-**Następny krok:** Implementacja Spring Data JPA repositories zgodnie ze schematem
+**Document prepared for:** Claude Code - Photo Map MVP Implementation
+**Current status:** ✅ Core MVP Complete - All tables implemented and tested
+**Last updated:** 2025-11-04

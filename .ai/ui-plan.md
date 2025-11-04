@@ -1,7 +1,7 @@
 # UI Architecture - Photo Map MVP
 
-**Version:** 1.0
-**Date:** 2025-10-19
+**Version:** 2.0
+**Date:** 2025-11-04
 **Framework:** Angular 18.2.0
 **Styling:** Tailwind CSS 3.4.17
 **Map Library:** Leaflet.js 1.9.4
@@ -10,7 +10,7 @@
 
 ## Overview
 
-Frontend Photo Map MVP to Single Page Application (SPA) zbudowana z Angular 18 (standalone components) i Tailwind CSS. Aplikacja składa się z:
+Frontend Photo Map MVP is a Single Page Application (SPA) built with Angular 18 (standalone components) and Tailwind CSS. The application consists of:
 - **Authentication Views** - Login, Register
 - **Main Views** - Gallery (grid), Map (Leaflet)
 - **Admin View** - User management
@@ -18,10 +18,10 @@ Frontend Photo Map MVP to Single Page Application (SPA) zbudowana z Angular 18 (
 
 **Architecture Pattern:**
 - **Standalone components** (no NgModules)
-- **Signals** dla reactive state (Angular 16+)
-- **BehaviorSubject** w Services dla shared state
-- **HttpClient** dla API calls
-- **Guards** dla route protection
+- **Signals** for reactive state (Angular 16+)
+- **BehaviorSubject** in Services for shared state
+- **HttpClient** for API calls
+- **Guards** for route protection
 
 ---
 
@@ -239,11 +239,11 @@ Frontend Photo Map MVP to Single Page Application (SPA) zbudowana z Angular 18 (
 - Original filename (truncate)
 - Date taken (or uploaded, Angular date pipe: 'short')
 - **Personalized rating display (⭐ 1-5 stars + rating value + context):**
-  - Wyświetla `photo.averageRating` (backend zwraca userRating gdy user ocenił, lub średnią innych gdy nie)
-  - Kontekst:
-    - Jeśli `photo.userRating` istnieje → "(your rating)"
-    - Jeśli `photo.userRating` null → "(X ratings)" gdzie X = `photo.totalRatings`
-    - Jeśli nikt nie ocenił → "No rating yet"
+  - Displays `photo.averageRating` (backend returns userRating when user rated, or average of others when not)
+  - Context:
+    - If `photo.userRating` exists → "(your rating)"
+    - If `photo.userRating` null → "(X ratings)" where X = `photo.totalRatings`
+    - If nobody rated → "No rating yet"
 - Actions: Rate button, Clear rating button, Delete button
 
 **Template Structure:**
@@ -326,7 +326,7 @@ Frontend Photo Map MVP to Single Page Application (SPA) zbudowana z Angular 18 (
 **Features:**
 - Modal dialog (fixed overlay + centered card, z-50)
 - File input OR drag-and-drop (border-dashed, hover effect)
-- Preview thumbnail po wybraniu (w-full h-64 object-cover)
+- Preview thumbnail after selection (w-full h-64 object-cover)
 - Upload progress bar (width % based on progress)
 - File info (name, size in MB)
 - Buttons: Cancel | Upload
@@ -581,7 +581,7 @@ this.viewerService.viewerState$.subscribe(state => {
 **File:** `guards/auth.guard.ts`
 **Type:** `CanActivateFn` (functional guard)
 
-**Purpose:** Protect routes dla zalogowanych (USER + ADMIN)
+**Purpose:** Protect routes for authenticated users (USER + ADMIN)
 
 **Logic:**
 - Check `AuthService.isLoggedIn()` (JWT token exists in localStorage)
@@ -595,7 +595,7 @@ this.viewerService.viewerState$.subscribe(state => {
 **File:** `guards/admin.guard.ts`
 **Type:** `CanActivateFn`
 
-**Purpose:** Protect routes tylko dla ADMIN
+**Purpose:** Protect routes for ADMIN only
 
 **Logic:**
 - Check `AuthService.isLoggedIn()` AND `AuthService.isAdmin()`
@@ -684,5 +684,5 @@ service.observable$.subscribe(data => signal.set(data))
 
 ---
 
-**Dokument przygotowany dla:** Claude Code - Photo Map MVP Implementation
-**Następny krok:** Implementacja Angular components + services zgodnie z architekturą
+**Document prepared for:** Claude Code - Photo Map MVP Implementation
+**Next step:** Implement Angular components + services according to architecture
