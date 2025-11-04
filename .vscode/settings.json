@@ -15,5 +15,69 @@
     {
       "file": ".github/prompts/review-code.prompt.md"
     }
-  ]
+  ],
+  
+  // ============================================
+  // PERFORMANCE OPTIMIZATIONS FOR VM
+  // ============================================
+  
+  // Wyłącz obserwację folderów (zmniejsza CPU)
+  "files.watcherExclude": {
+    "**/node_modules/**": true,
+    "**/target/**": true,
+    "**/.git/objects/**": true,
+    "**/.git/subtree-cache/**": true,
+    "**/uploads/**": true,
+    "**/test_photos/**": true,
+    "**/coverage/**": true,
+    "**/playwright-report/**": true,
+    "**/test-results/**": true,
+    "**/*.jar": true,
+    "**/*.class": true,
+    "**/.classpath": true,
+    "**/.factorypath": true,
+    "**/.project": true,
+    "**/.settings": true
+  },
+  "files.exclude": {
+    "**/target": true,
+    "**/node_modules": true,
+    "**/.git": true,
+    "**/coverage": true
+  },
+  "search.exclude": {
+    "**/node_modules": true,
+    "**/target": true,
+    "**/uploads": true,
+    "**/test_photos": true,
+    "**/coverage": true,
+    "**/.git": true
+  },
+  
+  // Editor optimizations
+  "editor.formatOnSave": false,
+  "editor.formatOnType": false,
+  "editor.formatOnPaste": false,
+  "editor.minimap.enabled": false,
+  
+  // TypeScript/JavaScript optimizations
+  "typescript.disableAutomaticTypeAcquisition": true,
+  "typescript.tsserver.maxTsServerMemory": 2048,
+  
+  // Git optimizations
+  "git.autorefresh": false,
+  "git.autofetch": false,
+  "git.enabled": true,
+  
+  // Terminal optimizations
+  "terminal.integrated.rendererType": "dom",
+  "terminal.integrated.gpuAcceleration": "off",
+  "terminal.integrated.smoothScrolling": false,
+  "terminal.integrated.localEchoLatencyThreshold": -1,
+  
+  // General optimizations
+  "extensions.autoUpdate": false,
+  "extensions.autoCheckUpdates": false,
+  "telemetry.telemetryLevel": "off",
+  "search.followSymlinks": false
 }
