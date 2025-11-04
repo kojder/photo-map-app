@@ -148,7 +148,7 @@ public class AdminController {
         }
 
         return photo.getRatings().stream()
-                .mapToInt(Rating::getRating)
+                .mapToInt(Rating::getRatingValue)
                 .average()
                 .orElse(0.0);
     }

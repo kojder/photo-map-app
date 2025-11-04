@@ -153,7 +153,7 @@ public class PhotoProcessingService {
             Files.move(file.toPath(), failedPath, StandardCopyOption.REPLACE_EXISTING);
 
             Path errorLogPath = Paths.get(failedDirectory, file.getName() + ".error.txt");
-            String errorMessage = String.format("Error: %s\nMessage: %s\nTimestamp: %s",
+            String errorMessage = String.format("Error: %s%nMessage: %s%nTimestamp: %s",
                     e.getClass().getName(), e.getMessage(), java.time.Instant.now());
             Files.writeString(errorLogPath, errorMessage);
 

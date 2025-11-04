@@ -299,7 +299,7 @@ public class PhotoController {
                 rating.getId(),
                 rating.getPhoto().getId(),
                 rating.getUser().getId(),
-                rating.getRating(),
+                rating.getRatingValue(),
                 rating.getCreatedAt()
         );
     }
@@ -310,7 +310,7 @@ public class PhotoController {
         }
 
         return photo.getRatings().stream()
-                .mapToInt(Rating::getRating)
+                .mapToInt(Rating::getRatingValue)
                 .average()
                 .orElse(0.0);
     }
@@ -335,7 +335,7 @@ public class PhotoController {
         if (currentUserId != null) {
             return photo.getRatings().stream()
                     .filter(r -> !r.getUser().getId().equals(currentUserId))
-                    .mapToInt(Rating::getRating)
+                    .mapToInt(Rating::getRatingValue)
                     .average()
                     .orElse(0.0);
         }
@@ -351,7 +351,7 @@ public class PhotoController {
 
         return photo.getRatings().stream()
                 .filter(r -> r.getUser().getId().equals(userId))
-                .map(Rating::getRating)
+                .map(Rating::getRatingValue)
                 .findFirst()
                 .orElse(null);
     }

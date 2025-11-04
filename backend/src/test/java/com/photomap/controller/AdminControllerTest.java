@@ -81,7 +81,6 @@ class AdminControllerTest {
     void listAllPhotos_ShouldReturnPhotosWithOwnerInfo() {
         final List<Photo> photos = List.of(photo1, photo2);
         final Page<Photo> photoPage = new PageImpl<>(photos);
-        final Pageable pageable = PageRequest.of(0, 20);
 
         when(photoService.getPhotosForAdmin(any(Pageable.class))).thenReturn(photoPage);
 
@@ -118,23 +117,23 @@ class AdminControllerTest {
 
     @Test
     void deletePhoto_ShouldCallDeletePhotoByAdmin() throws Exception {
-        doNothing().when(photoService).deletePhotoByAdmin(eq(1L));
+        doNothing().when(photoService).deletePhotoByAdmin(1L);
 
         final ResponseEntity<Void> response = adminController.deletePhoto(1L);
 
         assertThat(response.getStatusCode().value()).isEqualTo(204);
-        verify(photoService).deletePhotoByAdmin(eq(1L));
+        verify(photoService).deletePhotoByAdmin(1L);
     }
 
     @Test
     void deletePhoto_WhenPhotoNotFound_ShouldThrowException() throws Exception {
         doThrow(new IllegalArgumentException("Photo not found"))
-                .when(photoService).deletePhotoByAdmin(eq(999L));
+                .when(photoService).deletePhotoByAdmin(999L);
 
         assertThatThrownBy(() -> adminController.deletePhoto(999L))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("Photo not found");
 
-        verify(photoService).deletePhotoByAdmin(eq(999L));
+        verify(photoService).deletePhotoByAdmin(999L);
     }
 }

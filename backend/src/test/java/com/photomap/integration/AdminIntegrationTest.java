@@ -2,7 +2,6 @@ package com.photomap.integration;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.photomap.dto.UpdateRoleRequest;
-import com.photomap.dto.UserAdminResponse;
 import com.photomap.dto.UserResponse;
 import com.photomap.model.Role;
 import com.photomap.model.User;

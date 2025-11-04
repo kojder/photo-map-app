@@ -41,25 +41,25 @@ public class PhotoService {
 
     @Transactional(readOnly = true)
     public Page<Photo> getPhotos(final Long userId, final Pageable pageable, final LocalDateTime dateFrom, final LocalDateTime dateTo, final Integer minRating, final Boolean hasGps) {
-        Specification<Photo> spec = null;
+        Specification<Photo> spec = Specification.where(null);
 
         if (dateFrom != null) {
-            spec = spec == null ? PhotoSpecification.takenAfter(dateFrom) : spec.and(PhotoSpecification.takenAfter(dateFrom));
+            spec = spec.and(PhotoSpecification.takenAfter(dateFrom));
         }
 
         if (dateTo != null) {
-            spec = spec == null ? PhotoSpecification.takenBefore(dateTo) : spec.and(PhotoSpecification.takenBefore(dateTo));
+            spec = spec.and(PhotoSpecification.takenBefore(dateTo));
         }
 
         if (minRating != null) {
-            spec = spec == null ? PhotoSpecification.hasMinRating(minRating) : spec.and(PhotoSpecification.hasMinRating(minRating));
+            spec = spec.and(PhotoSpecification.hasMinRating(minRating));
         }
 
         if (hasGps != null) {
-            spec = spec == null ? PhotoSpecification.hasGps(hasGps) : spec.and(PhotoSpecification.hasGps(hasGps));
+            spec = spec.and(PhotoSpecification.hasGps(hasGps));
         }
 
-        return spec != null ? photoRepository.findAll(spec, pageable) : photoRepository.findAll(pageable);
+        return photoRepository.findAll(spec, pageable);
     }
 
     @Transactional(readOnly = true)
@@ -109,14 +109,14 @@ public class PhotoService {
 
         if (existingRating.isPresent()) {
             final Rating rating = existingRating.get();
-            rating.setRating(ratingValue);
+            rating.setRatingValue(ratingValue);
             return ratingRepository.save(rating);
         } else {
             final Rating newRating = new Rating();
             newRating.setPhoto(photo);
             newRating.setUser(new User());
             newRating.getUser().setId(userId);
-            newRating.setRating(ratingValue);
+            newRating.setRatingValue(ratingValue);
             return ratingRepository.save(newRating);
         }
     }
@@ -142,12 +142,5 @@ public class PhotoService {
             Files.deleteIfExists(mediumPath);
             log.info("Deleted thumbnail: {}", mediumPath);
         }
-    }
-
-    private String getFileExtension(final String filename) {
-        if (filename == null || !filename.contains(".")) {
-            return "";
-        }
-        return filename.substring(filename.lastIndexOf('.'));
     }
 }

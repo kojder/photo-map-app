@@ -299,21 +299,21 @@ class PhotoSpecificationTest {
         final Rating rating1 = new Rating();
         rating1.setPhoto(photoWithGps);
         rating1.setUser(rater1);
-        rating1.setRating(5);
+        rating1.setRatingValue(5);
         entityManager.persist(rating1);
 
         // Photo with medium rating (3)
         final Rating rating2 = new Rating();
         rating2.setPhoto(recentPhoto);
         rating2.setUser(rater1);
-        rating2.setRating(3);
+        rating2.setRatingValue(3);
         entityManager.persist(rating2);
 
         // Photo with low rating (2)
         final Rating rating3 = new Rating();
         rating3.setPhoto(oldPhoto);
         rating3.setUser(rater1);
-        rating3.setRating(2);
+        rating3.setRatingValue(2);
         entityManager.persist(rating3);
 
         entityManager.flush();
@@ -338,7 +338,7 @@ class PhotoSpecificationTest {
         final Rating rating = new Rating();
         rating.setPhoto(recentPhoto);
         rating.setUser(rater);
-        rating.setRating(5);
+        rating.setRatingValue(5);
         entityManager.persist(rating);
 
         entityManager.flush();

@@ -11,6 +11,10 @@ import java.time.ZoneId;
 
 public class PhotoSpecification {
 
+    private PhotoSpecification() {
+        throw new UnsupportedOperationException("Utility class");
+    }
+
     public static Specification<Photo> hasMinRating(final Integer minRating) {
         return (root, query, criteriaBuilder) -> {
             if (minRating == null) {
@@ -20,7 +24,7 @@ public class PhotoSpecification {
             // Join with ratings table
             final Subquery<Double> ratingSubquery = query.subquery(Double.class);
             final Root<Rating> ratingRoot = ratingSubquery.from(Rating.class);
-            ratingSubquery.select(criteriaBuilder.avg(ratingRoot.get("rating")))
+            ratingSubquery.select(criteriaBuilder.avg(ratingRoot.get("ratingValue")))
                     .where(criteriaBuilder.equal(ratingRoot.get("photo").get("id"), root.get("id")));
 
             // Return photos with average rating >= minRating

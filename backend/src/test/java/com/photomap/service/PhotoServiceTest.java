@@ -66,13 +66,13 @@ class PhotoServiceTest {
         final Page<Photo> photoPage = new PageImpl<>(photos);
         final Pageable pageable = PageRequest.of(0, 20);
 
-        when(photoRepository.findAll(pageable)).thenReturn(photoPage);
+        when(photoRepository.findAll(any(Specification.class), eq(pageable))).thenReturn(photoPage);
 
         final Page<Photo> result = photoService.getPhotos(testUser.getId(), pageable, null, null, null, null);
 
         assertNotNull(result);
         assertEquals(2, result.getContent().size());
-        verify(photoRepository, times(1)).findAll(pageable);
+        verify(photoRepository, times(1)).findAll(any(Specification.class), eq(pageable));
     }
 
     @Test
@@ -122,7 +122,7 @@ class PhotoServiceTest {
     }
 
     @Test
-    void deletePhoto_Success() throws IOException {
+    void deletePhoto_Success() {
         final Photo photo = createTestPhoto(1L);
         photo.setUser(testUser);
         photo.setFilename("test.jpg");
@@ -144,9 +144,8 @@ class PhotoServiceTest {
 
         when(photoRepository.findById(1L)).thenReturn(Optional.of(photo));
 
-        assertThrows(IllegalArgumentException.class, () -> {
-            photoService.deletePhoto(1L, testUser.getId());
-        });
+        assertThrows(IllegalArgumentException.class,
+            () -> photoService.deletePhoto(1L, testUser.getId()));
 
         verify(photoRepository, never()).delete(any(Photo.class));
     }
@@ -163,13 +162,13 @@ class PhotoServiceTest {
 
         final Rating savedRating = new Rating();
         savedRating.setId(1L);
-        savedRating.setRating(5);
+        savedRating.setRatingValue(5);
         when(ratingRepository.save(any(Rating.class))).thenReturn(savedRating);
 
         final Rating result = photoService.ratePhoto(1L, testUser.getId(), 5);
 
         assertNotNull(result);
-        assertEquals(5, result.getRating());
+        assertEquals(5, result.getRatingValue());
         verify(ratingRepository, times(1)).save(any(Rating.class));
     }
 
@@ -182,7 +181,7 @@ class PhotoServiceTest {
 
         final Rating existingRating = new Rating();
         existingRating.setId(1L);
-        existingRating.setRating(3);
+        existingRating.setRatingValue(3);
 
         when(photoRepository.findById(1L)).thenReturn(Optional.of(photo));
         when(ratingRepository.findByPhotoIdAndUserId(1L, testUser.getId())).thenReturn(Optional.of(existingRating));
@@ -191,7 +190,7 @@ class PhotoServiceTest {
         final Rating result = photoService.ratePhoto(1L, testUser.getId(), 5);
 
         assertNotNull(result);
-        assertEquals(5, result.getRating());
+        assertEquals(5, result.getRatingValue());
         verify(ratingRepository, times(1)).save(existingRating);
     }
 
@@ -204,9 +203,8 @@ class PhotoServiceTest {
 
         when(photoRepository.findById(1L)).thenReturn(Optional.of(photo));
 
-        assertThrows(IllegalArgumentException.class, () -> {
-            photoService.ratePhoto(1L, testUser.getId(), 6);
-        });
+        assertThrows(IllegalArgumentException.class,
+            () -> photoService.ratePhoto(1L, testUser.getId(), 6));
 
         verify(ratingRepository, never()).save(any(Rating.class));
     }
@@ -227,9 +225,8 @@ class PhotoServiceTest {
     void clearRating_NotFound_ThrowsException() {
         when(ratingRepository.findByPhotoIdAndUserId(1L, testUser.getId())).thenReturn(Optional.empty());
 
-        assertThrows(IllegalArgumentException.class, () -> {
-            photoService.clearRating(1L, testUser.getId());
-        });
+        assertThrows(IllegalArgumentException.class,
+            () -> photoService.clearRating(1L, testUser.getId()));
 
         verify(ratingRepository, never()).deleteByPhotoIdAndUserId(any(), any());
     }
@@ -251,7 +248,7 @@ class PhotoServiceTest {
     }
 
     @Test
-    void deletePhotoByAdmin_Success() throws Exception {
+    void deletePhotoByAdmin_Success() {
         final Photo photo = createTestPhoto(1L);
         when(photoRepository.findById(1L)).thenReturn(Optional.of(photo));
 

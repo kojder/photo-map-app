@@ -35,8 +35,8 @@ public class Rating {
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
-    @Column(nullable = false)
-    private Integer rating;
+    @Column(name = "rating", nullable = false)
+    private Integer ratingValue;
 
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)

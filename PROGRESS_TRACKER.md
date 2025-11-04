@@ -11,7 +11,67 @@
 
 ### 🎯 Currently Working On
 
-**No specific task** - awaiting user direction
+**🔧 SonarCloud Backend Issues - Code Quality Fixes** (2025-11-04)
+
+**Goal:** Fix all 19 OPEN backend issues detected by SonarCloud analysis
+
+**Issues Breakdown:**
+- Total: 19 issues (1 BUG + 18 CODE_SMELL)
+- Severity: 9 MAJOR + 10 MINOR
+- Estimated total time: ~1-1.5h
+
+**Priority 1: MAJOR BUG (15 min)**
+1. ✅ PhotoService.java:47 - `java:S2583`
+   - Problem: Condition always evaluates to "true"
+   - Impact: Potential logic error affecting photo filtering
+   - Effort: 15min
+
+**Priority 2: MAJOR CODE_SMELL - Quick Fixes (4 issues, ~10 min)**
+2. ✅ PhotoService.java:147 - Unused private method `getFileExtension()`
+   - Effort: 2min
+3. ✅ PhotoProcessingService.java:156 - Use %n instead of \n for line separator
+   - Effort: 1min
+4. ✅ PhotoSpecification.java:12 - Add private constructor (utility class)
+   - Effort: 5min
+5. ✅ AdminControllerTest.java:84 - Remove useless assignment
+   - Effort: 1min
+
+**Priority 3: MAJOR CODE_SMELL - Test Refactoring (4 issues, ~20 min)**
+6. ✅ PhotoServiceTest.java:147 - Refactor lambda (runtime exception)
+   - Effort: 5min
+7. ✅ PhotoServiceTest.java:207 - Refactor lambda (runtime exception)
+   - Effort: 5min
+8. ✅ PhotoServiceTest.java:230 - Refactor lambda (runtime exception)
+   - Effort: 5min
+9. ✅ Rating.java:39 - Rename field "rating" (naming conflict)
+   - Effort: 10min
+
+**Priority 4: MINOR CODE_SMELL - Test Cleanup (10 issues, ~15 min)**
+10. ✅ AdminControllerTest.java - 5 issues (unused variable, useless eq() calls)
+    - Lines: 84, 121, 126, 132, 138
+    - Effort: 5min total
+11. ✅ PhotoServiceTest.java - 2 issues (unnecessary throws declarations)
+    - Lines: 125, 254
+    - Effort: 2min total
+12. ✅ AdminIntegrationTest.java:5 - Remove unused import
+    - Effort: 1min
+13. ✅ JwtTokenProviderTest.java - 2 issues (join assertion chains)
+    - Lines: 40, 51
+    - Effort: 2min total
+
+**Implementation Plan:**
+1. Start with MAJOR BUG (highest risk)
+2. Fix quick MAJOR issues (low-hanging fruit)
+3. Refactor test lambdas (moderate complexity)
+4. Clean up MINOR test issues (final polish)
+5. Verify all tests passing after each fix
+6. Run full test suite before commit
+7. Update SonarCloud (automatic on push)
+
+**Verification:**
+- Backend tests: 78/78 passing → verify after each fix
+- SonarCloud re-scan: automatic after push
+- Target: 0 OPEN issues (100% clean)
 
 ---
 

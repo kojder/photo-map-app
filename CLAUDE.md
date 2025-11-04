@@ -130,6 +130,26 @@ PROGRESS_TRACKER.md            # Progress tracker (6 phases)
 README.md                      # Project overview (for humans)
 ```
 
+### 🔍 SonarCloud API Integration
+
+**File:** `.vscode/SONARCLOUD_API_SETUP.md`
+
+**Purpose:** Instructions for connecting to SonarCloud API to retrieve and analyze code quality issues.
+
+**Use when:**
+- ✅ Checking backend/frontend issues programmatically
+- ✅ Retrieving SonarCloud metrics (bugs, vulnerabilities, code smells, coverage)
+- ✅ Analyzing quality gate status
+- ✅ Planning code quality improvements
+
+**Contains:**
+- API authentication setup
+- curl examples for common queries (issues, hotspots, metrics)
+- Project keys for backend and frontend
+- Filtering and pagination patterns
+
+**Note:** File is git-ignored for security reasons.
+
 ### 📚 Code Snippets from Context7
 
 **Folder:** `.snippets/` - **Saved snippets from Context7 for future reference**
