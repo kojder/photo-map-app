@@ -83,10 +83,41 @@ Before making changes, gather comprehensive context about the feature's current 
    git branch -a | grep -i feature-name
    ```
 
-4. **Codebase**: Verify implementation exists
-   - Check if mentioned components exist in code
-   - Verify services, endpoints, or modules are implemented
-   - Look for test files related to feature
+4. **Codebase**: Systematically search and analyze implementation
+
+   **CRITICAL: This is NOT optional - you MUST perform thorough code search before updating docs!**
+
+   a) **Search by keywords** (use Grep tool with multiple patterns):
+   ```bash
+   # Example for "photo-viewer" feature:
+   grep -r "photo.?viewer" --ignore-case    # Find all variants
+   grep -r "photoViewer"                     # camelCase
+   grep -r "PhotoViewer"                     # PascalCase
+   grep -r "photo_viewer"                    # snake_case
+   ```
+
+   b) **Identify key files** (use Glob tool to find all related files):
+   - **Backend:** `*Controller.java`, `*Service.java`, `*Repository.java`, `*Entity.java`, `*DTO.java`
+   - **Frontend:** `*.component.ts`, `*.service.ts`, `*.guard.ts`, `*.model.ts`, `*.html`
+   - **Tests:** `*Test.java`, `*.spec.ts`, `*.e2e.ts`
+
+   c) **Read key files** (use Read tool - NOT just "check if exists"):
+   - Read main service/component implementation files
+   - Check method signatures, class structure, dependencies
+   - Identify integration points with other features
+   - Note important fields, interfaces, DTOs
+
+   d) **Create component inventory** (make a list while reading):
+   - Backend: Package + Class names (e.g., `com.photomap.service.PhotoViewerService`)
+   - Frontend: File paths + Component/Service names (e.g., `src/app/photo-viewer/photo-viewer.component.ts`)
+   - Key interfaces/DTOs (e.g., `PhotoViewerDTO`, `PhotoMetadata`)
+   - Important public methods (e.g., `extractExifData()`, `generateThumbnail()`)
+
+   **Do not proceed to Step 3 until you have:**
+   - ✅ Searched code with multiple grep patterns
+   - ✅ Found all related files with Glob
+   - ✅ Read (not just checked) key implementation files
+   - ✅ Created inventory of file paths/packages/classes
 
 5. **CLAUDE.md**: Review project conventions
    - Language preferences (Polish/English)
@@ -215,28 +246,131 @@ Ensure the feature file has a clear, prominent status section at the top.
 **Estimated Effort:** 2-3 weeks
 ```
 
-### Step 6: Preserve Language
+### Ensure "Key Components" Section Exists
 
-**CRITICAL: Always preserve the original language of the document unless user explicitly requests translation.**
+**CRITICAL: Every feature documentation MUST include a "Key Components" section with file paths/package references.**
 
-**Detection:**
-- Read first few sections of the document
-- Identify if content is in Polish or English
-- Check PROGRESS_TRACKER.md for project language patterns
+This section should be added immediately after the **Overview** section, containing ONLY references to code (NOT code snippets or implementation details).
 
-**Rules:**
-- Polish document → Keep in Polish
-- English document → Keep in English
-- Mixed document → Ask user which to standardize to
-- Only translate if user explicitly says "translate to [language]"
+**Required Format:**
 
-**Example:**
+```markdown
+## Key Components
+
+### Backend
+| Path/Package | Description |
+|--------------|-------------|
+| `com.photomap.service.PhotoService` | Main service for photo CRUD operations, EXIF extraction |
+| `com.photomap.controller.PhotoController` | REST endpoints: POST /api/photos, GET /api/photos/{id} |
+| `com.photomap.entity.Photo` | JPA entity with geolocation fields (latitude, longitude) |
+| `com.photomap.repository.PhotoRepository` | Spring Data JPA repository for Photo entity |
+
+### Frontend
+| Path/Component | Description |
+|----------------|-------------|
+| `src/app/photo-viewer/photo-viewer.component.ts` | Main component displaying photo with map integration |
+| `src/app/services/photo.service.ts` | Manages photo state via BehaviorSubject, handles API calls |
+| `src/app/models/photo.model.ts` | TypeScript interface for Photo with metadata |
 ```
-User: "Update photo viewer docs"
-→ Document in Polish → Keep changes in Polish
 
-User: "Update photo viewer docs and translate to English"
-→ Document in Polish → Translate to English
+**Rules for "Key Components" section:**
+
+1. **Content Rules:**
+   - ✅ Include file paths (e.g., `src/app/service/photo.service.ts`)
+   - ✅ Include package names (e.g., `com.photomap.service.PhotoService`)
+   - ✅ Include one-sentence description (5-15 words) explaining purpose
+   - ✅ Optionally mention key public methods/endpoints
+   - ❌ **NO code snippets or implementation details**
+   - ❌ **NO method bodies or class internals**
+   - ❌ **NO examples of usage**
+
+2. **Source of Information:**
+   - Use the component inventory created in Step 2.4 (Codebase search)
+   - All components listed here MUST come from actual code found via Grep/Glob/Read
+   - Do NOT guess or assume components - only list what was found in code
+
+3. **Status-Specific Guidelines:**
+
+   **For ✅ COMPLETED features:**
+   - Keep full component list (this is the MAIN architectural reference!)
+   - Remove code snippets from other sections, but KEEP this component list
+   - This section is gold for future work - never remove it
+
+   **For ⏳ IN-PROGRESS features:**
+   - List implemented components (found in code)
+   - List planned components with `(planned)` suffix
+   - Example: `PhotoExportService (planned)` - Export photos to ZIP
+
+   **For 🔜 PLANNED features:**
+   - List proposed architecture components with `(proposed)` suffix
+   - Example: `com.photomap.service.NotificationService (proposed)` - Email notifications
+
+4. **Grouping:**
+   - Group by Backend/Frontend (for full-stack features)
+   - For backend-only: use `### Backend` section only
+   - For frontend-only: use `### Frontend` section only
+
+**Purpose of this section:**
+- Enable Claude Code to quickly find related files when working on this feature
+- Provide architectural overview without code clutter
+- Serve as navigation reference for future development
+
+### Step 6: Apply Project Language Policy
+
+**CRITICAL: Check project's language policy in CLAUDE.md FIRST before deciding on documentation language.**
+
+**Step-by-step process:**
+
+1. **Check CLAUDE.md for language policy:**
+   - Read CLAUDE.md in project root
+   - Look for section about "Language and Communication" or "Documentation"
+   - Check if there's explicit policy about documentation language
+
+2. **Apply appropriate rule:**
+
+   **A) If CLAUDE.md specifies documentation language:**
+   - ✅ Use the language specified in CLAUDE.md
+   - Example: `Documentation: English (all .md files)` → Convert to English
+   - Example: `Dokumentacja: Polski` → Convert to Polish
+   - **This overrides the original document language**
+
+   **B) If NO language policy in CLAUDE.md:**
+   - ✅ Preserve the original language of the document
+   - Polish document → Keep in Polish
+   - English document → Keep in English
+   - Mixed document → Ask user which to standardize to
+
+   **C) If user explicitly requests translation:**
+   - ✅ Use the language user requested
+   - **This overrides CLAUDE.md and original language**
+
+**Priority order:**
+1. User's explicit request (highest)
+2. CLAUDE.md language policy
+3. Original document language (lowest)
+
+**Example workflows:**
+
+```
+Scenario 1: Project with English policy
+- CLAUDE.md says: "Documentation: English (all .md files)"
+- Current doc: Polish
+- Action: Convert to English
+
+Scenario 2: Project without policy
+- CLAUDE.md: No language policy specified
+- Current doc: Polish
+- Action: Keep in Polish
+
+Scenario 3: User explicit request
+- User says: "Update docs and translate to Polish"
+- CLAUDE.md says: "Documentation: English"
+- Action: Translate to Polish (user request overrides policy)
+
+Scenario 4: No policy, mixed language doc
+- CLAUDE.md: No language policy
+- Current doc: Mixed Polish/English
+- Action: Ask user which language to standardize to
 ```
 
 ### Step 7: Review with User Before Committing
@@ -254,6 +388,35 @@ User: "Update photo viewer docs and translate to English"
 4. Ask: "Czy zatwierdzić te zmiany w dokumentacji?"
 5. Wait for explicit confirmation
 6. Only after YES → stage and commit changes
+
+**Review Checklist - verify BEFORE showing summary to user:**
+
+Before presenting the review summary, verify that all required steps were completed:
+
+✅ **Code verification performed (Step 2.4):**
+   - [ ] Grep search executed with multiple patterns (camelCase, PascalCase, snake_case)
+   - [ ] Key files identified with Glob tool
+   - [ ] Key files **read** with Read tool (not just checked for existence)
+   - [ ] Component inventory created (file paths, packages, class names)
+
+✅ **Documentation completeness:**
+   - [ ] "Key Components" section exists in the updated documentation
+   - [ ] All components from Step 2.4 inventory are listed in "Key Components"
+   - [ ] Full file paths used (frontend) and package names (backend)
+   - [ ] Descriptions are concise (5-15 words) and accurate
+   - [ ] Section contains ONLY references (no code snippets or implementation details)
+
+✅ **Status accuracy:**
+   - [ ] Status classification matches git history + PROGRESS_TRACKER
+   - [ ] Completion date accurate (for ✅ COMPLETED features)
+   - [ ] Branch status verified (merged/active)
+
+✅ **Cleanup level appropriate:**
+   - [ ] COMPLETED: Removed 60-85% (kept architecture + decisions + Key Components)
+   - [ ] IN-PROGRESS: Removed 40-60% (kept current work + Key Components)
+   - [ ] PLANNED: Removed 30-50% (kept requirements + Key Components)
+
+**⚠️ If ANY checklist item is NOT checked - DO NOT proceed to user review. Go back and complete missing steps first.**
 
 **Example Review Summary:**
 ```
@@ -294,11 +457,13 @@ Before/after examples of documentation transformations for different statuses, s
 ## Important Reminders
 
 1. **Always gather full context** - Don't rely on the feature file alone
-2. **Be aggressive with COMPLETED features** - Remove 60-85% of content
-3. **Preserve technical decisions** - These are gold for future work
-4. **Keep language consistent** - Don't translate unless explicitly asked
-5. **Always review with user** - Never auto-commit documentation changes
-6. **Use references liberally** - Refer to cleanup-guidelines.md for specific guidance
+2. **Systematically search codebase** - Use Grep/Glob/Read tools to find all related components
+3. **Include Key Components section** - Always add file paths/packages for quick reference
+4. **Be aggressive with COMPLETED features** - Remove 60-85% of content
+5. **Preserve technical decisions** - These are gold for future work
+6. **Apply project language policy** - Check CLAUDE.md first, then user request, then preserve original
+7. **Always review with user** - Never auto-commit documentation changes
+8. **Use references liberally** - Refer to cleanup-guidelines.md for specific guidance
 
 ## Quick Reference
 
