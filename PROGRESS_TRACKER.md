@@ -11,42 +11,50 @@
 
 ### 🎯 Currently Working On
 
-**🧪 E2E Test Fix - AdminPage Users Table Visibility** (2025-11-04)
+**📚 Swagger/OpenAPI Implementation** (2025-11-04)
 
-**Problem:** E2E test `navigation/tabs-flow.spec.ts:43` fails on `adminPage.isUsersTableVisible()` check.
-- Error: Expected `true`, received `false`
-- Context: After SonarCloud backend fixes (Rating field rename: `rating` → `ratingValue`)
-- Page snapshot shows table IS visible and populated with 4 users
-- URL is correct (`/admin`), data loads properly
+**Goal:** Add Swagger UI for interactive API documentation and testing
 
-**Root Cause Analysis Plan:**
-1. **Check AdminPage POM** - Verify `isUsersTableVisible()` selector
-   - Location: `frontend/tests/e2e/pages/AdminPage.ts`
-   - Possible issue: Selector mismatch or timing issue
-   - From snapshot: table exists as `table [ref=e36]` with data
-2. **Verify Backend API** - Test `/api/admin/users` endpoint
-   - Check if Rating field rename broke any DTOs/responses
-   - Verify response structure matches frontend expectations
-3. **Add Proper Wait** - Ensure method waits for table rendering
-   - May need `page.waitForSelector()` before visibility check
-   - Check if other admin tests pass (isolation test)
+**Problem:**
+- `/swagger-ui/index.html` returns 500 error
+- `/v3/api-docs` endpoint not available
+- No springdoc-openapi dependency in project
 
-**Implementation Steps:**
-1. Read `AdminPage.ts` → identify `isUsersTableVisible()` implementation
-2. Check selector - likely issue: outdated or incorrect CSS selector
-3. Add explicit `waitFor` if missing (Playwright best practice)
-4. Run isolated admin test: `npm run test:e2e -- admin-panel` to verify
-5. If backend issue suspected: test API endpoint manually with curl
-6. Fix selector/timing issue
-7. Re-run full E2E suite: `npm run test:e2e`
-8. Verify all 16 tests pass
+**Implementation Plan:**
+1. **Add Dependencies** - `backend/pom.xml`
+   - `springdoc-openapi-starter-webmvc-ui` (Spring Boot 3 compatible)
+   - Version: 2.x (latest stable for Spring Boot 3)
+2. **Create OpenAPI Config** - `backend/src/main/java/com/photomap/config/OpenApiConfig.java`
+   - API title, description, version
+   - JWT security scheme configuration
+   - Contact info, license (optional)
+3. **Configure Properties** - `backend/src/main/resources/application.properties`
+   - Swagger UI path: `/swagger-ui/index.html`
+   - API docs path: `/v3/api-docs`
+   - Enable/disable in different profiles (optional)
+4. **Security Config Update** - Allow public access to Swagger endpoints
+   - Add `/swagger-ui/**`, `/v3/api-docs/**` to permitAll()
+5. **Test Swagger UI**
+   - Access `http://localhost:8080/swagger-ui/index.html`
+   - Verify all endpoints visible (auth, photos, admin)
+   - Test JWT authentication flow
+6. **Update README.md** - Add Swagger documentation section
 
-**Files to Check:**
-- `frontend/tests/e2e/pages/AdminPage.ts` (POM implementation)
-- `frontend/tests/e2e/specs/navigation/tabs-flow.spec.ts` (test source)
-- `backend/.../AdminController.java` (if API issue suspected)
+**Expected Result:**
+- ✅ Swagger UI available at `/swagger-ui/index.html`
+- ✅ OpenAPI JSON at `/v3/api-docs`
+- ✅ All REST endpoints auto-documented
+- ✅ JWT Bearer authentication configured
+- ✅ Interactive API testing through browser
 
-**Estimated Time:** 15-30 minutes
+**Estimated Time:** 10-15 minutes
+
+**Files to Create/Modify:**
+- `backend/pom.xml` (add dependency)
+- `backend/src/main/java/com/photomap/config/OpenApiConfig.java` (new file)
+- `backend/src/main/java/com/photomap/config/SecurityConfig.java` (update permitAll)
+- `backend/src/main/resources/application.properties` (optional config)
+- `README.md` (add Swagger section)
 
 ---
 
@@ -132,6 +140,33 @@ Backend and frontend test coverage currently below thresholds:
 ---
 
 ### ✅ Last Completed
+
+**🧪 E2E Test Fix - AdminPage Users Table Visibility** (2025-11-04)
+
+**Problem:** E2E test `navigation/tabs-flow.spec.ts:43` failed on `adminPage.isUsersTableVisible()` check after SonarCloud backend refactoring.
+
+**Root Cause:**
+- Race condition: test checked table visibility immediately during spinner rendering
+- AdminComponent shows spinner → loads data via HTTP → renders table
+- `isUsersTableVisible()` didn't wait for async data loading
+
+**Solution:**
+- Added `waitFor({ state: 'visible', timeout: 5000 })` to `AdminPage.isUsersTableVisible()`
+- Method now waits up to 5s for table to appear in DOM (smart polling)
+- No impact on production code - test-only change
+
+**Testing:**
+- Backend: 78/78 tests passing ✅
+- Frontend: 304/304 tests passing ✅
+- E2E: 16/16 tests passing ✅
+
+**Files Changed:**
+- `frontend/tests/e2e/pages/AdminPage.ts` - Added waitFor to prevent race condition
+- `PROGRESS_TRACKER.md` - Updated status
+
+**Commit:** `a00e614` - test(e2e): fix AdminPage users table visibility race condition
+
+---
 
 **📖 README.md Update - English Translation & Feature Status** (2025-11-04)
 
