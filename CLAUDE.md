@@ -468,7 +468,8 @@ git push --no-verify
 
 - **Communication with user**: Polish
 - **Code**: English (all identifiers, class names, method names, variables)
-- **Git commits**: Conventional Commits format (Polish or English)
+- **Documentation**: English (all .md files, README, comments, inline docs)
+- **Git commits**: Conventional Commits format (English)
 
 ### Code Quality
 
