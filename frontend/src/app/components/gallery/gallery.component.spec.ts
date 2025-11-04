@@ -55,7 +55,12 @@ describe('GalleryComponent', () => {
       photos$: photosSubject.asObservable()
     });
 
-    const filterServiceSpy = jasmine.createSpyObj('FilterService', ['currentFilters'], {
+    const filterServiceSpy = jasmine.createSpyObj('FilterService', [
+      'currentFilters',
+      'applyFilters',
+      'clearFilters',
+      'setPage'
+    ], {
       filters$: filtersSubject.asObservable()
     });
 
