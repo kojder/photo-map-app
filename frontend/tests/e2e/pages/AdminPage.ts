@@ -22,7 +22,12 @@ export class AdminPage extends BasePage {
   }
 
   async isUsersTableVisible(): Promise<boolean> {
-    return await this.usersTable.isVisible();
+    try {
+      await this.usersTable.waitFor({ state: 'visible', timeout: 5000 });
+      return true;
+    } catch {
+      return false;
+    }
   }
 
   async searchUser(email: string) {

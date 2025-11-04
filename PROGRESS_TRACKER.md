@@ -11,7 +11,48 @@
 
 ### 🎯 Currently Working On
 
-**🔧 SonarCloud Backend Issues - Code Quality Fixes** (2025-11-04)
+**🧪 E2E Test Fix - AdminPage Users Table Visibility** (2025-11-04)
+
+**Problem:** E2E test `navigation/tabs-flow.spec.ts:43` fails on `adminPage.isUsersTableVisible()` check.
+- Error: Expected `true`, received `false`
+- Context: After SonarCloud backend fixes (Rating field rename: `rating` → `ratingValue`)
+- Page snapshot shows table IS visible and populated with 4 users
+- URL is correct (`/admin`), data loads properly
+
+**Root Cause Analysis Plan:**
+1. **Check AdminPage POM** - Verify `isUsersTableVisible()` selector
+   - Location: `frontend/tests/e2e/pages/AdminPage.ts`
+   - Possible issue: Selector mismatch or timing issue
+   - From snapshot: table exists as `table [ref=e36]` with data
+2. **Verify Backend API** - Test `/api/admin/users` endpoint
+   - Check if Rating field rename broke any DTOs/responses
+   - Verify response structure matches frontend expectations
+3. **Add Proper Wait** - Ensure method waits for table rendering
+   - May need `page.waitForSelector()` before visibility check
+   - Check if other admin tests pass (isolation test)
+
+**Implementation Steps:**
+1. Read `AdminPage.ts` → identify `isUsersTableVisible()` implementation
+2. Check selector - likely issue: outdated or incorrect CSS selector
+3. Add explicit `waitFor` if missing (Playwright best practice)
+4. Run isolated admin test: `npm run test:e2e -- admin-panel` to verify
+5. If backend issue suspected: test API endpoint manually with curl
+6. Fix selector/timing issue
+7. Re-run full E2E suite: `npm run test:e2e`
+8. Verify all 16 tests pass
+
+**Files to Check:**
+- `frontend/tests/e2e/pages/AdminPage.ts` (POM implementation)
+- `frontend/tests/e2e/specs/navigation/tabs-flow.spec.ts` (test source)
+- `backend/.../AdminController.java` (if API issue suspected)
+
+**Estimated Time:** 15-30 minutes
+
+---
+
+### 🔮 Planned Next
+
+**🔧 SonarCloud Backend Issues - Code Quality Fixes** (COMPLETED - ready to commit)
 
 **Goal:** Fix all 19 OPEN backend issues detected by SonarCloud analysis
 
