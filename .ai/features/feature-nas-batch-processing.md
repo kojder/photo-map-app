@@ -9,48 +9,48 @@
 
 ## 🎯 Overview
 
-System przetwarzania zdjęć z NAS do MVP Photo Map, gdzie:
-- **Oryginały** pozostają na NAS (storage zewnętrzny)
-- **Miniatury** generowane i przechowywane lokalnie na Mikrus VPS
-- **Batch processing** - przetwarzanie w partiach z tracking progressu
-- **Deduplikacja** - wykrywanie duplikatów po hash MD5/SHA256
+Photo processing system from NAS to MVP Photo Map, where:
+- **Originals** remain on NAS (external storage)
+- **Thumbnails** generated and stored locally on Mikrus VPS
+- **Batch processing** - processing in batches with progress tracking
+- **Deduplication** - detecting duplicates by MD5/SHA256 hash
 
 **Benefits:**
-- ✅ **90% oszczędności miejsca** na Mikrus VPS (tylko miniatury, bez oryginałów)
-- ✅ **Centralne źródło** - NAS jako single source of truth dla oryginałów
-- ✅ **Skalowalność** - łatwe dodawanie tysięcy zdjęć przez NAS
-- ✅ **Backup** - oryginały już backupowane na NAS (RAID, snapshoty)
+- ✅ **90% storage savings** on Mikrus VPS (only thumbnails, no originals)
+- ✅ **Central source** - NAS as single source of truth for originals
+- ✅ **Scalability** - easy to add thousands of photos through NAS
+- ✅ **Backup** - originals already backed up on NAS (RAID, snapshots)
 
 ---
 
 ## 📊 Use Case & Problem Statement
 
 ### Problem:
-Użytkownik ma:
-- **NAS z kilkoma tysiącami zdjęć** (np. 5000 zdjęć × 5MB = 25GB)
-- **Mikrus VPS z 250GB dysku** - kopiowanie wszystkich zdjęć nieefektywne
-- **Potrzeba:** Wyświetlać zdjęcia w galerii/mapie bez duplikacji na VPS
+User has:
+- **NAS with several thousand photos** (e.g., 5000 photos × 5MB = 25GB)
+- **Mikrus VPS with 250GB disk** - copying all photos inefficient
+- **Need:** Display photos in gallery/map without VPS duplication
 
-### Obecne ograniczenia (MVP):
+### Current limitations (MVP):
 ```
 uploads/
 ├── input/      # Drop zone (Spring Integration poller)
-├── original/   # ❌ Oryginały kopiowane lokalnie (duplikacja!)
-├── medium/     # Miniatury 300px
-└── failed/     # Błędy
+├── original/   # ❌ Originals copied locally (duplication!)
+├── medium/     # 300px thumbnails
+└── failed/     # Errors
 ```
 
-**Problem:** Duplikacja danych - oryginały są w `input/` i `original/`
+**Problem:** Data duplication - originals are in both `input/` and `original/`
 
-### Docelowe rozwiązanie:
+### Target solution:
 ```
-NAS (zdalne):
-/volume1/photos/IMG_1234.JPG (5MB) ← Oryginały tutaj
+NAS (remote):
+/volume1/photos/IMG_1234.JPG (5MB) ← Originals here
 
-Mikrus VPS (lokalne):
+Mikrus VPS (local):
 /mnt/nas-photos/                   ← NAS mount (read-only)
 uploads/
-  └── medium/abc-uuid-123.jpg      ← TYLKO miniatury (~500KB)
+  └── medium/abc-uuid-123.jpg      ← ONLY thumbnails (~500KB)
 
 PostgreSQL:
 photos.original_path = "/volume1/photos/IMG_1234.JPG"
@@ -70,7 +70,7 @@ photos.processed = true
 │  /volume1/photos/ (25GB+)                       │
 │  ├── IMG_1234.JPG                               │
 │  ├── IMG_1235.JPG                               │
-│  └── ... (tysiące zdjęć)                        │
+│  └── ... (thousands of photos)                  │
 └─────────────────────────────────────────────────┘
                     ↓
           NFS/SMB mount (read-only)
@@ -80,7 +80,7 @@ photos.processed = true
 │                                                  │
 │  /mnt/nas-photos/ ← Mount point (RO)           │
 │                                                  │
-│  uploads/medium/ (~2.5GB dla 5000 zdjęć)       │
+│  uploads/medium/ (~2.5GB for 5000 photos)      │
 │                                                  │
 │  PostgreSQL:                                     │
 │  - photos (original_path, thumbnail_filename)   │
@@ -90,18 +90,18 @@ photos.processed = true
 
 ### Storage Calculation:
 ```
-Scenariusz: 5000 zdjęć
+Scenario: 5000 photos
 
 NAS:
-- Oryginały: 5000 × 5MB = 25GB
+- Originals: 5000 × 5MB = 25GB
 
 Mikrus VPS:
-- Miniatury: 5000 × 500KB = 2.5GB
+- Thumbnails: 5000 × 500KB = 2.5GB
 - PostgreSQL: ~50MB
-- Aplikacja: ~500MB
-- TOTAL: ~3GB (z zapasem <10GB)
+- Application: ~500MB
+- TOTAL: ~3GB (with margin <10GB)
 
-Oszczędność: 22GB (88%)! ✅
+Savings: 22GB (88%)! ✅
 ```
 
 ---
@@ -116,14 +116,14 @@ Oszczędność: 22GB (88%)! ✅
 CREATE TABLE batch_jobs (
     id BIGSERIAL PRIMARY KEY,
     job_type VARCHAR(50) NOT NULL,          -- 'INITIAL_SCAN', 'INCREMENTAL_SCAN', 'MANUAL_TRIGGER'
-    total_files INT DEFAULT 0,              -- Liczba zdjęć do przetworzenia
-    processed_files INT DEFAULT 0,          -- Przetworzono pomyślnie
-    failed_files INT DEFAULT 0,             -- Błędy przetwarzania
+    total_files INT DEFAULT 0,              -- Number of photos to process
+    processed_files INT DEFAULT 0,          -- Successfully processed
+    failed_files INT DEFAULT 0,             -- Processing errors
     status VARCHAR(20) DEFAULT 'RUNNING',   -- 'RUNNING', 'COMPLETED', 'FAILED', 'PAUSED'
     started_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     completed_at TIMESTAMP,
-    error_message TEXT,                     -- Ostatni błąd (jeśli FAILED)
-    
+    error_message TEXT,                     -- Last error (if FAILED)
+
     INDEX batch_jobs_status_idx (status),
     INDEX batch_jobs_started_at_idx (started_at)
 );
@@ -132,11 +132,11 @@ CREATE TABLE batch_jobs (
 ### Modified Table: `photos`
 
 **Changes:**
-- Add `original_path` - ścieżka do pliku na NAS
-- Add `nas_file_hash` - MD5/SHA256 hash dla deduplikacji
-- Add `processed` - flag czy zdjęcie zostało przetworzone
-- Add `processed_at` - timestamp przetworzenia
-- Remove `filename` - zbędne (mamy `original_filename` i `thumbnail_filename`)
+- Add `original_path` - path to file on NAS
+- Add `nas_file_hash` - MD5/SHA256 hash for deduplication
+- Add `processed` - flag if photo was processed
+- Add `processed_at` - processing timestamp
+- Remove `filename` - redundant (we have `original_filename` and `thumbnail_filename`)
 
 ```sql
 ALTER TABLE photos
@@ -153,100 +153,100 @@ CREATE INDEX photos_nas_hash_idx ON photos(nas_file_hash);
 
 **Updated Photo Entity Fields:**
 - `id` - BIGSERIAL PRIMARY KEY
-- `user_id` - BIGINT (nullable, może być null dla batch uploads)
-- `original_path` - VARCHAR(1000) UNIQUE NOT NULL - ścieżka na NAS
-- `original_filename` - VARCHAR(500) NOT NULL - nazwa z EXIF
+- `user_id` - BIGINT (nullable, can be null for batch uploads)
+- `original_path` - VARCHAR(1000) UNIQUE NOT NULL - path on NAS
+- `original_filename` - VARCHAR(500) NOT NULL - name from EXIF
 - `file_size` - BIGINT NOT NULL
 - `mime_type` - VARCHAR(100) NOT NULL
 - `nas_file_hash` - VARCHAR(64) - MD5/SHA256
-- `thumbnail_filename` - VARCHAR(500) NOT NULL - lokalny plik miniatury
+- `thumbnail_filename` - VARCHAR(500) NOT NULL - local thumbnail file
 - `gps_latitude`, `gps_longitude` - DECIMAL (EXIF GPS)
 - `taken_at` - TIMESTAMP (EXIF date)
-- `processed` - BOOLEAN - czy przetworzono
-- `processed_at` - TIMESTAMP - kiedy przetworzono
+- `processed` - BOOLEAN - if processed
+- `processed_at` - TIMESTAMP - when processed
 - `uploaded_at`, `updated_at` - timestamps
 
 ---
 
 ## 🔄 Workflows
 
-### Workflow 1: Inicjalne Skanowanie NAS (Jednorazowe)
+### Workflow 1: Initial NAS Scan (One-time)
 
-**Trigger:** Admin wywołuje `POST /api/admin/nas/scan`
+**Trigger:** Admin calls `POST /api/admin/nas/scan`
 
 **Steps:**
 1. **Scan NAS:**
-   - Rekurencyjne skanowanie `/mnt/nas-photos/`
-   - Filtrowanie: tylko `.jpg`, `.jpeg`, `.png`
-   - Zapisz listę znalezionych plików
+   - Recursive scan of `/mnt/nas-photos/`
+   - Filter: only `.jpg`, `.jpeg`, `.png`
+   - Save list of found files
 
 2. **Filter Unprocessed:**
-   - Dla każdego pliku: sprawdź w DB czy istnieje `photos.original_path`
-   - Jeśli NIE istnieje → dodaj do kolejki przetwarzania
+   - For each file: check if `photos.original_path` exists in DB
+   - If NOT exists → add to processing queue
 
 3. **Create Batch Job:**
-   - Insert do `batch_jobs`: `job_type='INITIAL_SCAN'`, `total_files=N`, `status='RUNNING'`
+   - Insert to `batch_jobs`: `job_type='INITIAL_SCAN'`, `total_files=N`, `status='RUNNING'`
 
 4. **Process in Batches:**
-   - Podziel na partie (np. 100 zdjęć na raz)
-   - Dla każdej partii:
-     - Odczytaj EXIF (przez NFS mount)
-     - Generuj miniaturę → zapisz lokalnie do `/uploads/medium/`
-     - Oblicz hash MD5 (opcjonalnie)
-     - Zapisz do DB: `photos` table
+   - Divide into batches (e.g., 100 photos at a time)
+   - For each batch:
+     - Read EXIF (through NFS mount)
+     - Generate thumbnail → save locally to `/uploads/medium/`
+     - Calculate MD5 hash (optional)
+     - Save to DB: `photos` table
      - Update `batch_jobs.processed_files`
 
 5. **Complete Job:**
    - Update `batch_jobs`: `status='COMPLETED'`, `completed_at=NOW()`
    - Log summary: total processed, failed, time elapsed
 
-**Expected Time:** 5000 zdjęć × 2s = ~3 godziny (można optymalizować)
+**Expected Time:** 5000 photos × 2s = ~3 hours (can be optimized)
 
 ---
 
-### Workflow 2: Przyrostowe Skanowanie (Okresowe)
+### Workflow 2: Incremental Scan (Periodic)
 
-**Trigger:** Cron job (np. codziennie o 3:00 AM) lub webhook z NAS
+**Trigger:** Cron job (e.g., daily at 3:00 AM) or webhook from NAS
 
 **Steps:**
 1. **Scan for New Files:**
-   - Skanuj `/mnt/nas-photos/`
-   - Filter: tylko pliki których `original_path` NIE MA w DB
+   - Scan `/mnt/nas-photos/`
+   - Filter: only files whose `original_path` NOT IN DB
 
 2. **Process New Files:**
-   - Analogicznie jak Workflow 1, ale tylko dla nowych
+   - Same as Workflow 1, but only for new ones
    - `job_type='INCREMENTAL_SCAN'`
 
-3. **Deduplikacja:**
-   - Przed zapisem: sprawdź `nas_file_hash` w DB
-   - Jeśli duplikat → skip (log warning)
+3. **Deduplication:**
+   - Before save: check `nas_file_hash` in DB
+   - If duplicate → skip (log warning)
 
-**Alternative:** Webhook z NAS
+**Alternative:** Webhook from NAS
 - Synology DSM: File Station → Webhook on file create
 - POST `/api/admin/nas/process-photo?path=/volume1/photos/new.jpg`
 
 ---
 
-### Workflow 3: Wyświetlanie Zdjęć (Frontend)
+### Workflow 3: Photo Display (Frontend)
 
-**Galeria/Mapa - Miniatury:**
+**Gallery/Map - Thumbnails:**
 ```
 GET /api/photos/{id}/thumbnail
-→ Backend zwraca lokalny plik z /uploads/medium/
-→ Szybko (local disk)
+→ Backend returns local file from /uploads/medium/
+→ Fast (local disk)
 ```
 
-**Full View - Oryginał:**
+**Full View - Original:**
 ```
 GET /api/photos/{id}/original
 → Backend:
-  1. Odczytuje photo.original_path z DB
-  2. Proxy do /mnt/nas-photos/IMG_1234.JPG (przez NFS mount)
-  3. Zwraca binary image data
-→ Wolniejsze (network I/O przez NFS), ale akceptowalne
+  1. Reads photo.original_path from DB
+  2. Proxy to /mnt/nas-photos/IMG_1234.JPG (through NFS mount)
+  3. Returns binary image data
+→ Slower (network I/O through NFS), but acceptable
 ```
 
-**Opcjonalna optymalizacja:** Nginx cache dla oryginałów (30 dni)
+**Optional optimization:** Nginx cache for originals (30 days)
 
 ---
 
@@ -290,13 +290,13 @@ GET /api/photos/{id}/original
 # application.properties
 nas.mount.path=/mnt/nas-photos
 nas.batch.size=100
-nas.hash.algorithm=MD5  # lub SHA256
+nas.hash.algorithm=MD5  # or SHA256
 ```
 
 **Key Logic:**
-- **Deduplikacja:** Before insert, check `photoRepository.existsByNasFileHash(hash)`
+- **Deduplication:** Before insert, check `photoRepository.existsByNasFileHash(hash)`
 - **Error handling:** Try-catch per photo, move to `failed_files` counter
-- **Progress tracking:** Update `batch_jobs.processed_files` co 10 zdjęć
+- **Progress tracking:** Update `batch_jobs.processed_files` every 10 photos
 
 ---
 
@@ -417,9 +417,9 @@ export class NasBatchService {
 
 ### Phase 2: Gallery/Map - No Changes (0 hours)
 
-**Reason:** Frontend NIE WIE że oryginały są na NAS!
+**Reason:** Frontend DOESN'T KNOW originals are on NAS!
 
-Endpoints pozostają te same:
+Endpoints remain the same:
 - `/api/photos/{id}/thumbnail` → local (fast)
 - `/api/photos/{id}/original` → backend proxy (transparent to frontend)
 
@@ -435,7 +435,7 @@ Endpoints pozostają te same:
    - Test: `scanNasDirectory()` filters only .jpg/.jpeg/.png
    - Test: `processPhotoFromNas()` extracts EXIF correctly
    - Test: `calculateFileHash()` returns consistent MD5
-   - Test: Deduplikacja - skip if hash exists in DB
+   - Test: Deduplication - skip if hash exists in DB
    - Test: Error handling - failed photo increments `failed_files`
 
 2. **AdminControllerTest (NAS endpoints)**
@@ -459,10 +459,10 @@ Endpoints pozostają te same:
 
 - [ ] NFS mount works (read files from `/mnt/nas-photos/`)
 - [ ] Scan 100 photos → all processed without errors
-- [ ] Deduplikacja działa (duplikat skipped)
-- [ ] Progress tracking aktualizuje się w real-time
+- [ ] Deduplication works (duplicate skipped)
+- [ ] Progress tracking updates in real-time
 - [ ] Frontend gallery shows thumbnails correctly
-- [ ] Full view loads original from NAS (może być wolniejsze)
+- [ ] Full view loads original from NAS (may be slower)
 
 ---
 
@@ -549,10 +549,10 @@ df -h
 
 **nginx.conf:**
 ```nginx
-proxy_cache_path /var/cache/nginx/photos 
-    levels=1:2 
-    keys_zone=photos:10m 
-    max_size=5g 
+proxy_cache_path /var/cache/nginx/photos
+    levels=1:2
+    keys_zone=photos:10m
+    max_size=5g
     inactive=30d;
 
 location /api/photos {
@@ -560,7 +560,7 @@ location /api/photos {
     location ~ /api/photos/\d+/thumbnail {
         proxy_pass http://localhost:8080;
     }
-    
+
     # Originals - cache for 30 days
     location ~ /api/photos/\d+/original {
         proxy_cache photos;
@@ -572,9 +572,9 @@ location /api/photos {
 ```
 
 **Benefits:**
-- Pierwsze odczytanie: wolne (przez NFS)
-- Kolejne odczytania: szybkie (z cache Nginx)
-- Cache limit: 5GB (najczęściej oglądane zdjęcia)
+- First read: slow (through NFS)
+- Subsequent reads: fast (from Nginx cache)
+- Cache limit: 5GB (most frequently viewed photos)
 
 ---
 
@@ -733,23 +733,23 @@ curl -X POST http://localhost:8080/api/admin/nas/migrate-legacy
 ## 📋 Acceptance Criteria
 
 ### Must Have (MVP for NAS Integration):
-- ✅ NAS zmontowany i dostępny w `/mnt/nas-photos/`
-- ✅ Admin może wywołać scan NAS przez API
-- ✅ Batch processing działa (100 zdjęć na raz)
-- ✅ Progress tracking w real-time (batch jobs table)
-- ✅ Miniatury generowane lokalnie (~2.5GB dla 5000 zdjęć)
-- ✅ Oryginały serwowane z NAS (przez backend proxy)
-- ✅ Frontend gallery/map działają bez zmian
-- ✅ Deduplikacja po hash (skip duplikaty)
+- ✅ NAS mounted and accessible at `/mnt/nas-photos/`
+- ✅ Admin can trigger NAS scan via API
+- ✅ Batch processing works (100 photos at a time)
+- ✅ Progress tracking in real-time (batch jobs table)
+- ✅ Thumbnails generated locally (~2.5GB for 5000 photos)
+- ✅ Originals served from NAS (through backend proxy)
+- ✅ Frontend gallery/map work without changes
+- ✅ Deduplication by hash (skip duplicates)
 - ✅ Error handling (failed photos to `failed_files` counter)
 
 ### Nice to Have (Optional Enhancements):
-- ⭐ Nginx cache dla oryginałów (5GB limit)
-- ⭐ Cron job - przyrostowe skanowanie (codziennie)
-- ⭐ Webhook z NAS - real-time processing
+- ⭐ Nginx cache for originals (5GB limit)
+- ⭐ Cron job - incremental scan (daily)
+- ⭐ Webhook from NAS - real-time processing
 - ⭐ Parallel processing (10 photos concurrent)
 - ⭐ Admin UI - batch jobs progress bar + auto-refresh
-- ⭐ Metrics - Actuator metrics dla batch jobs
+- ⭐ Metrics - Actuator metrics for batch jobs
 
 ---
 
@@ -786,7 +786,7 @@ curl -X POST http://localhost:8080/api/admin/nas/migrate-legacy
 ## 🛣️ Implementation Roadmap
 
 ### Phase 1: Infrastructure (1-2 days)
-- [ ] Setup NFS/SMB mount na Mikrus VPS
+- [ ] Setup NFS/SMB mount on Mikrus VPS
 - [ ] Test: Read files from `/mnt/nas-photos/`
 - [ ] Database migration V6 (`batch_jobs`, `photos` changes)
 - [ ] Create JPA entities (BatchJob, updated Photo)

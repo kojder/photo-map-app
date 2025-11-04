@@ -11,41 +11,41 @@
 
 ### Description
 
-Użytkownicy mogą grupować wybrane zdjęcia i udostępniać je znajomym przez unikalny link UUID bez wymagania rejestracji.
+Users can group selected photos and share them with friends via unique UUID link without requiring registration.
 
 ### Use Case Example
 
-> "Wyjazd w grudniu 2024 w Izery" - użytkownik filtruje zdjęcia po dacie, zaznacza 20 zdjęć checkboxami, tworzy grupę "Izery 2024", otrzymuje link `https://app.com/public/shared/abc123-uuid` i wysyła znajomym. Znajomi widzą galerię + mapę (read-only).
+> "December 2024 trip to Izery Mountains" - user filters photos by date, selects 20 photos with checkboxes, creates group "Izery 2024", receives link `https://app.com/public/shared/abc123-uuid` and sends to friends. Friends see gallery + map (read-only).
 
 ### User Stories
 
-- **US-SHARE-001:** Jako użytkownik mogę utworzyć grupę zdjęć z nazwą i opisem
-- **US-SHARE-002:** Jako użytkownik mogę zaznaczyć wiele zdjęć checkboxami w galerii
-- **US-SHARE-003:** Jako użytkownik mogę przypisać zaznaczone zdjęcia do grupy (nowej lub istniejącej)
-- **US-SHARE-004:** Jako użytkownik mogę skopiować link do grupy i wysłać znajomym
-- **US-SHARE-005:** Jako gość mogę otworzyć link i zobaczyć galerię + mapę bez logowania
-- **US-SHARE-006:** Jako użytkownik mogę zarządzać grupami (dodać/usunąć zdjęcia, zmienić nazwę, usunąć grupę)
-- **US-SHARE-007:** Jako użytkownik mogę wykonać bulk operations: zmiana ratingu, zmiana daty, usuwanie
+- **US-SHARE-001:** As a user I can create photo group with name and description
+- **US-SHARE-002:** As a user I can select multiple photos with checkboxes in gallery
+- **US-SHARE-003:** As a user I can assign selected photos to group (new or existing)
+- **US-SHARE-004:** As a user I can copy group link and send to friends
+- **US-SHARE-005:** As a guest I can open link and see gallery + map without logging in
+- **US-SHARE-006:** As a user I can manage groups (add/remove photos, change name, delete group)
+- **US-SHARE-007:** As a user I can perform bulk operations: change rating, change date, deletion
 
 ### Requirements Summary
 
-**Zabezpieczenie:**
-- Tylko unikalny link UUID (brak hasła, brak expiration dla MVP)
+**Security:**
+- Only unique UUID link (no password, no expiration for MVP)
 
-**Zarządzanie grupą (owner):**
-- Dodawać/usuwać zdjęcia
-- Zmieniać nazwę/opis
-- Usuwać całą grupę
-- Zarządzać ustawieniami dostępu (regeneracja linku - opcjonalnie)
+**Group Management (owner):**
+- Add/remove photos
+- Change name/description
+- Delete entire group
+- Manage access settings (link regeneration - optional)
 
 **Bulk Operations:**
-- Zmiana ratingu wielu zdjęć naraz
-- Usuwanie wielu zdjęć
-- Zmiana daty wielu zdjęć
+- Change rating for multiple photos at once
+- Delete multiple photos
+- Change date for multiple photos
 
-**Widok publiczny (guest):**
-- Galeria + mapa (read-only)
-- Bez możliwości edycji, ratingu, usuwania
+**Public View (guest):**
+- Gallery + map (read-only)
+- No ability to edit, rate, delete
 
 ---
 
@@ -57,7 +57,7 @@ Użytkownicy mogą grupować wybrane zdjęcia i udostępniać je znajomym przez 
 
 #### Database Changes
 
-**Nowa tabela: `shared_groups`**
+**New table: `shared_groups`**
 
 ```sql
 CREATE TABLE shared_groups (
@@ -74,7 +74,7 @@ CREATE INDEX shared_groups_user_id_idx ON shared_groups(user_id);
 CREATE UNIQUE INDEX shared_groups_token_idx ON shared_groups(share_token);
 ```
 
-**Nowa tabela: `shared_group_photos` (junction table)**
+**New table: `shared_group_photos` (junction table)**
 
 ```sql
 CREATE TABLE shared_group_photos (
@@ -109,58 +109,58 @@ CREATE INDEX shared_group_photos_photo_id_idx ON shared_group_photos(photo_id);
 ##### Protected Endpoints (require auth)
 
 **POST /api/shared-groups**
-- Opis: Utwórz nową grupę
+- Description: Create new group
 - Request: `{ name, description? }`
 - Response: `{ id, shareToken, name, description, createdAt }`
 - Security: Authenticated user
 
 **GET /api/shared-groups**
-- Opis: Lista grup użytkownika
+- Description: List user's groups
 - Query params: `page`, `size`, `sort`
 - Response: `PageResponse<SharedGroupResponse>`
-- Security: Authenticated user (tylko własne grupy)
+- Security: Authenticated user (only own groups)
 
 **GET /api/shared-groups/{id}**
-- Opis: Szczegóły grupy
+- Description: Group details
 - Response: `{ id, shareToken, name, description, photoCount, createdAt }`
 - Security: Owner only
 
 **PUT /api/shared-groups/{id}**
-- Opis: Edycja nazwy/opisu
+- Description: Edit name/description
 - Request: `{ name, description? }`
 - Response: `SharedGroupResponse`
 - Security: Owner only
 
 **DELETE /api/shared-groups/{id}**
-- Opis: Usunięcie grupy
+- Description: Delete group
 - Response: 204 No Content
 - Security: Owner only
 
 **POST /api/shared-groups/{id}/photos**
-- Opis: Dodanie zdjęć do grupy (bulk)
+- Description: Add photos to group (bulk)
 - Request: `{ photoIds: [1, 2, 3, ...] }`
 - Response: `{ added: 3, total: 15 }`
 - Security: Owner only + user owns all photoIds
 
 **DELETE /api/shared-groups/{id}/photos/{photoId}**
-- Opis: Usunięcie zdjęcia z grupy
+- Description: Remove photo from group
 - Response: 204 No Content
 - Security: Owner only
 
 **POST /api/photos/bulk/rating**
-- Opis: Bulk zmiana ratingu
+- Description: Bulk rating change
 - Request: `{ photoIds: [1, 2, 3], rating: 4 }`
 - Response: `{ updated: 3 }`
 - Security: Authenticated user (owns photos)
 
 **PUT /api/photos/bulk/date**
-- Opis: Bulk zmiana daty
+- Description: Bulk date change
 - Request: `{ photoIds: [1, 2, 3], takenAt: "2024-12-15T10:30:00Z" }`
 - Response: `{ updated: 3 }`
 - Security: Authenticated user (owns photos)
 
 **DELETE /api/photos/bulk**
-- Opis: Bulk usuwanie
+- Description: Bulk deletion
 - Request: `{ photoIds: [1, 2, 3] }`
 - Response: `{ deleted: 3 }`
 - Security: Authenticated user (owns photos)
@@ -168,16 +168,16 @@ CREATE INDEX shared_group_photos_photo_id_idx ON shared_group_photos(photo_id);
 ##### Public Endpoints (no auth required)
 
 **GET /api/public/shared/{token}**
-- Opis: Pobranie metadanych grupy (public)
+- Description: Fetch group metadata (public)
 - Response: `{ name, description, photoCount, createdAt }`
-- Security: Public (tylko share_token validation)
+- Security: Public (only share_token validation)
 
 **GET /api/public/shared/{token}/photos**
-- Opis: Lista zdjęć w grupie (public)
+- Description: List photos in group (public)
 - Query params: `page`, `size`
 - Response: `PageResponse<PublicPhotoResponse>`
   - PublicPhotoResponse: id, filename, thumbnailUrl, gpsLatitude, gpsLongitude, takenAt, averageRating
-  - **Brak:** userId, originalFilename, fullUrl (security)
+  - **Excluded:** userId, originalFilename, fullUrl (security)
 - Security: Public
 
 #### Service Layer
@@ -400,7 +400,7 @@ CREATE INDEX shared_group_photos_photo_id_idx ON shared_group_photos(photo_id);
 - `/public/shared/:token` - PublicGalleryComponent (public, no guard)
 
 **Update navbar:**
-- Add "Shared Groups" link (między Gallery i Map, authenticated users only)
+- Add "Shared Groups" link (between Gallery and Map, authenticated users only)
 
 ---
 
@@ -416,7 +416,7 @@ CREATE INDEX shared_group_photos_photo_id_idx ON shared_group_photos(photo_id);
 6. Counter shows "20 photos selected"
 7. Clicks "Actions" → "Assign to Group"
 8. SharedGroupDialogComponent opens
-9. Tab "Create New": enters name "Izery 2024", description "Wyjazd w grudniu"
+9. Tab "Create New": enters name "Izery 2024", description "December trip"
 10. Clicks "Create & Assign"
 11. System creates group, assigns photos, generates UUID token
 12. Dialog shows share link: `https://app.com/public/shared/abc123-uuid`

@@ -1,22 +1,56 @@
-# Implementation Plan: Admin Initializer + Must Change Password
+# Feature: Admin Initializer + Must Change Password
 
-**Status:** 🔜 Ready for Implementation
+**Status:** 🚧 Partially Implemented (Backend foundation done, API + Frontend TODO)
 **Priority:** HIGH (Security)
-**Estimated Time:** 3-4 hours
+**Estimated Time:** 2-3 hours remaining (API endpoints + Frontend)
 **Target:** Before Admin Panel (Phase 5)
+
+---
+
+## Implementation Status
+
+### ✅ COMPLETED (Backend Foundation)
+- [x] V2__add_admin_security.sql migration (database schema)
+- [x] User entity with `mustChangePassword` field
+- [x] UserRepository.countByRole() method
+- [x] AdminInitializer (CommandLineRunner - creates default admin)
+- [x] AdminInitializerTest (unit tests for initializer)
+
+**Commits:**
+- `ef6ad68` - feat(auth): add must_change_password field for admin security
+- `b7838a9` - fix(e2e): fix E2E tests - timeout, AdminInitializer, BCrypt hash
+
+### 🚧 TODO (Backend API)
+- [ ] Update LoginResponse with `mustChangePassword` field
+- [ ] Create ChangePasswordRequest DTO
+- [ ] Add AuthService.changePassword() method
+- [ ] Add endpoint POST /api/auth/change-password
+- [ ] Create UpdateProfileRequest DTO
+- [ ] Add AdminService.updateProfile() method
+- [ ] Add endpoint PUT /api/admin/profile
+- [ ] Write integration tests for new endpoints
+
+### 🚧 TODO (Frontend)
+- [ ] Update LoginResponse interface (add mustChangePassword)
+- [ ] Update AuthService.login() to handle mustChangePassword flag
+- [ ] Create ChangePasswordComponent
+- [ ] Add AuthService.changePassword() method
+- [ ] Create passwordChangeGuard
+- [ ] Update routes (add /change-password route + guard)
+- [ ] Manual testing with Chrome DevTools
 
 ---
 
 ## 1. Overview
 
 **Problem:**
-- Każdy może zarejestrować się jako admin (brak security)
-- Brak automatycznego utworzenia pierwszego admina
+- Anyone can register as admin (no security)
+- No automatic creation of first admin
 
 **Solution:**
-- **AdminInitializer** (CommandLineRunner) - automatyczne utworzenie default admina
-- **must_change_password** flag - wymuszenie zmiany hasła przy pierwszym logowaniu
-- **Admin Profile Endpoint** - możliwość zmiany email + hasło
+- **AdminInitializer** (CommandLineRunner) - automatic creation of default admin
+- **must_change_password** flag - force password change on first login
+- **Admin Profile Endpoint** - ability to change email + password
 
 ---
 
@@ -35,8 +69,8 @@ COMMENT ON COLUMN users.must_change_password IS 'Force user to change password o
 ```
 
 **Reasoning:**
-- `must_change_password` - wymusza zmianę hasła (admin po pierwszym logowaniu)
-- Index na `role` - szybkie sprawdzanie `countByRole(ADMIN)`
+- `must_change_password` - forces password change (admin after first login)
+- Index on `role` - fast checking `countByRole(ADMIN)`
 
 ---
 
@@ -138,11 +172,11 @@ public class AdminInitializer implements CommandLineRunner {
 ```
 
 **Key Points:**
-- ✅ Sprawdza `countByRole(ADMIN)` - nie email!
-- ✅ Idempotent - nie duplikuje adminów
-- ✅ Ustawia `mustChangePassword = true`
-- ✅ Używa `PasswordEncoder` - hasło zahashowane
-- ✅ Credentials z `.env` (różne dla dev/prod)
+- ✅ Checks `countByRole(ADMIN)` - not email!
+- ✅ Idempotent - doesn't duplicate admins
+- ✅ Sets `mustChangePassword = true`
+- ✅ Uses `PasswordEncoder` - password hashed
+- ✅ Credentials from `.env` (different for dev/prod)
 
 ### 3.4 Update AuthService
 
@@ -704,7 +738,7 @@ openssl rand -base64 24
 2. **Update .env on Mikrus:**
 ```bash
 # /opt/photomap/.env
-ADMIN_EMAIL=twoj-email@domena.pl
+ADMIN_EMAIL=your-email@domain.com
 ADMIN_PASSWORD=xyz123ABC...
 JWT_SECRET=<new production secret>
 ```
@@ -729,14 +763,14 @@ sudo systemctl restart photomap-backend
 ## 8. Success Criteria
 
 ✅ AdminInitializer creates default admin on first startup
-✅ AdminInitializer is idempotent (nie duplikuje adminów)
-✅ Admin po zmianie email'a nie powoduje utworzenia nowego admina
-✅ `mustChangePassword` flag działa - wymusza zmianę hasła
-✅ Endpoint `/api/auth/change-password` działa poprawnie
-✅ Endpoint `/api/admin/profile` pozwala zmienić email + hasło
-✅ Frontend przekierowuje do /change-password jeśli flag = true
-✅ Wszystkie testy przechodzą (unit + integration)
-✅ Credentials w `.env` - nie hardcoded
+✅ AdminInitializer is idempotent (doesn't duplicate admins)
+✅ Admin after email change doesn't cause creation of new admin
+✅ `mustChangePassword` flag works - forces password change
+✅ Endpoint `/api/auth/change-password` works correctly
+✅ Endpoint `/api/admin/profile` allows changing email + password
+✅ Frontend redirects to /change-password if flag = true
+✅ All tests passing (unit + integration)
+✅ Credentials in `.env` - not hardcoded
 ✅ Production deployment works end-to-end
 
 ---
@@ -784,4 +818,4 @@ sudo systemctl restart photomap-backend
 **Document Purpose:** Implementation plan for Admin Initializer + Must Change Password
 **Priority:** HIGH (Security before Admin Panel)
 **Status:** 🔜 Ready to implement
-**Last Updated:** 2025-10-26
+**Last Updated:** 2025-11-04

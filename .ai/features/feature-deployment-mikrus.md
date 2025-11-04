@@ -1,39 +1,39 @@
-# Feature: Deployment na Mikrus VPS (Docker Compose)
+# Feature: Deployment on Mikrus VPS (Docker Compose)
 
 **Status:** 🚧 In Progress (Phase 6)
 **Created:** 2025-10-27
 **Priority:** High (MVP blocker)
-**Strategy:** Docker Compose (containers), Manual (skrypty)
+**Strategy:** Docker Compose (containers), Manual (scripts)
 
 ---
 
-## 🎯 Cel
+## 🎯 Goal
 
-Wdrożenie aplikacji Photo Map na Mikrus VPS z wykorzystaniem:
-- **Backend:** Spring Boot JAR w Docker container (photo-map-backend:latest)
-- **Frontend:** Angular + nginx w Docker container (photo-map-frontend:latest)
-- **Database:** Shared PostgreSQL (psql01.mikr.us) z panelu Mikrus
+Deploy Photo Map application on Mikrus VPS using:
+- **Backend:** Spring Boot JAR in Docker container (photo-map-backend:latest)
+- **Frontend:** Angular + nginx in Docker container (photo-map-frontend:latest)
+- **Database:** Shared PostgreSQL (psql01.mikr.us) from Mikrus panel
 - **Deployment:** Docker Compose + manual scripts (build-images.sh, deploy.sh)
 
 ---
 
-## 📋 Wymagania
+## 📋 Requirements
 
 ### Mikrus VPS Requirements
-- **Docker & Docker Compose** - instalacja przez apt (already available)
-- **Shared PostgreSQL** - credentials z panelu: https://mikr.us/panel/?a=postgres
-- **SSH access** - dla deployment scripts
-- **Ports:** 30288 (frontend external), internal networking dla backend
+- **Docker & Docker Compose** - installation via apt (already available)
+- **Shared PostgreSQL** - credentials from panel: https://mikr.us/panel/?a=postgres
+- **SSH access** - for deployment scripts
+- **Ports:** 30288 (frontend external), internal networking for backend
 
 ### Resource Constraints (Mikrus)
 - **RAM:** 4 GB (srv07 - marcin288) - Docker overhead ~100-200 MB
-- **JVM heap:** -Xms256m -Xmx768m (w Dockerfile)
+- **JVM heap:** -Xms256m -Xmx768m (in Dockerfile)
 - **PostgreSQL:** Shared service (10-20 connections limit)
 - **Disk:** ~250 GB limit (Docker images + volumes)
 
 ---
 
-## 🏗️ Architektura Deployment (Docker Compose)
+## 🏗️ Deployment Architecture (Docker Compose)
 
 ### Docker Containers
 
@@ -73,8 +73,8 @@ EXPOSE 80
 
 **Features:**
 - Multi-stage build (node:18-alpine → nginx:alpine)
-- Port: 80 (internal), 30288 (external na Mikrus)
-- Reverse proxy do backend:8080 (internal Docker network)
+- Port: 80 (internal), 30288 (external on Mikrus)
+- Reverse proxy to backend:8080 (internal Docker network)
 - Logs: docker logs photo-map-frontend
 
 ### Docker Compose Setup
@@ -106,7 +106,7 @@ volumes:
 ```
 photo-map-uploads/
 ├── input/      # Drop zone (web + batch)
-├── original/   # Processed originals (pełny rozmiar)
+├── original/   # Processed originals (full size)
 ├── medium/     # 300px thumbnails (gallery + map)
 └── failed/     # Failed processing + logs
 ```
@@ -114,7 +114,7 @@ photo-map-uploads/
 ### Networking
 - **Internal:** backend ↔ frontend (Docker network)
 - **External:** frontend:30288 → Mikrus proxy → photos.tojest.dev
-- **SSL:** Automatyczny przez Mikrus proxy (*.wykr.es)
+- **SSL:** Automatic via Mikrus proxy (*.wykr.es)
 - **PostgreSQL:** backend → psql01.mikr.us:5432 (external service)
 
 ---
@@ -123,37 +123,37 @@ photo-map-uploads/
 
 ### Strategy: Docker Compose + Manual Scripts
 
-**Dlaczego Docker Compose?**
-1. **Mikrus compatibility:** srv07 (marcin288) ma 4GB RAM - Docker jest okej
-2. **Prostsze zarządzanie:** docker-compose up/down, zero conflicts z n8n
-3. **Łatwy rollback:** keep old images, docker-compose up z previous tag
-4. **Environment isolation:** containers mają własne networks, zero kolizji portów
-5. **Podobny workflow do n8n:** użytkownik już zna Docker Compose z n8n
+**Why Docker Compose?**
+1. **Mikrus compatibility:** srv07 (marcin288) has 4GB RAM - Docker is OK
+2. **Simpler management:** docker-compose up/down, zero conflicts with n8n
+3. **Easy rollback:** keep old images, docker-compose up with previous tag
+4. **Environment isolation:** containers have own networks, zero port collisions
+5. **Similar workflow to n8n:** user already knows Docker Compose from n8n
 
-**Dlaczego Manual Scripts?**
-1. **MVP scope:** Pełna kontrola, prostsze testowanie
-2. **Brak CI/CD complexity:** Skrypty zamiast GitHub Actions automation
-3. **Iteracja:** Szybki deploy podczas development
-4. **Post-MVP:** Można dodać CD później (GitHub Actions SSH deploy)
+**Why Manual Scripts?**
+1. **MVP scope:** Full control, simpler testing
+2. **No CI/CD complexity:** Scripts instead of GitHub Actions automation
+3. **Iteration:** Quick deploy during development
+4. **Post-MVP:** Can add CD later (GitHub Actions SSH deploy)
 
 ### Deployment Workflow
 
-**Pierwsza instalacja:**
+**First installation:**
 ```bash
-# 1. Build Docker images lokalnie
+# 1. Build Docker images locally
 ./deployment/scripts/build-images.sh
 
-# 2. Konfiguracja .env (credentials PostgreSQL z panelu)
-# Edycja: deployment/.env.production
-# Wartości: DATABASE_URL, DATABASE_USERNAME, DATABASE_PASSWORD, JWT_SECRET
+# 2. Configure .env (credentials PostgreSQL from panel)
+# Edit: deployment/.env.production
+# Values: DATABASE_URL, DATABASE_USERNAME, DATABASE_PASSWORD, JWT_SECRET
 
-# 3. Deploy na VPS (transfer images + start containers)
+# 3. Deploy to VPS (transfer images + start containers)
 ./deployment/scripts/deploy.sh
 ```
 
-**Kolejne wdrożenia (updates):**
+**Subsequent deployments (updates):**
 ```bash
-# 1. Rebuild images (po zmianach w kodzie)
+# 1. Rebuild images (after code changes)
 ./deployment/scripts/build-images.sh
 
 # 2. Deploy updated images
@@ -174,7 +174,7 @@ ssh -i ~/.ssh/id_ed25519_mikrus -p 10288 root@marcin288.mikrus.xyz 'docker logs 
 
 ## 📦 Shared PostgreSQL (Mikrus)
 
-### Connection Details (z panelu)
+### Connection Details (from panel)
 
 Panel URL: https://mikr.us/panel/?a=postgres
 
@@ -196,9 +196,9 @@ spring.jpa.database-platform=org.hibernate.dialect.PostgreSQLDialect
 ```
 
 **Flyway migrations:**
-- Automatyczne przy starcie aplikacji
-- Migracje z `src/main/resources/db/migration/`
-- Shared DB wspiera Flyway (verified z n8n deployment)
+- Automatic on application startup
+- Migrations from `src/main/resources/db/migration/`
+- Shared DB supports Flyway (verified with n8n deployment)
 
 ---
 
@@ -206,7 +206,7 @@ spring.jpa.database-platform=org.hibernate.dialect.PostgreSQLDialect
 
 **Required variables (Docker style):**
 ```env
-# PostgreSQL (Shared Service - z panelu Mikrus)
+# PostgreSQL (Shared Service - from Mikrus panel)
 DATABASE_URL=jdbc:postgresql://psql01.mikr.us:5432/YOUR_DB
 DATABASE_USERNAME=YOUR_USER
 DATABASE_PASSWORD=YOUR_PASSWORD
@@ -383,16 +383,16 @@ ssh -i ~/.ssh/id_ed25519_mikrus -p 10288 root@marcin288.mikrus.xyz 'docker exec 
 ## 🔒 Security Considerations
 
 ### Docker Containers
-- ✅ Non-root user w containers (best practice - future enhancement)
-- ✅ Internal networking: backend nie jest exposed na external port
-- ✅ Volume isolation: photo-map-uploads jest isolated od host filesystem
-- ✅ Environment variables: .env file z chmod 600 na VPS
+- ✅ Non-root user in containers (best practice - future enhancement)
+- ✅ Internal networking: backend not exposed on external port
+- ✅ Volume isolation: photo-map-uploads isolated from host filesystem
+- ✅ Environment variables: .env file with chmod 600 on VPS
 
 ### Nginx (frontend container)
 - ✅ Reverse proxy: /api → backend:8080 (internal Docker network)
-- ✅ Upload size limit: `client_max_body_size 50M;` w nginx.conf
+- ✅ Upload size limit: `client_max_body_size 50M;` in nginx.conf
 - ✅ Directory listing disabled: `autoindex off;`
-- ✅ SSL: Automatyczny przez Mikrus proxy dla *.wykr.es
+- ✅ SSL: Automatic via Mikrus proxy for *.wykr.es
 
 ### PostgreSQL
 - ✅ Shared service managed by Mikrus (automatic backups)
@@ -407,37 +407,37 @@ ssh -i ~/.ssh/id_ed25519_mikrus -p 10288 root@marcin288.mikrus.xyz 'docker exec 
 2. **Single instance** - No load balancing (OK for MVP)
 3. **Manual deployment** - No CI/CD automation (add later)
 4. **Shared PostgreSQL limits** - 10-20 connections (Mikrus policy)
-5. **Współdzielona domena** - Mikrus `*.wykr.es` format: `srv07-30288.wykr.es`
-6. **Port requirement** - Frontend exposed na 30288 (przydzielony przez Mikrus)
+5. **Shared domain** - Mikrus `*.wykr.es` format: `srv07-30288.wykr.es`
+6. **Port requirement** - Frontend exposed on 30288 (assigned by Mikrus)
 7. **Custom subdomain** - photos.tojest.dev → port 30288 (configured in panel)
-8. **Docker overhead** - ~100-200 MB RAM dla Docker daemon + containers
+8. **Docker overhead** - ~100-200 MB RAM for Docker daemon + containers
 
-**SSL:** ✅ Automatycznie zapewnione przez Mikrus dla `*.wykr.es` domen (proxy SSL termination)
+**SSL:** ✅ Automatically provided by Mikrus for `*.wykr.es` domains (proxy SSL termination)
 
 ---
 
 ## 🔮 Post-MVP Enhancements
 
-### SSL dla własnej domeny (Priority: Low)
-- **Wymagane:** Własna domena (np. `example.com`)
-- Mikrus reverse proxy config dla własnej domeny
-- Let's Encrypt przez Mikrus panel (automatic)
-- **MVP:** Współdzielona domena `*.wykr.es` ma SSL automatycznie (zero konfiguracji)
+### SSL for Custom Domain (Priority: Low)
+- **Required:** Own domain (e.g., `example.com`)
+- Mikrus reverse proxy config for custom domain
+- Let's Encrypt via Mikrus panel (automatic)
+- **MVP:** Shared domain `*.wykr.es` has SSL automatically (zero configuration)
 
 ### CI/CD Automation (Priority: Medium)
 - GitHub Actions workflow: build images → test → SSH deploy
 - SSH key in GitHub Secrets
 - Auto-deploy on merge to master
-- Rollback: keep previous images, docker-compose up z old tag
+- Rollback: keep previous images, docker-compose up with old tag
 
 ### Docker Registry (Priority: Medium)
-- Push images to Docker Hub lub GitHub Container Registry
-- Deploy przez docker-compose pull (zamiast SCP tar files)
-- Szybszy deployment (no tar transfer)
+- Push images to Docker Hub or GitHub Container Registry
+- Deploy via docker-compose pull (instead of SCP tar files)
+- Faster deployment (no tar transfer)
 - Version tagging: backend:v1.0.0, backend:v1.0.1
 
 ### Monitoring (Priority: Medium)
-- Spring Boot Actuator metrics exposed z backend
+- Spring Boot Actuator metrics exposed from backend
 - Prometheus + Grafana containers (lightweight setup)
 - Docker stats monitoring (cAdvisor)
 - Alerting: email on container down
@@ -460,7 +460,7 @@ ssh -i ~/.ssh/id_ed25519_mikrus -p 10288 root@marcin288.mikrus.xyz 'docker exec 
 
 ---
 
-**Document Purpose:** Feature specification dla deployment na Mikrus VPS
-**Related:** Phase 6 w PROGRESS_TRACKER.md
-**Strategy:** Native (JAR + systemd) + Manual (skrypty)
+**Document Purpose:** Feature specification for deployment on Mikrus VPS
+**Related:** Phase 6 in PROGRESS_TRACKER.md
+**Strategy:** Docker Compose (containers) + Manual (scripts)
 **Last Updated:** 2025-10-27

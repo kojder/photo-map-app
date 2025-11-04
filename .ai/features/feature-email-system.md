@@ -9,59 +9,59 @@
 
 ## 1. Overview
 
-System obsługi emaili dla:
-1. **Weryfikacja email** - potwierdzenie rejestracji
-2. **Reset hasła** - odzyskiwanie hasła przez email
-3. **Powiadomienia** (opcjonalne) - nowe zdjęcia, komentarze, itp.
+Email system for:
+1. **Email verification** - registration confirmation
+2. **Password reset** - password recovery via email
+3. **Notifications** (optional) - new photos, comments, etc.
 
 ---
 
 ## 2. Business Requirements
 
-### 2.1 Weryfikacja Email
+### 2.1 Email Verification
 
 **User Story:**
-> Jako użytkownik, chcę zweryfikować swój adres email, aby potwierdzić że jest prawidłowy i zabezpieczyć konto.
+> As a user, I want to verify my email address to confirm it's correct and secure my account.
 
 **Flow:**
-1. User rejestruje się → konto utworzone ale `email_verified = false`
-2. System wysyła email z linkiem weryfikacyjnym (UUID token, ważny 24h)
-3. User klika link → endpoint `/api/auth/verify-email?token=UUID`
-4. System weryfikuje token → ustawia `email_verified = true`
-5. User może korzystać z pełnej funkcjonalności
+1. User registers → account created but `email_verified = false`
+2. System sends email with verification link (UUID token, valid 24h)
+3. User clicks link → endpoint `/api/auth/verify-email?token=UUID`
+4. System verifies token → sets `email_verified = true`
+5. User can use full functionality
 
 **Business Rules:**
-- Niezweryfikowani użytkownicy mogą się logować ale mają ograniczenia (np. watermark na zdjęciach)
-- Link weryfikacyjny ważny 24h
-- Możliwość ponownego wysłania linku (max 3x/godzinę - rate limiting)
+- Unverified users can log in but have restrictions (e.g., watermark on photos)
+- Verification link valid 24h
+- Ability to resend link (max 3x/hour - rate limiting)
 
-### 2.2 Reset Hasła
+### 2.2 Password Reset
 
 **User Story:**
-> Jako użytkownik, chcę odzyskać dostęp do konta jeśli zapomnę hasła.
+> As a user, I want to recover access to my account if I forget my password.
 
 **Flow:**
-1. User klika "Forgot password?" na ekranie logowania
-2. Podaje email → System wysyła link resetujący (UUID token, ważny 1h)
-3. User klika link → Redirect do `/reset-password?token=UUID`
-4. User podaje nowe hasło (+ confirmation)
-5. System weryfikuje token + ustawia nowe hasło
+1. User clicks "Forgot password?" on login screen
+2. Provides email → System sends reset link (UUID token, valid 1h)
+3. User clicks link → Redirect to `/reset-password?token=UUID`
+4. User enters new password (+ confirmation)
+5. System verifies token + sets new password
 
 **Security:**
-- Token jednorazowy (po użyciu nieważny)
-- Ważność: 1 godzina
-- Rate limiting: max 3 requesty/godzinę na email
-- Wymóg silnego hasła (min 8 znaków, cyfra, wielka litera)
+- One-time token (invalid after use)
+- Validity: 1 hour
+- Rate limiting: max 3 requests/hour per email
+- Strong password requirement (min 8 chars, digit, uppercase)
 
-### 2.3 Powiadomienia (Opcjonalne)
+### 2.3 Notifications (Optional)
 
 **User Stories:**
-- Powiadomienie o nowych zdjęciach w grupie (Phase 2)
-- Powiadomienie o komentarzach (future)
-- Cotygodniowe podsumowanie aktywności (future)
+- Notification about new photos in group (Phase 2)
+- Comment notifications (future)
+- Weekly activity summary (future)
 
-**Konfiguracja:**
-- User może włączyć/wyłączyć powiadomienia w Settings
+**Configuration:**
+- User can enable/disable notifications in Settings
 - Frequency: instant, daily digest, weekly digest, off
 
 ---
@@ -280,10 +280,10 @@ export const routes: Routes = [
 ## 4. Security Considerations
 
 ### 4.1 Token Security
-- **UUID v4** dla tokenów (128-bit random)
-- **One-time use** - token invalid po użyciu
-- **Short expiry** - weryfikacja 24h, reset hasła 1h
-- **Hashing** - tokeny hashowane w bazie (SHA-256)
+- **UUID v4** for tokens (128-bit random)
+- **One-time use** - token invalid after use
+- **Short expiry** - verification 24h, password reset 1h
+- **Hashing** - tokens hashed in database (SHA-256)
 
 ### 4.2 Rate Limiting
 ```java
@@ -294,38 +294,38 @@ public void sendVerificationEmail(String email) {
 ```
 
 ### 4.3 Email Enumeration Prevention
-- Zawsze zwracaj "Email sent" nawet jeśli email nie istnieje
-- Log'uj failed attempts (monitoring)
+- Always return "Email sent" even if email doesn't exist
+- Log failed attempts (monitoring)
 
 ### 4.4 SMTP Security
-- **App passwords** dla Gmail (nie main password!)
-- **TLS/STARTTLS** wymagane
-- **Credentials w .env** - NIGDY w kodzie
+- **App passwords** for Gmail (not main password!)
+- **TLS/STARTTLS** required
+- **Credentials in .env** - NEVER in code
 
 ---
 
 ## 5. Testing Strategy
 
 ### 5.1 Unit Tests
-- TokenService - generowanie i walidacja tokenów
-- EmailTemplateService - rendering HTML templates
+- TokenService - token generation and validation
+- EmailTemplateService - HTML template rendering
 - AuthService - email verification flow + password reset flow
 
 ### 5.2 Integration Tests
 - `/api/auth/verify-email` - valid/invalid/expired token
 - `/api/auth/reset-password` - valid/invalid/expired token
-- Rate limiting - 4th request w ciągu godziny zwraca 429
+- Rate limiting - 4th request within hour returns 429
 
 ### 5.3 Manual Testing
-- Test z prawdziwym SMTP (Gmail test account)
-- Sprawdzenie HTML templates w różnych klientach email
-- Weryfikacja linków (dev + prod URLs)
+- Test with real SMTP (Gmail test account)
+- Check HTML templates in different email clients
+- Verify links (dev + prod URLs)
 
 ---
 
 ## 6. Email Templates (HTML)
 
-**Przykład: Verification Email**
+**Example: Verification Email**
 ```html
 <!DOCTYPE html>
 <html>
@@ -343,12 +343,12 @@ public void sendVerificationEmail(String email) {
     </style>
 </head>
 <body>
-    <h2>Witaj {{username}}!</h2>
-    <p>Dziękujemy za rejestrację w Photo Map.</p>
-    <p>Kliknij poniższy link aby zweryfikować swój adres email:</p>
-    <a href="{{verificationLink}}" class="button">Zweryfikuj Email</a>
-    <p>Link jest ważny przez 24 godziny.</p>
-    <p>Jeśli nie rejestrowałeś się w Photo Map, zignoruj tę wiadomość.</p>
+    <h2>Hello {{username}}!</h2>
+    <p>Thank you for registering with Photo Map.</p>
+    <p>Click the link below to verify your email address:</p>
+    <a href="{{verificationLink}}" class="button">Verify Email</a>
+    <p>This link is valid for 24 hours.</p>
+    <p>If you didn't register with Photo Map, please ignore this message.</p>
 </body>
 </html>
 ```
@@ -388,7 +388,7 @@ backend/src/main/resources/templates/email/
 - [ ] Security testing
 
 ### Phase 4: Polish & Deployment (2-3h)
-- [ ] HTML email templates styling
+- [ ] HTML email template styling
 - [ ] Error handling + user feedback
 - [ ] Test with real SMTP (Gmail)
 - [ ] Update .env.example
@@ -400,22 +400,22 @@ backend/src/main/resources/templates/email/
 
 ### Gmail (Recommended for MVP)
 **Pros:** Free, easy setup, reliable
-**Cons:** 500 emails/day limit, wymaga App Password
+**Cons:** 500 emails/day limit, requires App Password
 **Setup:** https://support.google.com/accounts/answer/185833
 
 ### SendGrid
 **Pros:** 100 emails/day free, professional API
-**Cons:** Wymaga weryfikacji domeny
+**Cons:** Requires domain verification
 **Setup:** https://sendgrid.com/
 
 ### Mailgun
 **Pros:** 5000 emails/month free (first 3 months)
-**Cons:** Wymaga karty kredytowej
+**Cons:** Requires credit card
 **Setup:** https://www.mailgun.com/
 
 ### Self-hosted (Mikrus VPS)
 **Pros:** Full control, no limits
-**Cons:** Spam risk, wymaga konfiguracji SPF/DKIM/DMARC
+**Cons:** Spam risk, requires SPF/DKIM/DMARC configuration
 **Not recommended for MVP**
 
 ---
@@ -436,7 +436,7 @@ backend/src/main/resources/templates/email/
 ## 10. Future Enhancements (Post-Implementation)
 
 - [ ] Email notifications for group activity (Phase 2)
-- [ ] Weekly digest emails (summary of activity)
+- [ ] Weekly digest emails (activity summary)
 - [ ] Email preferences UI (Settings page)
 - [ ] Multi-language email templates (EN + PL)
 - [ ] Email delivery monitoring (track bounces, opens)

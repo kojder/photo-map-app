@@ -11,25 +11,25 @@
 
 ### Description
 
-Zaawansowane filtry pozwalające na wyszukiwanie zdjęć:
-1. **Temporal Filter:** "W tym samym miesiącu w innych latach" (np. lipiec 2020, 2022, 2024)
-2. **Spatial Filter:** "W tej samej lokalizacji w innych latach" (np. Szklarska Poręba, radius 10 km, lata 2020, 2022)
+Advanced filters allowing photo search by:
+1. **Temporal Filter:** "Same month in different years" (e.g., July 2020, 2022, 2024)
+2. **Spatial Filter:** "Same location in different years" (e.g., Szklarska Poręba, 10 km radius, years 2020, 2022)
 
 ### Use Case Examples
 
 **Temporal Filter:**
-> User otwiera galerię, klika "Smart Filters" → "Same Month" → wybiera "Lipiec" + lata [2020, 2022, 2024] → widzi wszystkie zdjęcia z lipca w tych latach.
+> User opens gallery, clicks "Smart Filters" → "Same Month" → selects "July" + years [2020, 2022, 2024] → sees all photos from July in those years.
 
 **Spatial Filter:**
-> User otwiera mapę w okolicy Szklarskiej Poręby, klika "Find Similar Location" → radius 10 km → lata [2 lata temu, 4 lata temu] → widzi wszystkie zdjęcia z tej okolicy w wybranych latach.
+> User opens map in Szklarska Poręba area, clicks "Find Similar Location" → radius 10 km → years [2 years ago, 4 years ago] → sees all photos from that area in selected years.
 
 ### User Stories
 
-- **US-FILTER-001:** Jako użytkownik mogę wybrać miesiąc i wiele lat, aby zobaczyć zdjęcia z tego miesiąca w wybranych latach
-- **US-FILTER-002:** Jako użytkownik mogę wybrać lokalizację GPS + radius + lata, aby zobaczyć zdjęcia z tej okolicy w wybranych latach
-- **US-FILTER-003:** Jako użytkownik mogę łatwo toggle'ować lata (checkboxes) bez ręcznego wpisywania
-- **US-FILTER-004:** Jako użytkownik mogę auto-fill GPS z obecnego centrum mapy (spatial filter)
-- **US-FILTER-005:** Jako użytkownik mogę kombinować temporal/spatial filtry z innymi filtrami (rating, date range)
+- **US-FILTER-001:** As a user I can select month and multiple years to see photos from that month in selected years
+- **US-FILTER-002:** As a user I can select GPS location + radius + years to see photos from that area in selected years
+- **US-FILTER-003:** As a user I can easily toggle years (checkboxes) without manual typing
+- **US-FILTER-004:** As a user I can auto-fill GPS from current map center (spatial filter)
+- **US-FILTER-005:** As a user I can combine temporal/spatial filters with other filters (rating, date range)
 
 ---
 
@@ -41,19 +41,19 @@ Zaawansowane filtry pozwalające na wyszukiwanie zdjęć:
 
 #### Database Changes
 
-**Brak zmian w schemacie** - wykorzystujemy istniejące kolumny:
-- `photos.taken_at` (TIMESTAMP) - dla temporal queries
-- `photos.gps_latitude`, `photos.gps_longitude` (DECIMAL) - dla spatial queries
+**No schema changes** - using existing columns:
+- `photos.taken_at` (TIMESTAMP) - for temporal queries
+- `photos.gps_latitude`, `photos.gps_longitude` (DECIMAL) - for spatial queries
 
 #### REST API Endpoints
 
 ##### GET /api/photos/temporal-filter
 
-**Opis:** Filtruj zdjęcia po miesiącu i latach
+**Description:** Filter photos by month and years
 
 **Query Parameters:**
 - `month` - Integer (1-12)
-- `years` - Array of integers (np. `years=2020&years=2022&years=2024`)
+- `years` - Array of integers (e.g., `years=2020&years=2022&years=2024`)
 - `page`, `size`, `sort` (standard pagination)
 
 **Response:** `PageResponse<Photo>`
@@ -73,12 +73,12 @@ ORDER BY taken_at DESC
 
 ##### GET /api/photos/spatial-filter
 
-**Opis:** Filtruj zdjęcia po lokalizacji GPS (radius) i latach
+**Description:** Filter photos by GPS location (radius) and years
 
 **Query Parameters:**
-- `latitude` - Decimal (szerokość geograficzna centrum)
-- `longitude` - Decimal (długość geograficzna centrum)
-- `radiusKm` - Integer (promień w kilometrach, 1-100)
+- `latitude` - Decimal (latitude of center)
+- `longitude` - Decimal (longitude of center)
+- `radiusKm` - Integer (radius in kilometers, 1-100)
 - `years` - Array of integers
 - `page`, `size`, `sort` (standard pagination)
 

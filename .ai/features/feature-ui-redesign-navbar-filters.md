@@ -7,67 +7,67 @@
 
 ---
 
-## 🎯 Cel
+## 🎯 Goal
 
-Przeprojektowanie nawigacji i filtrów w Photo Map MVP z naciskiem na:
-- **Nowoczesną estetykę** - ikony, clean design, minimalizm
-- **Funkcjonalność** - wyraźna nawigacja, ukryte filtry domyślnie
-- **UX best practices** - intuicyjna obsługa, responsive, smooth animations
+Redesign navigation and filters in Photo Map MVP with focus on:
+- **Modern aesthetics** - icons, clean design, minimalism
+- **Functionality** - clear navigation, filters hidden by default
+- **UX best practices** - intuitive operation, responsive, smooth animations
 
 ---
 
-## 📊 Analiza Obecnego Stanu
+## 📊 Current State Analysis
 
-### Problemy UX
+### UX Problems
 
-1. **Navbar tylko tekstowy**
-   - Brak ikon → słaba czytelność wizualna
-   - Active state: border-bottom-2 → za mało wyrazisty
-   - Brak hamburger menu na mobile
+1. **Text-only navbar**
+   - No icons → poor visual readability
+   - Active state: border-bottom-2 → not prominent enough
+   - No hamburger menu on mobile
 
-2. **Zbędne headery**
-   - "Photo Gallery" h1 powtarza informację z navbar
-   - "Photo Map" h1 powtarza informację z navbar
-   - Marnowana przestrzeń ekranu
+2. **Unnecessary headers**
+   - "Photo Gallery" h1 repeats navbar information
+   - "Photo Map" h1 repeats navbar information
+   - Wasted screen space
 
-3. **Filtry zajmują za dużo miejsca**
-   - Desktop: zawsze widoczne (~100px wysokości)
-   - Map: `.map-header` absolute → nakłada się na mapę
-   - Gallery: filtry przed gridem → mniej przestrzeni na zdjęcia
+3. **Filters take up too much space**
+   - Desktop: always visible (~100px height)
+   - Map: `.map-header` absolute → overlaps map
+   - Gallery: filters before grid → less space for photos
 
-4. **Brak spójności visual**
-   - Wszystko tekstowe, brak systemu ikon
-   - Różne style headerów w gallery vs map
+4. **No visual consistency**
+   - Everything text-based, no icon system
+   - Different header styles in gallery vs map
 
-### Metryki
+### Metrics
 
-**Przed redesignem:**
+**Before redesign:**
 - Navbar height: 60px
 - Filter-bar height: ~100px (desktop)
-- Map visible area: ~70% (30% zajęte przez header)
-- Gallery grid start: 160px od góry
+- Map visible area: ~70% (30% occupied by header)
+- Gallery grid start: 160px from top
 - Active state: border-bottom-2 (2px)
 
-**Po redesignie (cel):**
+**After redesign (target):**
 - Navbar height: 64px (sticky)
-- Filters: 0px (ukryte domyślnie)
+- Filters: 0px (hidden by default)
 - Map visible area: 100% (full screen)
-- Gallery grid start: 80px od góry
+- Gallery grid start: 80px from top
 - Active state: bg-blue-100 (full background)
 
-**Zysk przestrzeni:**
+**Space gained:**
 - Gallery: +80px vertical space
 - Map: +30% visible area
 - Filters: +100px when closed
 
 ---
 
-## ✅ Nowy Design - Specyfikacja
+## ✅ New Design - Specification
 
-### 1. Navbar z Ikonami (Heroicons)
+### 1. Navbar with Icons (Heroicons)
 
-**Architektura:**
-- **Desktop (≥ 768px):** Horizontal navbar z ikonami + tekstem
+**Architecture:**
+- **Desktop (≥ 768px):** Horizontal navbar with icons + text
   - Logo "PhotoMap" (left)
   - Navigation links: Gallery, Map, Admin (with icons)
   - Logout button (right, red hover)
@@ -75,26 +75,26 @@ Przeprojektowanie nawigacji i filtrów w Photo Map MVP z naciskiem na:
 
 - **Mobile (< 768px):** Hamburger menu
   - Collapsed: Logo + hamburger icon
-  - Expanded: Dropdown menu z ikonami + tekstem (Gallery, Map, Admin, Logout)
+  - Expanded: Dropdown menu with icons + text (Gallery, Map, Admin, Logout)
   - State management: `signal(false)` for toggle
 
 **Styling:**
-- `sticky top-0 z-50` - navbar przyklejony do góry
-- Heroicons inline SVG (w-5 h-5 dla linków, w-6 h-6 dla hamburger)
-- Smooth transitions (`transition-all`) na hover i active
+- `sticky top-0 z-50` - navbar pinned to top
+- Heroicons inline SVG (w-5 h-5 for links, w-6 h-6 for hamburger)
+- Smooth transitions (`transition-all`) on hover and active
 
 ---
 
 ### 2. Floating Action Button (FAB) + Slide-in Panel
 
-**Architektura:**
+**Architecture:**
 - **FAB Button:** Fixed bottom-right (fixed bottom-6 right-6 z-40)
   - Heroicons funnel icon (solid, w-6 h-6)
-  - Badge z licznikiem aktywnych filtrów (computed signal)
+  - Badge with active filters counter (computed signal)
   - `hover:scale-110` animation
 
 - **Filter Panel:**
-  - **Desktop:** Slide-in z prawej (320px width, full height)
+  - **Desktop:** Slide-in from right (320px width, full height)
     - Header: "Filters" + close button
     - Content: Date From, Date To, Min Rating (scrollable)
     - Footer: Clear + Apply buttons
@@ -102,60 +102,60 @@ Przeprojektowanie nawigacji i filtrów w Photo Map MVP z naciskiem na:
   - **Mobile:** Bottom sheet (max-h-80vh, rounded-t-2xl)
     - Transform: `translate-y-full` (closed) → `translate-y-0` (open)
 
-- **Backdrop:** Fixed overlay (bg-black bg-opacity-30) z click-to-close
+- **Backdrop:** Fixed overlay (bg-black bg-opacity-30) with click-to-close
 
 **Integration:**
 - **FilterService:** BehaviorSubject pattern (filters$ Observable)
 - **State:** `signal(false)` for panel toggle
 - **Computed signals:** `hasActiveFilters()`, `activeFilterCount()`
-- **Subscription:** Subscribe to FilterService.filters$ w ngOnInit
+- **Subscription:** Subscribe to FilterService.filters$ in ngOnInit
 
 ---
 
 ### 3. Gallery Component - Clean Layout
 
-**Zmiany:**
-- **Usunięto:** `<h1>Photo Gallery</h1>`, `<app-filter-bar>`
-- **Dodano:** `<app-filter-fab></app-filter-fab>`, Upload button z Heroicons icon (arrow-up-tray)
+**Changes:**
+- **Removed:** `<h1>Photo Gallery</h1>`, `<app-filter-bar>`
+- **Added:** `<app-filter-fab></app-filter-fab>`, Upload button with Heroicons icon (arrow-up-tray)
 
-**Zyski:**
-- Grid startuje 80px wyżej (+80px vertical space)
-- Upload button wyraźniejszy z ikoną
-- Clean, minimalistyczny layout
+**Benefits:**
+- Grid starts 80px higher (+80px vertical space)
+- Upload button more prominent with icon
+- Clean, minimalist layout
 
 ---
 
 ### 4. Map Component - Full Screen
 
-**Zmiany:**
-- **Usunięto:** `.map-header` (absolute overlay), `<h1>Photo Map</h1>`
-- **Dodano:** `<app-filter-fab></app-filter-fab>`, floating notifications (error/loading)
+**Changes:**
+- **Removed:** `.map-header` (absolute overlay), `<h1>Photo Map</h1>`
+- **Added:** `<app-filter-fab></app-filter-fab>`, floating notifications (error/loading)
 
-**Architektura:**
+**Architecture:**
 - **Map container:** `h-screen w-full relative`
 - **Leaflet map:** `absolute inset-0` (full screen)
-- **Notifications:** Absolute top-4 left-1/2 z-[1000] (floating, nie blokują mapy)
+- **Notifications:** Absolute top-4 left-1/2 z-[1000] (floating, doesn't block map)
 
-**Zyski:**
-- Mapa full screen: 100vh (zamiast ~70%)
+**Benefits:**
+- Full screen map: 100vh (instead of ~70%)
 - +30% visible area
-- FAB nie blokuje widoku (floating)
-- Clean, minimalistyczny layout
+- FAB doesn't block view (floating)
+- Clean, minimalist layout
 
 ---
 
 ## 🎨 Heroicons SVG
 
-**Wybór: Heroicons v2.0**
+**Choice: Heroicons v2.0**
 
-**Dlaczego Heroicons?**
-- Oficjalny icon set dla Tailwind CSS
+**Why Heroicons?**
+- Official icon set for Tailwind CSS
 - MIT License (free commercial)
-- Style: outline (thin) + solid (filled)
+- Styles: outline (thin) + solid (filled)
 - Lightweight: inline SVG, no font files
-- Perfect match dla Tailwind utilities
+- Perfect match for Tailwind utilities
 
-**8 Ikon używanych:**
+**8 Icons used:**
 1. Gallery Icon (outline) - photo
 2. Map Icon (outline) - map
 3. Admin Icon (outline) - shield-check
@@ -170,31 +170,31 @@ Przeprojektowanie nawigacji i filtrów w Photo Map MVP z naciskiem na:
 ## ✅ Success Criteria
 
 ### Visual
-- ✅ Navbar z ikonami visible
+- ✅ Navbar with icons visible
 - ✅ Active state highlighted (bg-blue-100)
-- ✅ Hamburger menu działa na mobile
-- ✅ FAB visible w prawym dolnym rogu
+- ✅ Hamburger menu works on mobile
+- ✅ FAB visible in bottom right corner
 - ✅ Filter panel slide-in smooth
-- ✅ Badge pokazuje licznik aktywnych filtrów
-- ✅ Gallery bez h1 header
-- ✅ Map full screen bez header overlay
-- ✅ Upload button z ikoną
+- ✅ Badge shows active filters counter
+- ✅ Gallery without h1 header
+- ✅ Map full screen without header overlay
+- ✅ Upload button with icon
 
 ### Functional
-- ✅ Nawigacja działa (Gallery / Map / Admin)
-- ✅ Logout redirect do /login
-- ✅ Filtry działają identycznie jak poprzednio
-- ✅ FAB toggle otwiera/zamyka panel
-- ✅ Backdrop click zamyka panel
-- ✅ Clear filters resetuje wszystkie pola
-- ✅ Apply filters zamyka panel (optional)
+- ✅ Navigation works (Gallery / Map / Admin)
+- ✅ Logout redirect to /login
+- ✅ Filters work identically as before
+- ✅ FAB toggle opens/closes panel
+- ✅ Backdrop click closes panel
+- ✅ Clear filters resets all fields
+- ✅ Apply filters closes panel (optional)
 
 ### Responsive
 - ✅ Desktop (≥ 1024px): horizontal navbar, side panel
 - ✅ Tablet (768-1024px): horizontal navbar, narrow panel
 - ✅ Mobile (< 768px): hamburger menu, bottom sheet
-- ✅ Gallery grid responsive (2/3/4 kolumny)
-- ✅ No horizontal scroll na żadnym breakpoint
+- ✅ Gallery grid responsive (2/3/4 columns)
+- ✅ No horizontal scroll on any breakpoint
 
 ### Performance
 - ✅ Smooth animations (60 FPS)
@@ -204,8 +204,8 @@ Przeprojektowanie nawigacji i filtrów w Photo Map MVP z naciskiem na:
 ### Tests
 - ✅ filter-fab.component.spec.ts passing
 - ✅ navbar.component.spec.ts passing
-- ✅ Gallery działa z FAB
-- ✅ Map działa z FAB
+- ✅ Gallery works with FAB
+- ✅ Map works with FAB
 - ✅ Manual E2E flow pass
 
 ### Cleanup
@@ -215,11 +215,11 @@ Przeprojektowanie nawigacji i filtrów w Photo Map MVP z naciskiem na:
 
 ---
 
-## 📈 Metrics - Przed vs Po
+## 📈 Metrics - Before vs After
 
-| Metryka | Przed | Po | Zysk |
+| Metric | Before | After | Gain |
 |---------|-------|-----|------|
-| Navbar height | 60px | 64px | +4px (ikony) |
+| Navbar height | 60px | 64px | +4px (icons) |
 | Filters height | 100px | 0px (hidden) | +100px space |
 | Gallery grid start | 160px | 80px | +80px earlier |
 | Map visible area | ~70% | 100% | +30% |
@@ -231,7 +231,7 @@ Przeprojektowanie nawigacji i filtrów w Photo Map MVP z naciskiem na:
 
 ## 📦 Implementation Summary
 
-**Komponenty:**
+**Components:**
 - `navbar.component.{ts,html}` - Redesigned with Heroicons + hamburger menu
 - `filter-fab.component.{ts,html,css}` - NEW FAB component
 - `gallery.component.html` - Updated (removed h1, filter-bar; added filter-fab)

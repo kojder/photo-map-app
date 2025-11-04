@@ -11,36 +11,43 @@
 
 ### 🎯 Currently Working On
 
-**📚 Documentation Cleanup** (Planned for next session - after clean context)
+**📚 Feature Documentation Translation - English Standardization**
+
+**Goal:** Translate all Polish feature documentation to English for consistency and global accessibility.
 
 **Context:**
-Utworzono nowy skill `doc-update` do systematycznego czyszczenia dokumentacji. Pliki w `.ai/features/` zawierają dużo nadmiarowych informacji (fragmenty kodu, szczegółowe checklisty, verbose implementation details) które należy usunąć, zachowując kluczowe decyzje architektoniczne i kontekst techniczny.
+All files in `.ai/features/` have `**Status:**` marker but 7 of them are in Polish. Need to translate to English while preserving all technical content, decisions, and structure.
 
-**Plan na nową sesję:**
-Aktualizacja dokumentacji feature po feature według wskazań użytkownika:
-1. User wskaże feature do update'u (np. "update docs for photo-viewer")
-2. Skill `doc-update` automatycznie:
-   - Zbierze kontekst (feature file, PROGRESS_TRACKER, git log, kod)
-   - Określi status implementacji (✅ COMPLETED / ⏳ IN-PROGRESS / 🔜 PLANNED)
-   - Zastosuje odpowiedni poziom czyszczenia (aggressive/moderate/light)
-   - Usunie kod, checklisty, verbose details
-   - Zachowa architekturę, decyzje techniczne, integration points
-3. Review zmian z użytkownikiem przed commitem
-4. Commit i przejście do kolejnego feature'a
+**Progress Checklist:**
 
-**Targets:**
-- `.ai/features/feature-photo-viewer.md` (✅ COMPLETED - aggressive cleanup)
-- `.ai/features/feature-email-system.md` (🔜 PLANNED)
-- `.ai/features/feature-deployment-mikrus.md` (✅ COMPLETED)
-- `.ai/features/feature-e2e-playwright-tests.md` (✅ COMPLETED)
-- Inne pliki według wskazań użytkownika
+**Already in English (no action needed):**
+- [x] feature-admin-initializer.md
+- [x] feature-e2e-playwright-tests.md
+- [x] feature-github-actions-sonarcloud.md
+- [x] feature-photo-viewer.md
+
+**To translate (Polish → English):**
+- [x] feature-deployment-mikrus.md
+- [x] feature-email-system.md
+- [x] feature-map-photo-caching.md
+- [x] feature-nas-batch-processing.md
+- [x] feature-public-sharing.md
+- [x] feature-temporal-spatial-filters.md
+- [x] feature-ui-redesign-navbar-filters.md
+
+**Translation Strategy:**
+1. Translate all Polish text to English
+2. Preserve all technical terms, code snippets, file paths
+3. Keep markdown structure and formatting identical
+4. Maintain Status markers and metadata
+5. Review translated file before moving to next one
 
 **Acceptance Criteria:**
-- Wszystkie wskazane feature files zaktualizowane
-- Redukcja 60-85% rozmiaru dla COMPLETED features
-- Zachowane kluczowe decyzje techniczne i architektura
-- Commit dla każdego feature osobno
-- Push wszystkich zmian razem po zakończeniu
+- All 7 files translated to English
+- Technical accuracy preserved
+- No broken markdown formatting
+- Consistent terminology across all files
+- Single commit after all translations complete
 
 ---
 
