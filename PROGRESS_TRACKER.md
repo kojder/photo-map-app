@@ -11,25 +11,43 @@
 
 ### 🎯 Currently Working On
 
-**🔧 SonarQube Code Quality Issues**
-
-Po zakończeniu cleanup'u dokumentacji:
-- Pobrać aktualne issues z SonarCloud API
-- Naprawić BLOCKER i CRITICAL issues
-- Weryfikacja testów i coverage
-- Push do GitHub → CI verification
+**No specific task** - awaiting user direction
 
 ---
 
 ### 🔮 Planned Next
 
-**No specific task planned** - awaiting user direction
+**🧪 Fix Test Coverage Issues**
+
+Backend and frontend test coverage currently below thresholds:
+- Backend: <50% (target: >50%)
+- Frontend: <50% (target: >50%)
+- Identify missing test coverage
+- Add unit tests to reach >50% threshold
+- Verify all tests passing before push
 
 ---
 
 ---
 
 ### ✅ Last Completed
+
+**📖 README.md Update - English Translation & Feature Status** (2025-11-04)
+
+**Goal:** Updated README.md to reflect current project state with English translation, feature status from `.ai/features/`, automation details, and corrected SonarCloud badges.
+
+**Key Changes:**
+- Translated entire document from Polish to English
+- Fixed SonarCloud badges (separate for backend + frontend: `kojder_photo-map-app-backend`, `kojder_photo-map-app-frontend`)
+- Added new sections: Overview, Features (4 completed, 2 in-progress, 5 planned), Automation & Quality, Testing, Development Scripts, Deployment
+- Updated sections: Tech Stack (more details), Project Structure (expanded tree), Documentation
+- Removed: Swagger UI info (500 error), outdated progress "4/6 phases"
+- Length: 218 lines → 588 lines (+370 lines)
+- Coverage thresholds updated to >50% (backend + frontend)
+
+**Stats:** 461 insertions(+), 91 deletions(-)
+
+---
 
 **📚 Core Documentation Update - .ai/ Implementation Specs (COMPLETE)** (2025-11-04)
 
