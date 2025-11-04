@@ -1,5 +1,9 @@
 # Photo Map MVP
 
+[![Build Status](https://github.com/kojder/photo-map-app/workflows/CI%3A%20Build%2C%20Test%20%26%20SonarCloud%20Analysis/badge.svg)](https://github.com/kojder/photo-map-app/actions)
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=kojder_photo-map-app&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=kojder_photo-map-app)
+[![Coverage](https://sonarcloud.io/api/project_badges/measure?project=kojder_photo-map-app&metric=coverage)](https://sonarcloud.io/summary/new_code?id=kojder_photo-map-app)
+
 Full-stack aplikacja do zarządzania zdjęciami z geolokalizacją. Umożliwia upload zdjęć, automatyczną ekstrakcję danych EXIF (GPS, data), generowanie miniatur oraz wizualizację na interaktywnej mapie.
 
 ## 🛠️ Stack Technologiczny

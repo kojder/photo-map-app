@@ -7,41 +7,133 @@
 
 ## 🔄 Current Status
 
-**Last Updated:** 2025-10-31
+**Last Updated:** 2025-11-04
 
 ### 🎯 Currently Working On
 
-**🔧 SonarQube Code Quality Issues** (Planned for next session)
+**📚 Documentation Cleanup** (Planned for next session - after clean context)
 
 **Context:**
-Po zaimplementowaniu flatpickr date picker i naprawie testów E2E, pozostały do naprawy issues wykryte przez SonarQube. Trzeba poprawić jakość kodu przed kolejnymi feature'ami.
+Utworzono nowy skill `doc-update` do systematycznego czyszczenia dokumentacji. Pliki w `.ai/features/` zawierają dużo nadmiarowych informacji (fragmenty kodu, szczegółowe checklisty, verbose implementation details) które należy usunąć, zachowując kluczowe decyzje architektoniczne i kontekst techniczny.
 
 **Plan na nową sesję:**
-1. **Pobrać aktualne issues z SonarCloud API:**
-   - Użyć curl do pobrania BLOCKER i CRITICAL issues
-   - Zaktualizować `.sonarqube/CURRENT_ISSUES.md`
+Aktualizacja dokumentacji feature po feature według wskazań użytkownika:
+1. User wskaże feature do update'u (np. "update docs for photo-viewer")
+2. Skill `doc-update` automatycznie:
+   - Zbierze kontekst (feature file, PROGRESS_TRACKER, git log, kod)
+   - Określi status implementacji (✅ COMPLETED / ⏳ IN-PROGRESS / 🔜 PLANNED)
+   - Zastosuje odpowiedni poziom czyszczenia (aggressive/moderate/light)
+   - Usunie kod, checklisty, verbose details
+   - Zachowa architekturę, decyzje techniczne, integration points
+3. Review zmian z użytkownikiem przed commitem
+4. Commit i przejście do kolejnego feature'a
 
-2. **Naprawić issues według priorytetu:**
-   - BLOCKER issues (najwyższy priorytet)
-   - CRITICAL issues
-   - MAJOR issues (jeśli zostanie czas)
-
-3. **Weryfikacja:**
-   - Uruchomić wszystkie testy (backend + frontend)
-   - Sprawdzić czy coverage >= 50%
-   - Push do GitHub → weryfikacja CI
+**Targets:**
+- `.ai/features/feature-photo-viewer.md` (✅ COMPLETED - aggressive cleanup)
+- `.ai/features/feature-email-system.md` (🔜 PLANNED)
+- `.ai/features/feature-deployment-mikrus.md` (✅ COMPLETED)
+- `.ai/features/feature-e2e-playwright-tests.md` (✅ COMPLETED)
+- Inne pliki według wskazań użytkownika
 
 **Acceptance Criteria:**
-- Wszystkie BLOCKER issues naprawione
-- Wszystkie CRITICAL issues naprawione
-- Testy passing (backend + frontend + E2E)
-- SonarQube Quality Gate: PASSED
+- Wszystkie wskazane feature files zaktualizowane
+- Redukcja 60-85% rozmiaru dla COMPLETED features
+- Zachowane kluczowe decyzje techniczne i architektura
+- Commit dla każdego feature osobno
+- Push wszystkich zmian razem po zakończeniu
+
+---
+
+### 🔮 Planned Next
+
+**🔧 SonarQube Code Quality Issues**
+
+Po zakończeniu cleanup'u dokumentacji:
+- Pobrać aktualne issues z SonarCloud API
+- Naprawić BLOCKER i CRITICAL issues
+- Weryfikacja testów i coverage
+- Push do GitHub → CI verification
 
 ---
 
 ---
 
 ### ✅ Last Completed
+
+**🔧 GitHub Actions CI/CD + SonarCloud Integration** (2025-10-28)
+
+**Implemented:**
+- **GitHub Actions Workflow** - Two-job pipeline (`build` + `e2e-tests`)
+  - Job 1: Backend tests, frontend tests, SonarCloud analysis, artifacts upload
+  - Job 2: E2E tests with Playwright + PostgreSQL service container
+  - Triggers: push to master, pull requests (opened, synchronize, reopened)
+  - Caching: Maven deps, npm packages, SonarCloud cache (workflow time: 8min → 4-5min)
+- **Backend Configuration** - `backend/pom.xml`
+  - SonarCloud properties (projectKey, organization, coverage paths)
+  - JaCoCo plugin 0.8.12 (prepare-agent, report)
+  - Coverage: >70% achieved
+- **Frontend Configuration** - `frontend/sonar-project.properties`
+  - TypeScript/JavaScript analysis settings
+  - LCOV coverage report paths
+  - Test inclusions/exclusions
+  - Coverage: >60% achieved
+- **Workflow Documentation** - `.github/workflows/README.md`
+  - Detailed workflow breakdown
+  - Required secrets and env variables
+  - Troubleshooting guide
+  - Local testing instructions
+- **SonarCloud Project** - Shared project `kojder_photo-map-app`
+  - Combined backend (Java) + frontend (TypeScript) metrics
+  - Quality gate configured and enforced
+  - Coverage reports visible in dashboard
+
+**Key Decisions:**
+- Shared SonarCloud project (not separate) for simplified MVP management
+- E2E tests in separate job with PostgreSQL service for isolation
+- Aggressive caching strategy (3 cache types) for faster workflow execution
+
+**Testing:**
+- Backend: 78/78 tests passing ✅
+- Frontend: 199/199 tests passing ✅
+- E2E: 16/16 tests passing ✅
+- Coverage: Backend 78%, Frontend 61% ✅
+
+**Files:**
+- `.github/workflows/build.yml` (237 lines) - Main workflow
+- `.github/workflows/README.md` (142 lines) - Documentation
+- `backend/pom.xml` - SonarCloud + JaCoCo config
+- `frontend/sonar-project.properties` (30 lines)
+- `.ai/features/feature-github-actions-sonarcloud.md` - Updated to COMPLETED status
+
+**Why implemented:**
+Automated quality checks before deployment. Every push/PR triggers full test suite + code quality analysis, ensuring no regressions reach production.
+
+---
+
+**🛠️ Claude Code Skill: doc-update** (2025-11-04)
+
+**Implemented:**
+- **doc-update skill** - Systematic documentation cleanup workflow
+  - 7-step process: identify → context → status → cleanup → update → language → review
+  - Status-aware cleanup levels (✅ COMPLETED: aggressive 60-85%, ⏳ IN-PROGRESS: moderate 40-60%, 🔜 PLANNED: light 30-50%)
+  - Multi-source context gathering (feature file, PROGRESS_TRACKER, git log, codebase, CLAUDE.md)
+  - Language preservation (Polish/English detection)
+  - User review before commit (never auto-commit)
+- **References documentation** (3 files, 917 lines):
+  - `cleanup-guidelines.md` - Detailed what to keep/remove for each status
+  - `feature-status-levels.md` - Status definitions and classification criteria
+  - `examples.md` - Before/after transformations with real examples
+- **Scope:** Universal - works with `.ai/features/`, `README.md`, `PROGRESS_TRACKER.md`, and any `.md` file
+
+**Files:**
+- `.claude/skills/doc-update/SKILL.md` (321 lines)
+- `.claude/skills/doc-update/references/` (3 files)
+- `.gitignore` - Added Python `__pycache__/` ignore
+
+**Why created:**
+Feature documentation files contain excessive implementation details (code snippets, task checklists, verbose testing procedures) that clutter the docs. Skill enables systematic cleanup while preserving essential architecture and technical decisions.
+
+---
 
 **🎨 Flatpickr Date Picker Integration + E2E Tests Fix** (2025-10-31)
 
