@@ -16,6 +16,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
+import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -105,7 +106,7 @@ public class PhotoController {
             @RequestParam(required = false) final String dateTo,
             @RequestParam(required = false) final Integer minRating,
             @RequestParam(required = false) final Boolean hasGps,
-            @PageableDefault(size = 20, sort = "uploadedAt", direction = Sort.Direction.DESC) final Pageable pageable,
+            @ParameterObject @PageableDefault(size = 20, sort = "uploadedAt", direction = Sort.Direction.DESC) final Pageable pageable,
             final Authentication authentication) {
 
         final User currentUser = getCurrentUser(authentication);
@@ -274,7 +275,7 @@ public class PhotoController {
                 : null;
 
         final Integer userRating = currentUserId != null ? getUserRating(photo, currentUserId) : null;
-        final Double displayRating = calculateDisplayRating(photo, currentUserId, userRating);
+        final Double displayRating = calculateDisplayRating(photo);
         final Integer totalRatings = photo.getRatings() != null ? photo.getRatings().size() : 0;
 
         return new PhotoResponse(
@@ -316,31 +317,14 @@ public class PhotoController {
     }
 
     /**
-     * Calculates personalized rating display:
-     * - If user has rated the photo → show user's rating
-     * - If user hasn't rated but others have → show average of others' ratings
-     * - If no ratings exist → return null
+     * Calculates overall average rating from all users.
+     * This matches the database filter logic (hasMinimumRating) to ensure consistency
+     * between displayed rating and rating filter behavior.
+     *
+     * @param photo The photo to calculate rating for
+     * @return Average rating from all users, or null if no ratings exist
      */
-    private Double calculateDisplayRating(final Photo photo, final Long currentUserId, final Integer userRating) {
-        if (photo.getRatings() == null || photo.getRatings().isEmpty()) {
-            return null;
-        }
-
-        // If user has own rating, return it as display rating
-        if (userRating != null) {
-            return userRating.doubleValue();
-        }
-
-        // User hasn't rated - calculate average of OTHER users' ratings
-        if (currentUserId != null) {
-            return photo.getRatings().stream()
-                    .filter(r -> !r.getUser().getId().equals(currentUserId))
-                    .mapToInt(Rating::getRatingValue)
-                    .average()
-                    .orElse(0.0);
-        }
-
-        // Not logged in - show overall average
+    private Double calculateDisplayRating(final Photo photo) {
         return calculateAverageRating(photo);
     }
 

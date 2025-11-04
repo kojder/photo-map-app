@@ -228,24 +228,25 @@ REST API for Photo Map MVP provides endpoints for:
 - One user = one rating per photo (update if already rated)
 - Rating: 1-5 stars
 
-**Personalized Rating Display Logic:**
+**Rating Display Logic:**
 Backend returns 3 fields: `averageRating`, `totalRatings`, `userRating`
 
 **`averageRating` (backend calculation - PhotoController.calculateDisplayRating):**
-- If current user rated the photo → returns **their own rating** (= `userRating`)
-- If current user NOT rated → returns **average of other users' ratings**
+- Returns **overall average rating** from all users
+- Matches database filter logic (hasMinimumRating) for consistency between displayed rating and filter behavior
 - If nobody rated → `null`
 
 **`userRating`:**
-- Current user's rating (1-5) or `null` if not rated
+- Current user's personal rating (1-5) or `null` if not rated
+- Allows user to see their own rating separately from overall average
 
 **`totalRatings`:**
 - Total count of all ratings for the photo
 
 **Frontend display:**
-- Shows `averageRating` with context:
-  - If `userRating` exists → "(your rating)"
-  - If `userRating` null → "(X ratings)" where X = `totalRatings`
+- Shows `averageRating` (overall average) with star rating
+- Can show `userRating` separately if user has rated (e.g., "Your rating: 5 stars")
+- Shows rating count: "(X ratings)" where X = `totalRatings`
 
 ---
 

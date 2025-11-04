@@ -106,13 +106,14 @@ Photo Map MVP is a full-stack application (Angular 18 + Spring Boot 3 + PostgreS
 **Business Rules:**
 - One user can submit only one rating per photo (can edit it)
 
-**Personalized Rating Display:**
+**Rating Display:**
 - API returns `averageRating`, `totalRatings`, `userRating`
 - **What user sees:**
-  - If user rated the photo → sees **their rating** (backend returns `averageRating` = `userRating`)
-  - If user did NOT rate → sees **average rating of other users** (backend calculates average without current user)
+  - `averageRating` → **overall average rating** from all users (consistent with rating filter behavior)
+  - `userRating` → user's personal rating (displayed separately, e.g., "Your rating: 5 stars")
   - If nobody rated → photo **has no rating** (`averageRating` = null)
-- Frontend displays `averageRating` with context: "(your rating)" or "(X ratings)"
+- Frontend displays `averageRating` with rating count: "(X ratings)" where X = `totalRatings`
+- User's personal rating (`userRating`) can be shown separately if desired
 
 ### 2.6. Filtering
 

@@ -11,50 +11,154 @@
 
 ### 🎯 Currently Working On
 
-**📚 Swagger/OpenAPI Implementation** (2025-11-04)
+**🐛 Rating Filter Bug - Incorrect Photo Count** (2025-11-04)
 
-**Goal:** Add Swagger UI for interactive API documentation and testing
+**Goal:** Fix rating filter logic to show correct number of photos based on minRating filter
 
 **Problem:**
-- `/swagger-ui/index.html` returns 500 error
-- `/v3/api-docs` endpoint not available
-- No springdoc-openapi dependency in project
+- User has photos with ratings: 5.0 (×2), 4.0 (×2), 3.0, 2.0
+- Filter "3+" shows 3 photos instead of 4 (should show all ≥3: two 5.0, two 4.0)
+- Filter "5+" shows 1 photo instead of 2 (should show both 5.0 rated photos)
+- Issue likely related to `displayRating` calculation vs `minRating` filter logic
+
+**Root Cause Analysis Needed:**
+1. **Backend filtering** (`PhotoService.getPhotos()`)
+   - Check how `minRating` parameter is applied to database query
+   - Verify if filtering uses average rating or user's personal rating
+   - Issue: `PhotoSpecification.hasMinimumRating()` filters by AVG(all ratings)
+   - But frontend displays `displayRating` (personalized: user's rating OR others' average)
+   - **Mismatch:** DB filter ≠ displayed rating value
+
+2. **Frontend FilterService**
+   - Verify if `minRating` parameter is correctly passed to backend
+   - Check if local filtering interferes with backend filtering
+
+3. **Rating calculation logic** (`PhotoController.calculateDisplayRating()`)
+   - Personalized rating: user's own rating OR average of others' ratings
+   - This creates inconsistency: user sees different rating than DB filters by
 
 **Implementation Plan:**
-1. **Add Dependencies** - `backend/pom.xml`
-   - `springdoc-openapi-starter-webmvc-ui` (Spring Boot 3 compatible)
-   - Version: 2.x (latest stable for Spring Boot 3)
-2. **Create OpenAPI Config** - `backend/src/main/java/com/photomap/config/OpenApiConfig.java`
-   - API title, description, version
-   - JWT security scheme configuration
-   - Contact info, license (optional)
-3. **Configure Properties** - `backend/src/main/resources/application.properties`
-   - Swagger UI path: `/swagger-ui/index.html`
-   - API docs path: `/v3/api-docs`
-   - Enable/disable in different profiles (optional)
-4. **Security Config Update** - Allow public access to Swagger endpoints
-   - Add `/swagger-ui/**`, `/v3/api-docs/**` to permitAll()
-5. **Test Swagger UI**
-   - Access `http://localhost:8080/swagger-ui/index.html`
-   - Verify all endpoints visible (auth, photos, admin)
-   - Test JWT authentication flow
-6. **Update README.md** - Add Swagger documentation section
 
-**Expected Result:**
-- ✅ Swagger UI available at `/swagger-ui/index.html`
+**Chosen Approach: Simplify Rating Logic (Remove Personalization)** ⭐
+- **Goal:** Make filter and display consistent - both use overall average rating
+- **Reason:** Current personalization creates mismatch between DB filter and UI display
+- **Future:** Personalized rating can be added later as separate feature with proper filtering support
+
+**Phase 1: Code Analysis & Discovery (10 min)**
+1. **Find all personalized rating logic**
+   - Search codebase for: `calculateDisplayRating`, `getUserRating`, personalized rating comments
+   - Backend: `PhotoController.java` - methods related to rating calculation
+   - Frontend: Check if any client-side rating logic exists
+   - Document all locations where personalization logic exists
+
+2. **Analyze current behavior**
+   - `PhotoSpecification.hasMinimumRating()` - uses AVG of ALL ratings
+   - `PhotoController.calculateDisplayRating()` - personalized logic (user's rating OR others' avg)
+   - `PhotoController.getUserRating()` - helper method for personalization
+   - Understand exact mismatch between filter and display
+
+**Phase 2: Code Changes (15 min)**
+3. **Simplify `calculateDisplayRating()` in PhotoController**
+   - Remove personalization logic
+   - Always return overall average rating (same as DB filter uses)
+   - Update method signature if needed (may no longer need currentUserId)
+
+4. **Review `mapToPhotoResponse()` method**
+   - Ensure displayRating now uses simplified logic
+   - Keep userRating field (user's personal rating for reference)
+   - Update JavaDoc comments
+
+5. **Check if `getUserRating()` is still needed**
+   - If only used for userRating field → keep it
+   - If used for display calculation → verify new usage
+
+6. **Search for related helper methods**
+   - `calculateAverageRating()` - probably still needed
+   - Any other rating calculation methods
+
+**Phase 3: Tests (10 min)**
+7. **Update/add unit tests**
+   - `PhotoSpecificationTest` - verify minRating filter works correctly
+   - `PhotoServiceTest` - test filtering with various rating scenarios
+   - Verify: photo with avg=5.0 shown with filter "5+", hidden with filter "5.1+"
+
+8. **Update integration tests if needed**
+   - Verify end-to-end rating filter flow
+
+**Phase 4: Documentation Updates (15 min)**
+9. **Update API documentation**
+   - `.ai/api-plan.md` - update PhotoResponse.displayRating description
+   - Clarify: displayRating = overall average (not personalized)
+   - Update rating filter behavior description
+
+10. **Update PRD if rating behavior is mentioned**
+    - `.ai/prd.md` - search for "rating" mentions
+    - Update business logic description if personalization was documented
+
+11. **Update README.md if rating feature is described**
+    - Clarify current rating behavior (overall average)
+    - Note: personalized rating planned for future
+
+12. **Update PROGRESS_TRACKER.md**
+    - Mark task as completed
+    - Document what changed and why
+
+**Phase 5: Manual Testing (5 min)**
+13. **Verify fix works**
+    - Login to app
+    - Rate photos with different values (2, 3, 4, 5)
+    - Apply filters: "3+", "4+", "5+"
+    - Verify correct photo count matches displayed ratings
+
+**Estimated Time:** 55 minutes (including documentation)
+
+**Files to Analyze:**
+- `backend/src/main/java/com/photomap/controller/PhotoController.java` (calculateDisplayRating, getUserRating, mapToPhotoResponse)
+- `backend/src/main/java/com/photomap/repository/PhotoSpecification.java` (hasMinimumRating - understand current filter)
+- `backend/src/main/java/com/photomap/service/PhotoService.java` (getPhotos method)
+- `frontend/src/app/services/filter.service.ts` (verify minRating parameter passing)
+
+**Files to Modify - Backend:**
+- `backend/src/main/java/com/photomap/controller/PhotoController.java` (simplify calculateDisplayRating)
+- `backend/src/test/java/com/photomap/repository/PhotoSpecificationTest.java` (add/update tests)
+- `backend/src/test/java/com/photomap/service/PhotoServiceTest.java` (add/update tests)
+
+**Files to Modify - Documentation:**
+- `.ai/api-plan.md` (update PhotoResponse.displayRating description)
+- `.ai/prd.md` (update rating behavior if mentioned)
+- `README.md` (clarify rating feature behavior)
+- `PROGRESS_TRACKER.md` (mark completed)
+
+**Testing Checklist:**
+- [ ] Photo with rating 5.0 shown with filter "5+" ✅
+- [ ] Photo with rating 4.0 shown with filter "3+" but hidden with "5+" ✅
+- [ ] Photo with rating 2.0 hidden with filter "3+" ✅
+- [ ] Count matches: 2 photos rated 5.0 → filter "5+" shows exactly 2 photos ✅
+- [ ] E2E test: apply filter in gallery, verify correct photo count
+
+---
+
+### ✅ Last Completed
+
+**📚 Swagger/OpenAPI Implementation + Tests** (2025-11-04) - COMPLETED
+
+**Result:**
+- ✅ Swagger UI working at `/swagger-ui/index.html`
 - ✅ OpenAPI JSON at `/v3/api-docs`
-- ✅ All REST endpoints auto-documented
 - ✅ JWT Bearer authentication configured
-- ✅ Interactive API testing through browser
+- ✅ Unit tests added: `OpenApiConfigTest` (3 tests, 100% coverage)
+- ✅ Unit tests added: `SecurityConfigTest` (4 tests, 100% coverage)
+- ✅ Integration tests: `SwaggerSecurityIntegrationTest` (4 tests)
+- ✅ All 75 backend tests passing
+- ✅ New code coverage: 100% for OpenApiConfig and SecurityConfig
 
-**Estimated Time:** 10-15 minutes
-
-**Files to Create/Modify:**
-- `backend/pom.xml` (add dependency)
-- `backend/src/main/java/com/photomap/config/OpenApiConfig.java` (new file)
-- `backend/src/main/java/com/photomap/config/SecurityConfig.java` (update permitAll)
-- `backend/src/main/resources/application.properties` (optional config)
-- `README.md` (add Swagger section)
+**Files Modified:**
+- `backend/pom.xml` (added springdoc-openapi dependency)
+- `backend/src/main/java/com/photomap/config/OpenApiConfig.java` (created)
+- `backend/src/main/java/com/photomap/config/SecurityConfig.java` (permitAll for Swagger)
+- `backend/src/test/java/com/photomap/config/OpenApiConfigTest.java` (created)
+- `backend/src/test/java/com/photomap/config/SecurityConfigTest.java` (created)
+- `backend/src/test/java/com/photomap/integration/SwaggerSecurityIntegrationTest.java` (created)
 
 ---
 

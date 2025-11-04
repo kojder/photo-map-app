@@ -327,6 +327,107 @@ class PhotoSpecificationTest {
     }
 
     @Test
+    void hasMinRating_WithMultipleRatings_CalculatesAverage() {
+        // Test that filtering uses average of all ratings
+        final User rater1 = new User();
+        rater1.setEmail("rater1@example.com");
+        rater1.setPasswordHash("hash");
+        rater1.setRole(Role.USER);
+        entityManager.persist(rater1);
+
+        final User rater2 = new User();
+        rater2.setEmail("rater2@example.com");
+        rater2.setPasswordHash("hash");
+        rater2.setRole(Role.USER);
+        entityManager.persist(rater2);
+
+        final User rater3 = new User();
+        rater3.setEmail("rater3@example.com");
+        rater3.setPasswordHash("hash");
+        rater3.setRole(Role.USER);
+        entityManager.persist(rater3);
+
+        // Photo with multiple ratings: 5, 5, 3 → average = 4.33
+        final Rating rating1 = new Rating();
+        rating1.setPhoto(photoWithGps);
+        rating1.setUser(rater1);
+        rating1.setRatingValue(5);
+        entityManager.persist(rating1);
+
+        final Rating rating2 = new Rating();
+        rating2.setPhoto(photoWithGps);
+        rating2.setUser(rater2);
+        rating2.setRatingValue(5);
+        entityManager.persist(rating2);
+
+        final Rating rating3 = new Rating();
+        rating3.setPhoto(photoWithGps);
+        rating3.setUser(rater3);
+        rating3.setRatingValue(3);
+        entityManager.persist(rating3);
+
+        entityManager.flush();
+
+        // Filter minRating=4 should include photo (avg 4.33 >= 4)
+        final Specification<Photo> spec4 = PhotoSpecification.hasMinRating(4);
+        final List<Photo> result4 = photoRepository.findAll(spec4);
+        assertEquals(1, result4.size());
+        assertEquals(photoWithGps.getId(), result4.get(0).getId());
+
+        // Filter minRating=5 should exclude photo (avg 4.33 < 5)
+        final Specification<Photo> spec5 = PhotoSpecification.hasMinRating(5);
+        final List<Photo> result5 = photoRepository.findAll(spec5);
+        assertEquals(0, result5.size());
+    }
+
+    @Test
+    void hasMinRating_ExactMatch_IncludesPhoto() {
+        // Test that photo with exact average rating is included
+        final User rater1 = new User();
+        rater1.setEmail("rater1@example.com");
+        rater1.setPasswordHash("hash");
+        rater1.setRole(Role.USER);
+        entityManager.persist(rater1);
+
+        final User rater2 = new User();
+        rater2.setEmail("rater2@example.com");
+        rater2.setPasswordHash("hash");
+        rater2.setRole(Role.USER);
+        entityManager.persist(rater2);
+
+        // Photo with ratings: 5, 5 → average = 5.0
+        final Rating rating1 = new Rating();
+        rating1.setPhoto(recentPhoto);
+        rating1.setUser(rater1);
+        rating1.setRatingValue(5);
+        entityManager.persist(rating1);
+
+        final Rating rating2 = new Rating();
+        rating2.setPhoto(recentPhoto);
+        rating2.setUser(rater2);
+        rating2.setRatingValue(5);
+        entityManager.persist(rating2);
+
+        entityManager.flush();
+
+        // Filter minRating=5 should include photo (avg 5.0 >= 5)
+        final Specification<Photo> spec = PhotoSpecification.hasMinRating(5);
+        final List<Photo> result = photoRepository.findAll(spec);
+        assertEquals(1, result.size());
+        assertEquals(recentPhoto.getId(), result.get(0).getId());
+    }
+
+    @Test
+    void hasMinRating_NoRatings_ExcludesPhoto() {
+        // Test that photos without ratings are excluded from minRating filter
+        final Specification<Photo> spec = PhotoSpecification.hasMinRating(1);
+        final List<Photo> result = photoRepository.findAll(spec);
+
+        // Should return 0 photos (all test photos have no ratings initially)
+        assertEquals(0, result.size());
+    }
+
+    @Test
     void combinedSpecifications_FiltersCorrectly() {
         // Add a rating to recentPhoto
         final User rater = new User();

@@ -17,7 +17,7 @@
 **Key Features:**
 - **Upload & Processing** - Upload photos with automatic EXIF extraction (GPS, date) and thumbnail generation
 - **Visualization** - Responsive gallery grid and interactive map (Leaflet.js) with GPS markers
-- **Rating System** - Rate photos with 1-5 stars, personalized ratings for each user
+- **Rating System** - Rate photos with 1-5 stars, view overall average ratings and personal ratings
 - **Security** - JWT authentication, BCrypt password hashing, role-based access control
 - **Administration** - Admin panel for user management, permissions, and photo oversight
 
@@ -350,6 +350,35 @@ See `.env.example` for all required environment variables:
 - `DB_USERNAME`, `DB_PASSWORD` - PostgreSQL credentials
 - `JWT_SECRET` - JWT signing key (generate with `openssl rand -base64 32`)
 - `STORAGE_PATH` - Photo storage directory
+
+### API Documentation (Swagger)
+
+Interactive API documentation is available via Swagger UI after starting the backend:
+
+**Swagger UI:** http://localhost:8080/swagger-ui/index.html
+
+**OpenAPI JSON:** http://localhost:8080/v3/api-docs
+
+**Features:**
+- Interactive API testing (send requests directly from browser)
+- JWT authentication support (Bearer token)
+- All REST endpoints documented automatically
+- Request/response schemas with validation rules
+
+**How to use:**
+1. Start backend: `./scripts/start-dev.sh`
+2. Open Swagger UI: http://localhost:8080/swagger-ui/index.html
+3. Click "Authorize" button
+4. Login via `/api/auth/login` to get JWT token
+5. Copy JWT token from login response
+6. Click "Authorize" button again, enter: `Bearer <your-token>`
+7. Test any endpoint interactively
+
+**Available endpoints:**
+- `/api/auth/**` - Authentication (login, register)
+- `/api/photos/**` - Photo management (list, upload, rating)
+- `/api/admin/**` - Admin operations (users, permissions, settings)
+- `/api/public/**` - Public endpoints (no authentication required)
 
 ## 🧪 Testing
 
