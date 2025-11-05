@@ -40,8 +40,8 @@ public class PhotoService {
 
 
     @Transactional(readOnly = true)
-    public Page<Photo> getPhotos(final Long userId, final Pageable pageable, final LocalDateTime dateFrom, final LocalDateTime dateTo, final Integer minRating, final Boolean hasGps) {
-        Specification<Photo> spec = Specification.where(null);
+    public Page<Photo> getPhotos(@SuppressWarnings("unused") final Long userId, final Pageable pageable, final LocalDateTime dateFrom, final LocalDateTime dateTo, final Integer minRating, final Boolean hasGps) {
+        Specification<Photo> spec = Specification.where((root, query, builder) -> null);
 
         if (dateFrom != null) {
             spec = spec.and(PhotoSpecification.takenAfter(dateFrom));
@@ -63,7 +63,7 @@ public class PhotoService {
     }
 
     @Transactional(readOnly = true)
-    public Optional<Photo> getPhotoById(final Long photoId, final Long userId) {
+    public Optional<Photo> getPhotoById(final Long photoId, @SuppressWarnings("unused") final Long userId) {
         return photoRepository.findById(photoId);
     }
 

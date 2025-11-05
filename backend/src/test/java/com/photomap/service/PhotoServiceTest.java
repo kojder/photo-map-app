@@ -8,6 +8,7 @@ import com.photomap.repository.RatingRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.api.function.Executable;
 import org.junit.jupiter.api.io.TempDir;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -19,7 +20,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.test.util.ReflectionTestUtils;
 
-import java.io.IOException;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
@@ -31,6 +31,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
+@SuppressWarnings("unchecked")
 class PhotoServiceTest {
 
     @Mock
@@ -144,8 +145,8 @@ class PhotoServiceTest {
 
         when(photoRepository.findById(1L)).thenReturn(Optional.of(photo));
 
-        assertThrows(IllegalArgumentException.class,
-            () -> photoService.deletePhoto(1L, testUser.getId()));
+        Executable deleteAction = () -> photoService.deletePhoto(1L, testUser.getId());
+        assertThrows(IllegalArgumentException.class, deleteAction);
 
         verify(photoRepository, never()).delete(any(Photo.class));
     }
@@ -203,8 +204,8 @@ class PhotoServiceTest {
 
         when(photoRepository.findById(1L)).thenReturn(Optional.of(photo));
 
-        assertThrows(IllegalArgumentException.class,
-            () -> photoService.ratePhoto(1L, testUser.getId(), 6));
+        Executable rateAction = () -> photoService.ratePhoto(1L, testUser.getId(), 6);
+        assertThrows(IllegalArgumentException.class, rateAction);
 
         verify(ratingRepository, never()).save(any(Rating.class));
     }
@@ -225,8 +226,8 @@ class PhotoServiceTest {
     void clearRating_NotFound_ThrowsException() {
         when(ratingRepository.findByPhotoIdAndUserId(1L, testUser.getId())).thenReturn(Optional.empty());
 
-        assertThrows(IllegalArgumentException.class,
-            () -> photoService.clearRating(1L, testUser.getId()));
+        Executable clearAction = () -> photoService.clearRating(1L, testUser.getId());
+        assertThrows(IllegalArgumentException.class, clearAction);
 
         verify(ratingRepository, never()).deleteByPhotoIdAndUserId(any(), any());
     }
@@ -261,9 +262,8 @@ class PhotoServiceTest {
     void deletePhotoByAdmin_PhotoNotFound_ThrowsException() {
         when(photoRepository.findById(999L)).thenReturn(Optional.empty());
 
-        assertThrows(IllegalArgumentException.class, () -> {
-            photoService.deletePhotoByAdmin(999L);
-        });
+        assertThrows(IllegalArgumentException.class,
+            () -> photoService.deletePhotoByAdmin(999L));
 
         verify(photoRepository, never()).delete(any(Photo.class));
     }
