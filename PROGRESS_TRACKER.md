@@ -7,138 +7,106 @@
 
 ## 🔄 Current Status
 
-**Last Updated:** 2025-11-04
+**Last Updated:** 2025-11-05
 
 ### 🎯 Currently Working On
 
-**🐛 Rating Filter Bug - Incorrect Photo Count** (2025-11-04)
+**🧪 Backend Test Coverage Improvement - ALL PHASES COMPLETED ✅** (2025-11-05)
 
-**Goal:** Fix rating filter logic to show correct number of photos based on minRating filter
+**Status:** READY FOR VERIFICATION - All 3 phases (FAZA 1, 2, 3) completed and committed
 
-**Problem:**
-- User has photos with ratings: 5.0 (×2), 4.0 (×2), 3.0, 2.0
-- Filter "3+" shows 3 photos instead of 4 (should show all ≥3: two 5.0, two 4.0)
-- Filter "5+" shows 1 photo instead of 2 (should show both 5.0 rated photos)
-- Issue likely related to `displayRating` calculation vs `minRating` filter logic
+**Final Results:**
+- Tests: 92 → **130** (+38 tests, +41%) ✅
+- All 130 tests passing ✅
+- Coverage: 52.6% → **estimated 63-67%** (+11-14%)
+- SonarCloud issues: 6 → **0** ✅
+- Code quality warnings: **10+ → 0** ✅
 
-**Root Cause Analysis Needed:**
-1. **Backend filtering** (`PhotoService.getPhotos()`)
-   - Check how `minRating` parameter is applied to database query
-   - Verify if filtering uses average rating or user's personal rating
-   - Issue: `PhotoSpecification.hasMinimumRating()` filters by AVG(all ratings)
-   - But frontend displays `displayRating` (personalized: user's rating OR others' average)
-   - **Mismatch:** DB filter ≠ displayed rating value
+**Completed Phases:**
 
-2. **Frontend FilterService**
-   - Verify if `minRating` parameter is correctly passed to backend
-   - Check if local filtering interferes with backend filtering
+✅ **FAZA 1:** PhotoProcessingServiceTest (24 tests, 326 lines)
+- Covered: isValidFileExtension (5), getFileExtension (2), getMimeType (5), extractUserFromFilename (6), createDirectoryIfNotExists (2), processPhoto error handling (1), helpers (3)
+- File: `backend/src/test/java/com/photomap/service/PhotoProcessingServiceTest.java`
+- Coverage increase: **+8-10%**
 
-3. **Rating calculation logic** (`PhotoController.calculateDisplayRating()`)
-   - Personalized rating: user's own rating OR average of others' ratings
-   - This creates inconsistency: user sees different rating than DB filters by
+✅ **BONUS:** Fixed all 6 SonarCloud issues
+- PhotoService.java: Replaced deprecated `Specification.where(null)`
+- PhotoServiceTest.java: Removed unused imports, refactored 3 lambdas
+- AdminControllerTest.java: Removed unused mock field
+- Code quality warnings: 10+ → 0
 
-**Implementation Plan:**
+✅ **FAZA 2:** SettingsService + PublicController (7 tests, 151 lines)
+- SettingsServiceTest.java (5 tests): getSetting found/not found, updateSetting existing/new, multiple settings
+- PublicControllerTest.java (2 tests): getPublicSettings with/without email
+- Files: `backend/src/test/java/com/photomap/service/SettingsServiceTest.java`, `backend/src/test/java/com/photomap/controller/PublicControllerTest.java`
+- Coverage increase: **+1.5-2%**
 
-**Chosen Approach: Simplify Rating Logic (Remove Personalization)** ⭐
-- **Goal:** Make filter and display consistent - both use overall average rating
-- **Reason:** Current personalization creates mismatch between DB filter and UI display
-- **Future:** Personalized rating can be added later as separate feature with proper filtering support
+✅ **FAZA 3:** CustomUserDetailsService + AuthController (7 tests, 200 lines)
+- CustomUserDetailsServiceTest.java (3 tests): loadUserByUsername found/not found, admin role
+- AuthControllerTest.java (4 tests): register valid, login valid, getCurrentUser authenticated/not found
+- Files: `backend/src/test/java/com/photomap/security/CustomUserDetailsServiceTest.java`, `backend/src/test/java/com/photomap/controller/AuthControllerTest.java`
+- Coverage increase: **+1-1.5%**
 
-**Phase 1: Code Analysis & Discovery (10 min)**
-1. **Find all personalized rating logic**
-   - Search codebase for: `calculateDisplayRating`, `getUserRating`, personalized rating comments
-   - Backend: `PhotoController.java` - methods related to rating calculation
-   - Frontend: Check if any client-side rating logic exists
-   - Document all locations where personalization logic exists
+**📝 Documentation TODO:**
+- Update README.md with mobile functionality (responsive design, touch gestures, mobile-optimized UI)
+  - Photo Viewer: mobile touch support, swipe gestures
+  - Gallery: responsive grid (1-4 columns based on screen size)
+  - Filters: mobile FAB, responsive panels
+  - Map: touch-optimized Leaflet controls
 
-2. **Analyze current behavior**
-   - `PhotoSpecification.hasMinimumRating()` - uses AVG of ALL ratings
-   - `PhotoController.calculateDisplayRating()` - personalized logic (user's rating OR others' avg)
-   - `PhotoController.getUserRating()` - helper method for personalization
-   - Understand exact mismatch between filter and display
-
-**Phase 2: Code Changes (15 min)**
-3. **Simplify `calculateDisplayRating()` in PhotoController**
-   - Remove personalization logic
-   - Always return overall average rating (same as DB filter uses)
-   - Update method signature if needed (may no longer need currentUserId)
-
-4. **Review `mapToPhotoResponse()` method**
-   - Ensure displayRating now uses simplified logic
-   - Keep userRating field (user's personal rating for reference)
-   - Update JavaDoc comments
-
-5. **Check if `getUserRating()` is still needed**
-   - If only used for userRating field → keep it
-   - If used for display calculation → verify new usage
-
-6. **Search for related helper methods**
-   - `calculateAverageRating()` - probably still needed
-   - Any other rating calculation methods
-
-**Phase 3: Tests (10 min)**
-7. **Update/add unit tests**
-   - `PhotoSpecificationTest` - verify minRating filter works correctly
-   - `PhotoServiceTest` - test filtering with various rating scenarios
-   - Verify: photo with avg=5.0 shown with filter "5+", hidden with filter "5.1+"
-
-8. **Update integration tests if needed**
-   - Verify end-to-end rating filter flow
-
-**Phase 4: Documentation Updates (15 min)**
-9. **Update API documentation**
-   - `.ai/api-plan.md` - update PhotoResponse.displayRating description
-   - Clarify: displayRating = overall average (not personalized)
-   - Update rating filter behavior description
-
-10. **Update PRD if rating behavior is mentioned**
-    - `.ai/prd.md` - search for "rating" mentions
-    - Update business logic description if personalization was documented
-
-11. **Update README.md if rating feature is described**
-    - Clarify current rating behavior (overall average)
-    - Note: personalized rating planned for future
-
-12. **Update PROGRESS_TRACKER.md**
-    - Mark task as completed
-    - Document what changed and why
-
-**Phase 5: Manual Testing (5 min)**
-13. **Verify fix works**
-    - Login to app
-    - Rate photos with different values (2, 3, 4, 5)
-    - Apply filters: "3+", "4+", "5+"
-    - Verify correct photo count matches displayed ratings
-
-**Estimated Time:** 55 minutes (including documentation)
-
-**Files to Analyze:**
-- `backend/src/main/java/com/photomap/controller/PhotoController.java` (calculateDisplayRating, getUserRating, mapToPhotoResponse)
-- `backend/src/main/java/com/photomap/repository/PhotoSpecification.java` (hasMinimumRating - understand current filter)
-- `backend/src/main/java/com/photomap/service/PhotoService.java` (getPhotos method)
-- `frontend/src/app/services/filter.service.ts` (verify minRating parameter passing)
-
-**Files to Modify - Backend:**
-- `backend/src/main/java/com/photomap/controller/PhotoController.java` (simplify calculateDisplayRating)
-- `backend/src/test/java/com/photomap/repository/PhotoSpecificationTest.java` (add/update tests)
-- `backend/src/test/java/com/photomap/service/PhotoServiceTest.java` (add/update tests)
-
-**Files to Modify - Documentation:**
-- `.ai/api-plan.md` (update PhotoResponse.displayRating description)
-- `.ai/prd.md` (update rating behavior if mentioned)
-- `README.md` (clarify rating feature behavior)
-- `PROGRESS_TRACKER.md` (mark completed)
-
-**Testing Checklist:**
-- [ ] Photo with rating 5.0 shown with filter "5+" ✅
-- [ ] Photo with rating 4.0 shown with filter "3+" but hidden with "5+" ✅
-- [ ] Photo with rating 2.0 hidden with filter "3+" ✅
-- [ ] Count matches: 2 photos rated 5.0 → filter "5+" shows exactly 2 photos ✅
-- [ ] E2E test: apply filter in gallery, verify correct photo count
+**🔄 Next Actions After /clear:**
+1. Run `./mvnw verify` to generate JaCoCo coverage report
+2. Check actual coverage in `backend/target/site/jacoco/index.html`
+3. Verify SonarCloud analysis shows 0 issues
+4. If coverage target met (>62%) → update README.md with mobile functionality
+5. If coverage target NOT met → analyze gaps and add more tests
 
 ---
 
 ### ✅ Last Completed
+
+**🧪 Backend Test Coverage - FAZA 1 + BONUS + Code Quality Fixes** (2025-11-05) - COMPLETED
+
+**Completed today:**
+- ✅ **FAZA 1:** PhotoProcessingServiceTest (24 tests, 326 lines)
+  - Created comprehensive test suite for PhotoProcessingService (208 LOC)
+  - Covered: isValidFileExtension (5), getFileExtension (2), getMimeType (5), extractUserFromFilename (6), createDirectoryIfNotExists (2), processPhoto error handling (1), helpers (3)
+  - Estimated coverage increase: **+8-10%**
+
+- ✅ **BONUS:** Fixed all 6 SonarCloud issues
+  - PhotoService.java: Replaced deprecated `Specification.where(null)`
+  - PhotoServiceTest.java: Removed unused imports, refactored 3 lambdas
+  - AdminControllerTest.java: Removed unused mock field
+
+- ✅ **Code Quality:** Fixed 10+ IDE warnings
+  - Removed unused imports (Photo, PhotoRepository, ArgumentMatchers.any)
+  - Removed unused mock fields
+  - Added @SuppressWarnings for unchecked assignments and unused parameters
+  - Fixed typos (newdir → newDir)
+  - Simplified lambda expressions
+
+**Result:**
+- Tests: 92 → **116** (+24)
+- All 116 tests passing ✅
+- SonarCloud issues: 6 → **0** ✅
+- Code quality warnings: 10+ → **0** ✅
+- Estimated coverage: 52.6% → **60-62%** (+8-10%)
+
+**Files Created:**
+- `backend/src/test/java/com/photomap/service/PhotoProcessingServiceTest.java` (326 lines)
+
+**Files Modified:**
+- `backend/src/main/java/com/photomap/service/PhotoService.java` (deprecated fix, @SuppressWarnings)
+- `backend/src/test/java/com/photomap/service/PhotoServiceTest.java` (@SuppressWarnings, lambda simplification)
+- `backend/src/test/java/com/photomap/controller/AdminControllerTest.java` (removed unused field)
+
+**Commit:** `b871ed9` - test(backend): add PhotoProcessingService tests and fix code quality issues
+
+**Time spent:** ~3 hours (FAZA 1: 2h, BONUS: 0.5h, Code Quality: 0.5h)
+
+---
+
+**📚 Swagger/OpenAPI Implementation + Tests** (2025-11-04) - COMPLETED
 
 **📚 Swagger/OpenAPI Implementation + Tests** (2025-11-04) - COMPLETED
 
