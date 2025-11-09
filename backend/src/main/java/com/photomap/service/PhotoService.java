@@ -41,22 +41,22 @@ public class PhotoService {
 
     @Transactional(readOnly = true)
     public Page<Photo> getPhotos(@SuppressWarnings("unused") final Long userId, final Pageable pageable, final LocalDateTime dateFrom, final LocalDateTime dateTo, final Integer minRating, final Boolean hasGps) {
-        Specification<Photo> spec = Specification.where((root, query, builder) -> null);
+        Specification<Photo> spec = null;
 
         if (dateFrom != null) {
-            spec = spec.and(PhotoSpecification.takenAfter(dateFrom));
+            spec = PhotoSpecification.takenAfter(dateFrom);
         }
 
         if (dateTo != null) {
-            spec = spec.and(PhotoSpecification.takenBefore(dateTo));
+            spec = spec == null ? PhotoSpecification.takenBefore(dateTo) : spec.and(PhotoSpecification.takenBefore(dateTo));
         }
 
         if (minRating != null) {
-            spec = spec.and(PhotoSpecification.hasMinRating(minRating));
+            spec = spec == null ? PhotoSpecification.hasMinRating(minRating) : spec.and(PhotoSpecification.hasMinRating(minRating));
         }
 
         if (hasGps != null) {
-            spec = spec.and(PhotoSpecification.hasGps(hasGps));
+            spec = spec == null ? PhotoSpecification.hasGps(hasGps) : spec.and(PhotoSpecification.hasGps(hasGps));
         }
 
         return photoRepository.findAll(spec, pageable);

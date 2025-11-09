@@ -4,7 +4,6 @@ import com.photomap.model.Photo;
 import com.photomap.model.Role;
 import com.photomap.model.User;
 import com.photomap.service.PhotoService;
-import com.photomap.service.UserService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

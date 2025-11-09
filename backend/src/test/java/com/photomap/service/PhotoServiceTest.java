@@ -67,13 +67,13 @@ class PhotoServiceTest {
         final Page<Photo> photoPage = new PageImpl<>(photos);
         final Pageable pageable = PageRequest.of(0, 20);
 
-        when(photoRepository.findAll(any(Specification.class), eq(pageable))).thenReturn(photoPage);
+        when(photoRepository.findAll(nullable(Specification.class), eq(pageable))).thenReturn(photoPage);
 
         final Page<Photo> result = photoService.getPhotos(testUser.getId(), pageable, null, null, null, null);
 
         assertNotNull(result);
         assertEquals(2, result.getContent().size());
-        verify(photoRepository, times(1)).findAll(any(Specification.class), eq(pageable));
+        verify(photoRepository, times(1)).findAll(nullable(Specification.class), eq(pageable));
     }
 
     @Test

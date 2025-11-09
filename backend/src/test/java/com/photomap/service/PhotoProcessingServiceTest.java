@@ -6,6 +6,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.io.TempDir;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -56,124 +58,52 @@ class PhotoProcessingServiceTest {
         ReflectionTestUtils.setField(photoProcessingService, "failedDirectory", failedDir.toString());
     }
 
-    @Test
-    void isValidFileExtension_ShouldReturnTrue_ForJpgExtension() throws Exception {
+    @ParameterizedTest
+    @CsvSource({
+        "photo.jpg, true",
+        "photo.jpeg, true",
+        "photo.png, true",
+        "photo.JPG, true",
+        "photo.gif, false"
+    })
+    void isValidFileExtension_ShouldValidateExtensions(String filename, boolean expected) throws Exception {
         Method method = PhotoProcessingService.class.getDeclaredMethod("isValidFileExtension", String.class);
         method.setAccessible(true);
 
-        boolean result = (boolean) method.invoke(photoProcessingService, "photo.jpg");
+        boolean result = (boolean) method.invoke(photoProcessingService, filename);
 
-        assertTrue(result);
+        assertEquals(expected, result);
     }
 
-    @Test
-    void isValidFileExtension_ShouldReturnTrue_ForJpegExtension() throws Exception {
-        Method method = PhotoProcessingService.class.getDeclaredMethod("isValidFileExtension", String.class);
-        method.setAccessible(true);
-
-        boolean result = (boolean) method.invoke(photoProcessingService, "photo.jpeg");
-
-        assertTrue(result);
-    }
-
-    @Test
-    void isValidFileExtension_ShouldReturnTrue_ForPngExtension() throws Exception {
-        Method method = PhotoProcessingService.class.getDeclaredMethod("isValidFileExtension", String.class);
-        method.setAccessible(true);
-
-        boolean result = (boolean) method.invoke(photoProcessingService, "photo.png");
-
-        assertTrue(result);
-    }
-
-    @Test
-    void isValidFileExtension_ShouldReturnTrue_ForUppercaseExtension() throws Exception {
-        Method method = PhotoProcessingService.class.getDeclaredMethod("isValidFileExtension", String.class);
-        method.setAccessible(true);
-
-        boolean result = (boolean) method.invoke(photoProcessingService, "photo.JPG");
-
-        assertTrue(result);
-    }
-
-    @Test
-    void isValidFileExtension_ShouldReturnFalse_ForUnsupportedExtension() throws Exception {
-        Method method = PhotoProcessingService.class.getDeclaredMethod("isValidFileExtension", String.class);
-        method.setAccessible(true);
-
-        boolean result = (boolean) method.invoke(photoProcessingService, "photo.gif");
-
-        assertFalse(result);
-    }
-
-    @Test
-    void getFileExtension_ShouldReturnCorrectExtension() throws Exception {
+    @ParameterizedTest
+    @CsvSource({
+        "photo.jpg, .jpg",
+        "my.photo.name.png, .png"
+    })
+    void getFileExtension_ShouldReturnCorrectExtension(String filename, String expectedExtension) throws Exception {
         Method method = PhotoProcessingService.class.getDeclaredMethod("getFileExtension", String.class);
         method.setAccessible(true);
 
-        String result = (String) method.invoke(photoProcessingService, "photo.jpg");
+        String result = (String) method.invoke(photoProcessingService, filename);
 
-        assertEquals(".jpg", result);
+        assertEquals(expectedExtension, result);
     }
 
-    @Test
-    void getFileExtension_ShouldReturnCorrectExtension_ForMultipleDots() throws Exception {
-        Method method = PhotoProcessingService.class.getDeclaredMethod("getFileExtension", String.class);
-        method.setAccessible(true);
-
-        String result = (String) method.invoke(photoProcessingService, "my.photo.name.png");
-
-        assertEquals(".png", result);
-    }
-
-    @Test
-    void getMimeType_ShouldReturnImageJpeg_ForJpgExtension() throws Exception {
+    @ParameterizedTest
+    @CsvSource({
+        ".jpg, image/jpeg",
+        ".jpeg, image/jpeg",
+        ".png, image/png",
+        ".unknown, application/octet-stream",
+        ".JPG, image/jpeg"
+    })
+    void getMimeType_ShouldReturnCorrectMimeType(String extension, String expectedMimeType) throws Exception {
         Method method = PhotoProcessingService.class.getDeclaredMethod("getMimeType", String.class);
         method.setAccessible(true);
 
-        String result = (String) method.invoke(photoProcessingService, ".jpg");
+        String result = (String) method.invoke(photoProcessingService, extension);
 
-        assertEquals("image/jpeg", result);
-    }
-
-    @Test
-    void getMimeType_ShouldReturnImageJpeg_ForJpegExtension() throws Exception {
-        Method method = PhotoProcessingService.class.getDeclaredMethod("getMimeType", String.class);
-        method.setAccessible(true);
-
-        String result = (String) method.invoke(photoProcessingService, ".jpeg");
-
-        assertEquals("image/jpeg", result);
-    }
-
-    @Test
-    void getMimeType_ShouldReturnImagePng_ForPngExtension() throws Exception {
-        Method method = PhotoProcessingService.class.getDeclaredMethod("getMimeType", String.class);
-        method.setAccessible(true);
-
-        String result = (String) method.invoke(photoProcessingService, ".png");
-
-        assertEquals("image/png", result);
-    }
-
-    @Test
-    void getMimeType_ShouldReturnOctetStream_ForUnknownExtension() throws Exception {
-        Method method = PhotoProcessingService.class.getDeclaredMethod("getMimeType", String.class);
-        method.setAccessible(true);
-
-        String result = (String) method.invoke(photoProcessingService, ".unknown");
-
-        assertEquals("application/octet-stream", result);
-    }
-
-    @Test
-    void getMimeType_ShouldBeCaseInsensitive() throws Exception {
-        Method method = PhotoProcessingService.class.getDeclaredMethod("getMimeType", String.class);
-        method.setAccessible(true);
-
-        String result = (String) method.invoke(photoProcessingService, ".JPG");
-
-        assertEquals("image/jpeg", result);
+        assertEquals(expectedMimeType, result);
     }
 
     @Test
