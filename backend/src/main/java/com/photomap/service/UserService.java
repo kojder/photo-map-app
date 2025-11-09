@@ -4,6 +4,7 @@ import com.photomap.dto.UpdatePermissionsRequest;
 import com.photomap.dto.UpdateRoleRequest;
 import com.photomap.dto.UserAdminResponse;
 import com.photomap.dto.UserResponse;
+import com.photomap.model.Role;
 import com.photomap.model.User;
 import com.photomap.repository.PhotoRepository;
 import com.photomap.repository.UserRepository;
@@ -11,8 +12,12 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
+import java.util.UUID;
 
 @Service
 public class UserService {
@@ -21,10 +26,13 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final PhotoRepository photoRepository;
+    private final PasswordEncoder passwordEncoder;
 
-    public UserService(final UserRepository userRepository, final PhotoRepository photoRepository) {
+    public UserService(final UserRepository userRepository, final PhotoRepository photoRepository,
+                       final PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
         this.photoRepository = photoRepository;
+        this.passwordEncoder = passwordEncoder;
     }
 
     @Transactional(readOnly = true)
@@ -97,5 +105,33 @@ public class UserService {
                 savedUser.isCanViewPhotos(),
                 savedUser.isCanRate()
         );
+    }
+
+    @Transactional
+    public void deactivateUser(final Long userId) {
+        final User user = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException(ERROR_USER_NOT_FOUND));
+
+        if (user.getRole() == Role.ADMIN) {
+            throw new IllegalArgumentException("Cannot deactivate admin user");
+        }
+
+        final long timestamp = System.currentTimeMillis();
+        final String anonymizedEmail = String.format("inactive_%d_%d@deleted.local", timestamp, userId);
+        final String randomPassword = UUID.randomUUID().toString();
+
+        user.setEmail(anonymizedEmail);
+        user.setPasswordHash(passwordEncoder.encode(randomPassword));
+        user.setActive(false);
+        user.setCanUpload(false);
+        user.setCanViewPhotos(false);
+        user.setCanRate(false);
+
+        userRepository.save(user);
+    }
+
+    @Transactional(readOnly = true)
+    public List<User> getInactiveUsers() {
+        return userRepository.findByIsActive(false);
     }
 }

@@ -67,7 +67,7 @@ Database schema for Photo Map MVP consists of 4 main tables:
 
 **Columns:**
 - `id` - BIGSERIAL PRIMARY KEY (auto-increment)
-- `user_id` - BIGINT NULLABLE REFERENCES users(id) ON DELETE CASCADE (photo owner, null for batch uploads)
+- `user_id` - BIGINT NULLABLE REFERENCES users(id) ON DELETE SET NULL (photo owner, null for batch uploads or orphaned photos)
 - `filename` - VARCHAR(500) NOT NULL (UUID-based, e.g., `a1b2c3d4-e5f6.jpg` or `{userId}_{uuid}.jpg`)
 - `original_filename` - VARCHAR(500) NOT NULL (original name, e.g., `IMG_1234.JPG`)
 - `file_size` - BIGINT NOT NULL (size in bytes)
@@ -90,8 +90,10 @@ Database schema for Photo Map MVP consists of 4 main tables:
 - `photos_taken_at_idx` - INDEX on `taken_at` (date filtering)
 - `photos_uploaded_at_idx` - INDEX on `uploaded_at` (sorting)
 
-**ON DELETE CASCADE:**
-- User deletion → delete all their photos
+**ON DELETE SET NULL:**
+- User deletion → photos remain as orphaned (user_id = NULL)
+- Orphaned photos can be managed separately by admin (see V6 migration)
+- Admin can bulk delete orphaned photos or reassign them to another user
 
 **Note:** `user_id` is NULLABLE to support batch uploads via scp/ftp where photos are uploaded directly to `input/` folder without web interface authentication.
 

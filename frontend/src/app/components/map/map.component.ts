@@ -197,51 +197,12 @@ export class MapComponent implements OnInit, AfterViewInit, OnDestroy {
 
     for (const photo of photosWithGps) {
       const marker = L.marker([photo.gpsLatitude!, photo.gpsLongitude!]);
-
       const thumbnailUrl = this.thumbnailUrls.get(photo.id) || '';
-      
-      let ratingDisplay = 'No rating yet';
-      if (photo.averageRating && photo.averageRating > 0) {
-        const ratingValue = `⭐ ${photo.averageRating.toFixed(1)}`;
-        if (photo.userRating) {
-          ratingDisplay = `${ratingValue} (your rating)`;
-        } else if (photo.totalRatings > 0) {
-          ratingDisplay = `${ratingValue} (${photo.totalRatings} ${photo.totalRatings === 1 ? 'rating' : 'ratings'})`;
-        } else {
-          ratingDisplay = ratingValue;
-        }
-      }
-
-      const popupContent = `
-        <div style="text-align: center; min-width: 150px;">
-          ${thumbnailUrl ? `<img 
-            src="${thumbnailUrl}" 
-            alt="${photo.originalFilename}" 
-            data-photo-id="${photo.id}"
-            data-testid="map-popup-thumbnail"
-            style="width: 128px; height: 96px; object-fit: cover; border-radius: 4px; cursor: pointer;" 
-          />` : '<div style="width: 128px; height: 96px; background: #e5e7eb; border-radius: 4px;"></div>'}
-          <div style="margin-top: 8px; font-weight: 600;">${photo.originalFilename}</div>
-          <div style="margin-top: 4px; color: #666; font-size: 14px;">${ratingDisplay}</div>
-        </div>
-      `;
-
+      const popupContent = this.createPopupContent(photo, thumbnailUrl);
       const popup = L.popup().setContent(popupContent);
-      
+
       popup.on('add', () => {
-        const popupElement = popup.getElement();
-        if (popupElement) {
-          const img = popupElement.querySelector('img[data-photo-id]');
-          if (img) {
-            img.addEventListener('click', (e: Event) => {
-              const target = e.target as HTMLImageElement;
-              const photoId = Number.parseInt(target.dataset['photoId'] || '0', 10);
-              if (photoId) {
-                this.onPhotoClick(photoId);
-              }
-            });
-          }
-        }
+        this.attachPopupClickHandler(popup);
       });
 
       marker.bindPopup(popup);
@@ -250,6 +211,65 @@ export class MapComponent implements OnInit, AfterViewInit, OnDestroy {
 
     const bounds = L.latLngBounds(photosWithGps.map(p => [p.gpsLatitude!, p.gpsLongitude!]));
     this.map.fitBounds(bounds, { padding: [50, 50] });
+  }
+
+  private getRatingDisplay(photo: Photo): string {
+    if (!photo.averageRating || photo.averageRating <= 0) {
+      return 'No rating yet';
+    }
+
+    const ratingValue = `⭐ ${photo.averageRating.toFixed(1)}`;
+
+    if (photo.userRating) {
+      return `${ratingValue} (your rating)`;
+    }
+
+    if (photo.totalRatings > 0) {
+      return `${ratingValue} (${photo.totalRatings} ${photo.totalRatings === 1 ? 'rating' : 'ratings'})`;
+    }
+
+    return ratingValue;
+  }
+
+  private createPopupContent(photo: Photo, thumbnailUrl: string): string {
+    const ratingDisplay = this.getRatingDisplay(photo);
+    const imageHtml = thumbnailUrl
+      ? `<img
+          src="${thumbnailUrl}"
+          alt="${photo.originalFilename}"
+          data-photo-id="${photo.id}"
+          data-testid="map-popup-thumbnail"
+          style="width: 128px; height: 96px; object-fit: cover; border-radius: 4px; cursor: pointer;"
+        />`
+      : '<div style="width: 128px; height: 96px; background: #e5e7eb; border-radius: 4px;"></div>';
+
+    return `
+      <div style="text-align: center; min-width: 150px;">
+        ${imageHtml}
+        <div style="margin-top: 8px; font-weight: 600;">${photo.originalFilename}</div>
+        <div style="margin-top: 4px; color: #666; font-size: 14px;">${ratingDisplay}</div>
+      </div>
+    `;
+  }
+
+  private attachPopupClickHandler(popup: L.Popup): void {
+    const popupElement = popup.getElement();
+    if (!popupElement) {
+      return;
+    }
+
+    const img = popupElement.querySelector('img[data-photo-id]');
+    if (!img) {
+      return;
+    }
+
+    img.addEventListener('click', (e: Event) => {
+      const target = e.target as HTMLImageElement;
+      const photoId = Number.parseInt(target.dataset['photoId'] || '0', 10);
+      if (photoId) {
+        this.onPhotoClick(photoId);
+      }
+    });
   }
 
   onPhotoClick(photoId: number): void {

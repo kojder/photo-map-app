@@ -3,6 +3,8 @@ package com.photomap.controller;
 import com.photomap.dto.*;
 import com.photomap.model.Photo;
 import com.photomap.model.Rating;
+import com.photomap.model.User;
+import com.photomap.repository.PhotoRepository;
 import com.photomap.service.PhotoService;
 import com.photomap.service.SettingsService;
 import com.photomap.service.UserService;
@@ -16,21 +18,28 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import lombok.extern.slf4j.Slf4j;
+
 import java.io.IOException;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/admin")
 @PreAuthorize("hasRole('ADMIN')")
+@Slf4j
 public class AdminController {
 
     private final UserService userService;
     private final PhotoService photoService;
     private final SettingsService settingsService;
+    private final PhotoRepository photoRepository;
 
-    public AdminController(final UserService userService, final PhotoService photoService, final SettingsService settingsService) {
+    public AdminController(final UserService userService, final PhotoService photoService,
+                           final SettingsService settingsService, final PhotoRepository photoRepository) {
         this.userService = userService;
         this.photoService = photoService;
         this.settingsService = settingsService;
+        this.photoRepository = photoRepository;
     }
 
     @GetMapping("/users")
@@ -151,5 +160,57 @@ public class AdminController {
                 .mapToInt(Rating::getRatingValue)
                 .average()
                 .orElse(0.0);
+    }
+
+    @GetMapping("/users/inactive")
+    public ResponseEntity<List<UserSummaryDTO>> getInactiveUsers() {
+        final List<User> inactiveUsers = userService.getInactiveUsers();
+        final List<UserSummaryDTO> dtos = inactiveUsers.stream()
+                .map(user -> new UserSummaryDTO(
+                        user.getId(),
+                        user.getEmail(),
+                        user.getRole(),
+                        user.isActive(),
+                        user.getCreatedAt(),
+                        user.getUpdatedAt()
+                ))
+                .toList();
+        return ResponseEntity.ok(dtos);
+    }
+
+    @GetMapping("/photos/orphaned")
+    public ResponseEntity<Page<OrphanedPhotoDTO>> getOrphanedPhotos(
+            @RequestParam(defaultValue = "0") final int page,
+            @RequestParam(defaultValue = "20") final int size) {
+
+        final Pageable pageable = PageRequest.of(page, size, Sort.by("uploadedAt").descending());
+        final Page<Photo> orphanedPhotos = photoRepository.findByUserIdIsNull(pageable);
+        final Page<OrphanedPhotoDTO> dtos = orphanedPhotos.map(photo -> new OrphanedPhotoDTO(
+                photo.getId(),
+                photo.getFilename(),
+                photo.getOriginalFilename(),
+                photo.getFileSize(),
+                photo.getUploadedAt(),
+                photo.getGpsLatitude() != null ? photo.getGpsLatitude().doubleValue() : null,
+                photo.getGpsLongitude() != null ? photo.getGpsLongitude().doubleValue() : null
+        ));
+        return ResponseEntity.ok(dtos);
+    }
+
+    @DeleteMapping("/photos/orphaned")
+    public ResponseEntity<BulkDeleteResponse> deleteOrphanedPhotos() {
+        final List<Photo> orphanedPhotos = photoRepository.findByUserIdIsNull();
+
+        int deletedCount = 0;
+        for (final Photo photo : orphanedPhotos) {
+            try {
+                photoService.deletePhotoByAdmin(photo.getId());
+                deletedCount++;
+            } catch (final Exception e) {
+                log.error("Failed to delete photo: {}", photo.getId(), e);
+            }
+        }
+
+        return ResponseEntity.ok(new BulkDeleteResponse(deletedCount, orphanedPhotos.size()));
     }
 }

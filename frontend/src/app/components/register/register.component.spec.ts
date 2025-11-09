@@ -52,7 +52,7 @@ describe('RegisterComponent', () => {
 
     fixture.detectChanges();
 
-    const req = httpMock.expectOne('/api/admin/settings');
+    const req = httpMock.expectOne('/api/public/settings');
     expect(req.request.method).toBe('GET');
     req.flush(mockSettings);
 
@@ -62,7 +62,7 @@ describe('RegisterComponent', () => {
   it('should use fallback email when admin settings request fails', () => {
     fixture.detectChanges();
 
-    const req = httpMock.expectOne('/api/admin/settings');
+    const req = httpMock.expectOne('/api/public/settings');
     req.error(new ProgressEvent('error'), { status: 403 });
 
     expect(component.adminContactEmail()).toBe('admin@photomap.local');

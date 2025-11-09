@@ -1,9 +1,19 @@
 package com.photomap.controller;
 
+import com.photomap.dto.AppSettingsResponse;
+import com.photomap.dto.BulkDeleteResponse;
+import com.photomap.dto.OrphanedPhotoDTO;
+import com.photomap.dto.UpdatePermissionsRequest;
+import com.photomap.dto.UpdateSettingsRequest;
+import com.photomap.dto.UserResponse;
+import com.photomap.dto.UserSummaryDTO;
 import com.photomap.model.Photo;
 import com.photomap.model.Role;
 import com.photomap.model.User;
+import com.photomap.repository.PhotoRepository;
 import com.photomap.service.PhotoService;
+import com.photomap.service.SettingsService;
+import com.photomap.service.UserService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -29,7 +39,16 @@ import static org.mockito.Mockito.*;
 class AdminControllerTest {
 
     @Mock
+    private UserService userService;
+
+    @Mock
     private PhotoService photoService;
+
+    @Mock
+    private SettingsService settingsService;
+
+    @Mock
+    private PhotoRepository photoRepository;
 
     @InjectMocks
     private AdminController adminController;
@@ -130,5 +149,153 @@ class AdminControllerTest {
                 .hasMessage("Photo not found");
 
         verify(photoService).deletePhotoByAdmin(999L);
+    }
+
+    @Test
+    void updateUserPermissions_Success_UpdatesPermissions() {
+        final UpdatePermissionsRequest request = new UpdatePermissionsRequest(true, false);
+        final UserResponse userResponse = new UserResponse(
+                regularUser.getId(),
+                regularUser.getEmail(),
+                regularUser.getRole(),
+                regularUser.getCreatedAt(),
+                true,
+                false
+        );
+
+        when(userService.updateUserPermissions(2L, request)).thenReturn(userResponse);
+
+        final ResponseEntity<UserResponse> response = adminController.updateUserPermissions(2L, request);
+
+        assertThat(response.getStatusCode().value()).isEqualTo(200);
+        assertThat(response.getBody()).isNotNull();
+        assertThat(response.getBody().canViewPhotos()).isTrue();
+        assertThat(response.getBody().canRate()).isFalse();
+        verify(userService).updateUserPermissions(2L, request);
+    }
+
+    @Test
+    void getSettings_Success_ReturnsSettings() {
+        when(settingsService.getSetting("admin_contact_email")).thenReturn("admin@test.com");
+
+        final ResponseEntity<AppSettingsResponse> response = adminController.getSettings();
+
+        assertThat(response.getStatusCode().value()).isEqualTo(200);
+        assertThat(response.getBody()).isNotNull();
+        assertThat(response.getBody().adminContactEmail()).isEqualTo("admin@test.com");
+        verify(settingsService).getSetting("admin_contact_email");
+    }
+
+    @Test
+    void updateSettings_Success_UpdatesSettings() {
+        final UpdateSettingsRequest request = new UpdateSettingsRequest("newemail@test.com");
+        doNothing().when(settingsService).updateSetting("admin_contact_email", "newemail@test.com");
+
+        final ResponseEntity<AppSettingsResponse> response = adminController.updateSettings(request);
+
+        assertThat(response.getStatusCode().value()).isEqualTo(200);
+        assertThat(response.getBody()).isNotNull();
+        assertThat(response.getBody().adminContactEmail()).isEqualTo("newemail@test.com");
+        verify(settingsService).updateSetting("admin_contact_email", "newemail@test.com");
+    }
+
+    @Test
+    void listAllPhotos_WithAscSort_SortsCorrectly() {
+        final List<Photo> photos = List.of(photo1);
+        final Page<Photo> photoPage = new PageImpl<>(photos);
+
+        when(photoService.getPhotosForAdmin(any(Pageable.class))).thenReturn(photoPage);
+
+        final ResponseEntity<?> response = adminController.listAllPhotos(0, 20, "uploadedAt,asc");
+
+        assertThat(response.getStatusCode().value()).isEqualTo(200);
+        verify(photoService).getPhotosForAdmin(any(Pageable.class));
+    }
+
+    @Test
+    void getInactiveUsers_Success_ReturnsInactiveUsers() {
+        final User inactiveUser1 = new User();
+        inactiveUser1.setId(3L);
+        inactiveUser1.setEmail("inactive_123456789_3@deleted.local");
+        inactiveUser1.setRole(Role.USER);
+        inactiveUser1.setActive(false);
+        inactiveUser1.setCreatedAt(Instant.now());
+        inactiveUser1.setUpdatedAt(Instant.now());
+
+        when(userService.getInactiveUsers()).thenReturn(List.of(inactiveUser1));
+
+        final ResponseEntity<List<UserSummaryDTO>> response = adminController.getInactiveUsers();
+
+        assertThat(response.getStatusCode().value()).isEqualTo(200);
+        assertThat(response.getBody()).hasSize(1);
+        assertThat(response.getBody().get(0).email()).isEqualTo("inactive_123456789_3@deleted.local");
+        assertThat(response.getBody().get(0).isActive()).isFalse();
+        verify(userService).getInactiveUsers();
+    }
+
+    @Test
+    void getOrphanedPhotos_Success_ReturnsOrphanedPhotos() {
+        final Photo orphanedPhoto = new Photo();
+        orphanedPhoto.setId(100L);
+        orphanedPhoto.setFilename("orphaned.jpg");
+        orphanedPhoto.setOriginalFilename("original_orphaned.jpg");
+        orphanedPhoto.setFileSize(5000L);
+        orphanedPhoto.setUploadedAt(Instant.now());
+        orphanedPhoto.setUser(null);
+
+        final Page<Photo> orphanedPage = new PageImpl<>(List.of(orphanedPhoto));
+        when(photoRepository.findByUserIdIsNull(any(Pageable.class))).thenReturn(orphanedPage);
+
+        final ResponseEntity<Page<OrphanedPhotoDTO>> response = adminController.getOrphanedPhotos(0, 20);
+
+        assertThat(response.getStatusCode().value()).isEqualTo(200);
+        assertThat(response.getBody().getContent()).hasSize(1);
+        assertThat(response.getBody().getContent().get(0).filename()).isEqualTo("orphaned.jpg");
+        verify(photoRepository).findByUserIdIsNull(any(Pageable.class));
+    }
+
+    @Test
+    void deleteOrphanedPhotos_Success_DeletesAllOrphanedPhotos() throws Exception {
+        final Photo orphanedPhoto1 = new Photo();
+        orphanedPhoto1.setId(101L);
+        orphanedPhoto1.setUser(null);
+
+        final Photo orphanedPhoto2 = new Photo();
+        orphanedPhoto2.setId(102L);
+        orphanedPhoto2.setUser(null);
+
+        when(photoRepository.findByUserIdIsNull()).thenReturn(List.of(orphanedPhoto1, orphanedPhoto2));
+        doNothing().when(photoService).deletePhotoByAdmin(anyLong());
+
+        final ResponseEntity<BulkDeleteResponse> response = adminController.deleteOrphanedPhotos();
+
+        assertThat(response.getStatusCode().value()).isEqualTo(200);
+        assertThat(response.getBody().deletedCount()).isEqualTo(2);
+        assertThat(response.getBody().totalCount()).isEqualTo(2);
+        verify(photoRepository).findByUserIdIsNull();
+        verify(photoService, times(2)).deletePhotoByAdmin(anyLong());
+    }
+
+    @Test
+    void deleteOrphanedPhotos_PartialFailure_ReturnsPartialCount() throws Exception {
+        final Photo orphanedPhoto1 = new Photo();
+        orphanedPhoto1.setId(101L);
+        orphanedPhoto1.setUser(null);
+
+        final Photo orphanedPhoto2 = new Photo();
+        orphanedPhoto2.setId(102L);
+        orphanedPhoto2.setUser(null);
+
+        when(photoRepository.findByUserIdIsNull()).thenReturn(List.of(orphanedPhoto1, orphanedPhoto2));
+        doNothing().when(photoService).deletePhotoByAdmin(101L);
+        doThrow(new RuntimeException("Delete failed")).when(photoService).deletePhotoByAdmin(102L);
+
+        final ResponseEntity<BulkDeleteResponse> response = adminController.deleteOrphanedPhotos();
+
+        assertThat(response.getStatusCode().value()).isEqualTo(200);
+        assertThat(response.getBody().deletedCount()).isEqualTo(1);
+        assertThat(response.getBody().totalCount()).isEqualTo(2);
+        verify(photoRepository).findByUserIdIsNull();
+        verify(photoService, times(2)).deletePhotoByAdmin(anyLong());
     }
 }

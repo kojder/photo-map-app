@@ -1,5 +1,6 @@
 package com.photomap.service;
 
+import com.photomap.dto.UpdatePermissionsRequest;
 import com.photomap.dto.UpdateRoleRequest;
 import com.photomap.dto.UserAdminResponse;
 import com.photomap.dto.UserResponse;
@@ -23,6 +24,7 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.time.Instant;
 import java.util.Collections;
@@ -43,6 +45,9 @@ class UserServiceTest {
 
     @Mock
     private PhotoRepository photoRepository;
+
+    @Mock
+    private PasswordEncoder passwordEncoder;
 
     @Mock
     private SecurityContext securityContext;
@@ -88,6 +93,39 @@ class UserServiceTest {
         verify(userRepository).findAll(pageable);
         verify(photoRepository).countByUserId(1L);
         verify(photoRepository).countByUserId(2L);
+    }
+
+    @Test
+    void listAllUsers_WithSearchEmail_FiltersUsers() {
+        Pageable pageable = PageRequest.of(0, 20);
+        Page<User> userPage = new PageImpl<>(List.of(user1));
+
+        when(userRepository.findByEmailContainingIgnoreCase("user1", pageable)).thenReturn(userPage);
+        when(photoRepository.countByUserId(1L)).thenReturn(5L);
+
+        Page<UserAdminResponse> result = userService.listAllUsers(pageable, "user1");
+
+        assertThat(result).isNotNull();
+        assertThat(result.getContent()).hasSize(1);
+        assertThat(result.getContent().get(0).email()).isEqualTo("user1@example.com");
+        verify(userRepository).findByEmailContainingIgnoreCase("user1", pageable);
+        verify(photoRepository).countByUserId(1L);
+    }
+
+    @Test
+    void listAllUsers_WithEmptySearchEmail_ReturnsAllUsers() {
+        Pageable pageable = PageRequest.of(0, 20);
+        Page<User> userPage = new PageImpl<>(List.of(user1, user2));
+
+        when(userRepository.findAll(pageable)).thenReturn(userPage);
+        when(photoRepository.countByUserId(1L)).thenReturn(5L);
+        when(photoRepository.countByUserId(2L)).thenReturn(3L);
+
+        Page<UserAdminResponse> result = userService.listAllUsers(pageable, "   ");
+
+        assertThat(result).isNotNull();
+        assertThat(result.getContent()).hasSize(2);
+        verify(userRepository).findAll(pageable);
     }
 
     @Test
@@ -185,5 +223,95 @@ class UserServiceTest {
 
         verify(userRepository).findById(999L);
         verify(userRepository, never()).delete(any(User.class));
+    }
+
+    @Test
+    void updateUserPermissions_Success_UpdatesPermissions() {
+        UpdatePermissionsRequest request = new UpdatePermissionsRequest(true, true);
+        when(userRepository.findById(1L)).thenReturn(Optional.of(user1));
+        when(userRepository.save(any(User.class))).thenReturn(user1);
+
+        UserResponse response = userService.updateUserPermissions(1L, request);
+
+        assertThat(response).isNotNull();
+        assertThat(user1.isCanViewPhotos()).isTrue();
+        assertThat(user1.isCanRate()).isTrue();
+        verify(userRepository).findById(1L);
+        verify(userRepository).save(user1);
+    }
+
+    @Test
+    void updateUserPermissions_UserNotFound_ThrowsException() {
+        UpdatePermissionsRequest request = new UpdatePermissionsRequest(true, true);
+        when(userRepository.findById(anyLong())).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> userService.updateUserPermissions(999L, request))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("User not found");
+
+        verify(userRepository).findById(999L);
+        verify(userRepository, never()).save(any(User.class));
+    }
+
+    @Test
+    void deactivateUser_Success_AnonymizesAndDeactivatesUser() {
+        when(userRepository.findById(1L)).thenReturn(Optional.of(user1));
+        when(passwordEncoder.encode(any(String.class))).thenReturn("encoded-random-hash");
+        when(userRepository.save(any(User.class))).thenReturn(user1);
+
+        userService.deactivateUser(1L);
+
+        assertThat(user1.getEmail()).startsWith("inactive_");
+        assertThat(user1.getEmail()).contains("_1@deleted.local");
+        assertThat(user1.getPasswordHash()).isEqualTo("encoded-random-hash");
+        assertThat(user1.isActive()).isFalse();
+        assertThat(user1.isCanUpload()).isFalse();
+        assertThat(user1.isCanViewPhotos()).isFalse();
+        assertThat(user1.isCanRate()).isFalse();
+
+        verify(userRepository).findById(1L);
+        verify(passwordEncoder).encode(any(String.class));
+        verify(userRepository).save(user1);
+    }
+
+    @Test
+    void deactivateUser_AdminUser_ThrowsException() {
+        when(userRepository.findById(2L)).thenReturn(Optional.of(user2));
+
+        assertThatThrownBy(() -> userService.deactivateUser(2L))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("Cannot deactivate admin user");
+
+        verify(userRepository).findById(2L);
+        verify(userRepository, never()).save(any(User.class));
+    }
+
+    @Test
+    void deactivateUser_UserNotFound_ThrowsException() {
+        when(userRepository.findById(anyLong())).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> userService.deactivateUser(999L))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("User not found");
+
+        verify(userRepository).findById(999L);
+        verify(userRepository, never()).save(any(User.class));
+    }
+
+    @Test
+    void getInactiveUsers_Success_ReturnsInactiveUsers() {
+        user1.setActive(false);
+        User user3 = new User();
+        user3.setId(3L);
+        user3.setEmail("user3@example.com");
+        user3.setActive(false);
+
+        when(userRepository.findByIsActive(false)).thenReturn(List.of(user1, user3));
+
+        List<User> result = userService.getInactiveUsers();
+
+        assertThat(result).hasSize(2);
+        assertThat(result).containsExactly(user1, user3);
+        verify(userRepository).findByIsActive(false);
     }
 }

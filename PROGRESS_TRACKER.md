@@ -10,20 +10,30 @@
 
 ### ✅ Last Completed (2025-11-09)
 
-**SonarCloud Quality Improvements:**
-- Frontend: Fixed 70/72 issues (98.6%) - 0 bugs, 1 minor code smell
-- Backend: Fixed maintainability issues + coverage improvements
-- PhotoProcessingService: 47% → 87% coverage
-- PhotoSpecification: 87% coverage
-- Total: 0 code smells, all tests passing (29 backend tests)
-- Commits: `9866f97` (frontend), `17ec7df` (backend)
+**User Deactivation & Orphaned Photos Cleanup:**
+- Database: V6 migration (CASCADE DELETE → SET NULL for photos.user_id)
+- Backend: UserService.deactivateUser(), getInactiveUsers()
+- Backend: AdminController - 3 new endpoints (inactive users, orphaned photos, bulk delete)
+- Frontend: Fixed registration admin email endpoint + deletion confirmation message
+- Frontend: Fixed MapComponent Cognitive Complexity (17 → <15, extracted helper methods)
+- Tests: 151 backend tests passing, 304 frontend tests passing
+- Coverage: UserService 100%, AdminController 92% (both >90%)
+- DTOs: BulkDeleteResponse, OrphanedPhotoDTO, UserSummaryDTO
+- Documentation: `.ai/features/feature-user-deactivation-cleanup.md`
 
 ### 🎯 Currently Working On
 
-**Next: Push to GitHub & Verify SonarCloud Quality Gate**
-- Ready to push 2 commits to origin/master
-- Verify SonarCloud analysis passes
-- Monitor quality gate status
+**Priorytet 1: Naprawić problem z klastrowaniem na mapie**
+- Po refactoringu MapComponent marker z 74 zdjęciami wymaga wielokrotnego kliknięcia przed powiększeniem
+- Wcześniej zoom działał płynnie po pierwszym kliknięciu
+- Prawdopodobnie problem w metodzie updateMarkers() lub event handlerach
+- Lokalizacja: frontend/src/app/components/map/map.component.ts
+
+**Priorytet 2: Commit User Deactivation & Orphaned Photos Cleanup**
+- Po naprawie mapy: zacommitować zmiany z pokryciem testów >90%
+- Backend: UserService 100%, AdminController 92%
+- Frontend: wszystkie 304 testy przechodzą
+- Staged: V6 migration, DTOs, testy, dokumentacja
 
 ---
 
@@ -59,6 +69,17 @@
 **Time:** 12-16h
 **Description:** Email verification, password reset, notifications
 **Details:** `.ai/features/feature-email-system.md`
+
+### User Deactivation & Orphaned Photos Cleanup
+**Status:** 🔜 Post-MVP
+**Time:** 6-8h
+**Description:** Soft delete users (anonymization), manage orphaned photos, bulk delete with admin panel
+**Features:**
+- User anonymization instead of hard delete (email, isActive flag, password reset)
+- DB migration: Change CASCADE DELETE to SET NULL for photos.user_id
+- Admin endpoints: list inactive users, orphaned photos, bulk delete
+- Frontend: Admin panel for managing inactive users and orphaned photos
+**Details:** `.ai/features/feature-user-deactivation-cleanup.md`
 
 ### Public Photo Sharing
 **Status:** 🔜 Post-MVP
