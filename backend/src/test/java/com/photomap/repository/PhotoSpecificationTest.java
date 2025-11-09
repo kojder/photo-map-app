@@ -30,9 +30,6 @@ class PhotoSpecificationTest {
     @Autowired
     private PhotoRepository photoRepository;
 
-    @Autowired
-    private RatingRepository ratingRepository;
-
     private User testUser;
     private Photo photoWithGps;
     private Photo photoWithoutGps;
@@ -139,8 +136,8 @@ class PhotoSpecificationTest {
 
         assertEquals(3, result.size());
         final Instant cutoffInstant = cutoffDate.atZone(ZoneId.systemDefault()).toInstant();
-        assertTrue(result.stream().allMatch(p -> 
-            !p.getTakenAt().isBefore(cutoffInstant)
+        assertTrue(result.stream().noneMatch(p ->
+            p.getTakenAt().isBefore(cutoffInstant)
         ));
     }
 
@@ -152,7 +149,7 @@ class PhotoSpecificationTest {
         final List<Photo> result = photoRepository.findAll(spec);
 
         // Should include photos taken 2+ days ago (old photo and possibly photoWithoutGps if taken at same time)
-        assertTrue(result.size() >= 1);
+        assertFalse(result.isEmpty());
         assertTrue(result.stream().anyMatch(p -> p.getId().equals(oldPhoto.getId())));
     }
 
