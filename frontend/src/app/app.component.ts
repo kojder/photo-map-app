@@ -7,8 +7,7 @@ import { PhotoViewerComponent } from './components/photo-viewer/photo-viewer.com
   selector: 'app-root',
   standalone: true,
   imports: [RouterOutlet, NavbarComponent, PhotoViewerComponent],
-  templateUrl: './app.component.html',
-  styleUrl: './app.component.css'
+  templateUrl: './app.component.html'
 })
 export class AppComponent {
   title = 'frontend';

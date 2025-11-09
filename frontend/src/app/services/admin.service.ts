@@ -22,14 +22,14 @@ interface SpringPage<T> {
 export class AdminService {
   private readonly API_URL = '/api/admin';
 
-  constructor(private http: HttpClient) {}
+  constructor(private readonly http: HttpClient) {}
 
   getUsers(page: number = 0, size: number = 10, searchEmail?: string): Observable<PageResponse<User>> {
     let params = new HttpParams()
       .set('page', page.toString())
       .set('size', size.toString());
 
-    if (searchEmail && searchEmail.trim()) {
+    if (searchEmail?.trim()) {
       params = params.set('searchEmail', searchEmail.trim());
     }
 

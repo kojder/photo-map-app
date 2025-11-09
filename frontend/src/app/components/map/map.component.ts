@@ -27,16 +27,18 @@ export class MapComponent implements OnInit, AfterViewInit, OnDestroy {
   errorMessage = signal<string | null>(null);
 
   constructor(
-    private photoService: PhotoService,
-    private filterService: FilterService,
-    private photoViewerService: PhotoViewerService,
-    private http: HttpClient
+    private readonly photoService: PhotoService,
+    private readonly filterService: FilterService,
+    private readonly photoViewerService: PhotoViewerService,
+    private readonly http: HttpClient
   ) {
     this.fixLeafletIconPaths();
   }
 
   ngOnDestroy(): void {
-    this.thumbnailUrls.forEach(url => URL.revokeObjectURL(url));
+    for (const url of this.thumbnailUrls.values()) {
+      URL.revokeObjectURL(url);
+    }
     this.thumbnailUrls.clear();
 
     if (this.resizeObserver) {
@@ -95,7 +97,9 @@ export class MapComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   private loadThumbnails(): void {
-    this.thumbnailUrls.forEach(url => URL.revokeObjectURL(url));
+    for (const url of this.thumbnailUrls.values()) {
+      URL.revokeObjectURL(url);
+    }
     this.thumbnailUrls.clear();
 
     const photos = this.photos();
@@ -110,7 +114,7 @@ export class MapComponent implements OnInit, AfterViewInit, OnDestroy {
     let loadedCount = 0;
     const totalCount = photos.length;
 
-    photos.forEach(photo => {
+    for (const photo of photos) {
       this.http.get(`/api/photos/${photo.id}/thumbnail`, {
         responseType: 'blob'
       }).subscribe({
@@ -138,7 +142,7 @@ export class MapComponent implements OnInit, AfterViewInit, OnDestroy {
           }
         }
       });
-    });
+    }
   }
 
   initMap(): void {
@@ -191,7 +195,7 @@ export class MapComponent implements OnInit, AfterViewInit, OnDestroy {
       return;
     }
 
-    photosWithGps.forEach(photo => {
+    for (const photo of photosWithGps) {
       const marker = L.marker([photo.gpsLatitude!, photo.gpsLongitude!]);
 
       const thumbnailUrl = this.thumbnailUrls.get(photo.id) || '';
@@ -231,7 +235,7 @@ export class MapComponent implements OnInit, AfterViewInit, OnDestroy {
           if (img) {
             img.addEventListener('click', (e: Event) => {
               const target = e.target as HTMLImageElement;
-              const photoId = parseInt(target.getAttribute('data-photo-id') || '0', 10);
+              const photoId = Number.parseInt(target.dataset['photoId'] || '0', 10);
               if (photoId) {
                 this.onPhotoClick(photoId);
               }
@@ -242,7 +246,7 @@ export class MapComponent implements OnInit, AfterViewInit, OnDestroy {
 
       marker.bindPopup(popup);
       this.markerClusterGroup!.addLayer(marker);
-    });
+    }
 
     const bounds = L.latLngBounds(photosWithGps.map(p => [p.gpsLatitude!, p.gpsLongitude!]));
     this.map.fitBounds(bounds, { padding: [50, 50] });

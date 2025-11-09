@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { BehaviorSubject, Observable } from 'rxjs';
+import { BehaviorSubject } from 'rxjs';
 import { PhotoFilters } from '../models/photo.model';
 
 @Injectable({
@@ -27,11 +27,11 @@ export class FilterService {
     }
     
     // Apply new filter values (excluding null/undefined/empty)
-    Object.entries(filters).forEach(([key, value]) => {
+    for (const [key, value] of Object.entries(filters)) {
       if (value !== undefined && value !== null && value !== '') {
         (newFilters as any)[key] = value;
       }
-    });
+    }
     
     this.filtersSubject.next(newFilters);
   }

@@ -7,15 +7,14 @@ import { AuthService } from '../../services/auth.service';
   selector: 'app-navbar',
   standalone: true,
   imports: [CommonModule, RouterLink, RouterLinkActive],
-  templateUrl: './navbar.component.html',
-  styleUrl: './navbar.component.css'
+  templateUrl: './navbar.component.html'
 })
 export class NavbarComponent {
   mobileMenuOpen = signal(false);
 
   constructor(
-    public authService: AuthService,
-    private router: Router
+    public readonly authService: AuthService,
+    private readonly router: Router
   ) {}
 
   toggleMobileMenu(): void {

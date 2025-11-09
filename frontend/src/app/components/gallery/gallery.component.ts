@@ -15,8 +15,7 @@ import { UploadDialogComponent } from '../upload-dialog/upload-dialog.component'
   selector: 'app-gallery',
   standalone: true,
   imports: [CommonModule, PhotoCardComponent, FilterFabComponent, UploadDialogComponent],
-  templateUrl: './gallery.component.html',
-  styleUrl: './gallery.component.css'
+  templateUrl: './gallery.component.html'
 })
 export class GalleryComponent implements OnInit {
   photos$: Observable<Photo[]>;
@@ -27,10 +26,10 @@ export class GalleryComponent implements OnInit {
   adminContactEmail = signal<string>('admin@photomap.local');
 
   constructor(
-    private photoService: PhotoService,
-    private filterService: FilterService,
-    private photoViewerService: PhotoViewerService,
-    private adminService: AdminService
+    private readonly photoService: PhotoService,
+    private readonly filterService: FilterService,
+    private readonly photoViewerService: PhotoViewerService,
+    private readonly adminService: AdminService
   ) {
     this.photos$ = this.photoService.photos$;
   }

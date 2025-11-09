@@ -28,6 +28,10 @@
 @if (filtersOpen()) {
   <div
     (click)="closeFilters()"
+    (keydown.enter)="closeFilters()"
+    tabindex="0"
+    role="button"
+    aria-label="Close filters"
     class="fixed inset-0 bg-black bg-opacity-30 z-40 transition-opacity"
     data-testid="filter-backdrop"
   ></div>

@@ -6,8 +6,7 @@ import { PhotoService } from '../../services/photo.service';
   selector: 'app-upload-dialog',
   standalone: true,
   imports: [CommonModule],
-  templateUrl: './upload-dialog.component.html',
-  styleUrl: './upload-dialog.component.css'
+  templateUrl: './upload-dialog.component.html'
 })
 export class UploadDialogComponent {
   @Output() uploadSuccess = new EventEmitter<void>();
@@ -20,11 +19,11 @@ export class UploadDialogComponent {
   errorMessage = signal<string | null>(null);
   dragOver = signal(false);
 
-  constructor(private photoService: PhotoService) {}
+  constructor(private readonly photoService: PhotoService) {}
 
   onFileSelected(event: Event): void {
     const input = event.target as HTMLInputElement;
-    if (input.files && input.files[0]) {
+    if (input.files?.[0]) {
       this.handleFile(input.files[0]);
     }
   }
@@ -33,7 +32,7 @@ export class UploadDialogComponent {
     event.preventDefault();
     this.dragOver.set(false);
 
-    if (event.dataTransfer?.files && event.dataTransfer.files[0]) {
+    if (event.dataTransfer?.files?.[0]) {
       this.handleFile(event.dataTransfer.files[0]);
     }
   }

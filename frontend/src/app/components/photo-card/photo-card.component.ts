@@ -10,8 +10,7 @@ import { AuthService } from '../../services/auth.service';
   selector: 'app-photo-card',
   standalone: true,
   imports: [CommonModule],
-  templateUrl: './photo-card.component.html',
-  styleUrl: './photo-card.component.css'
+  templateUrl: './photo-card.component.html'
 })
 export class PhotoCardComponent implements OnInit, OnDestroy {
   @Input({ required: true }) photo!: Photo;
@@ -24,10 +23,10 @@ export class PhotoCardComponent implements OnInit, OnDestroy {
   thumbnailUrl = signal<SafeUrl | null>(null);
 
   constructor(
-    private photoService: PhotoService,
-    private http: HttpClient,
-    private sanitizer: DomSanitizer,
-    public authService: AuthService
+    private readonly photoService: PhotoService,
+    private readonly http: HttpClient,
+    private readonly sanitizer: DomSanitizer,
+    public readonly authService: AuthService
   ) {}
 
   ngOnInit(): void {

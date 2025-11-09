@@ -10,8 +10,7 @@ import { AppSettings } from '../../models/settings.model';
   selector: 'app-register',
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule, RouterLink],
-  templateUrl: './register.component.html',
-  styleUrl: './register.component.css'
+  templateUrl: './register.component.html'
 })
 export class RegisterComponent implements OnInit {
   registerForm: FormGroup;
@@ -21,10 +20,10 @@ export class RegisterComponent implements OnInit {
   adminContactEmail = signal<string | null>(null);
 
   constructor(
-    private fb: FormBuilder,
-    private authService: AuthService,
-    private router: Router,
-    private http: HttpClient
+    private readonly fb: FormBuilder,
+    private readonly authService: AuthService,
+    private readonly router: Router,
+    private readonly http: HttpClient
   ) {
     this.registerForm = this.fb.group({
       email: ['', [Validators.required, Validators.email]],

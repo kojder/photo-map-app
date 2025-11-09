@@ -37,9 +37,9 @@ export class PhotoViewerComponent implements OnInit, OnDestroy {
   private spinnerTimeout: any = null;
 
   constructor(
-    private photoViewerService: PhotoViewerService,
-    private http: HttpClient,
-    private sanitizer: DomSanitizer
+    private readonly photoViewerService: PhotoViewerService,
+    private readonly http: HttpClient,
+    private readonly sanitizer: DomSanitizer
   ) {}
 
   ngOnInit(): void {
@@ -269,7 +269,7 @@ export class PhotoViewerComponent implements OnInit, OnDestroy {
     if (isIOS) {
       // Small delay to ensure DOM is ready
       setTimeout(() => {
-        window.scrollTo(0, 1);
+        globalThis.scrollTo(0, 1);
       }, 100);
     }
   }

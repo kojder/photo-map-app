@@ -1,9 +1,13 @@
 <div data-testid="photo-card" class="bg-white shadow-lg rounded-lg overflow-hidden hover:shadow-xl transition-shadow duration-300">
   @if (thumbnailUrl()) {
-    <div 
+    <div
       data-testid="photo-card-image"
       class="w-full h-48 bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center cursor-pointer"
       (click)="onPhotoClick()"
+      (keydown.enter)="onPhotoClick()"
+      tabindex="0"
+      role="button"
+      aria-label="View photo"
     >
       <img
         [src]="thumbnailUrl()"

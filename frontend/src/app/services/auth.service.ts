@@ -15,7 +15,7 @@ export class AuthService {
   private currentUserSubject = new BehaviorSubject<User | null>(this.getCurrentUser());
   public currentUser$ = this.currentUserSubject.asObservable();
 
-  constructor(private http: HttpClient) {}
+  constructor(private readonly http: HttpClient) {}
 
   login(email: string, password: string): Observable<LoginResponse> {
     const loginRequest: LoginRequest = { email, password };

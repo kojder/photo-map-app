@@ -45,8 +45,8 @@ export class AdminComponent implements OnInit {
   private notificationTimeout?: number;
 
   constructor(
-    private adminService: AdminService,
-    private authService: AuthService
+    private readonly adminService: AdminService,
+    private readonly authService: AuthService
   ) {
     this.authService.currentUser$.subscribe(user => {
       if (user) {
@@ -299,20 +299,20 @@ export class AdminComponent implements OnInit {
 
   showNotification(message: string, type: 'success' | 'error' = 'success', duration: number = 5000): void {
     if (this.notificationTimeout) {
-      window.clearTimeout(this.notificationTimeout);
+      globalThis.clearTimeout(this.notificationTimeout);
     }
 
     this.notificationMessage.set(message);
     this.notificationType.set(type);
 
-    this.notificationTimeout = window.setTimeout(() => {
+    this.notificationTimeout = globalThis.setTimeout(() => {
       this.notificationMessage.set(null);
     }, duration);
   }
 
   closeNotification(): void {
     if (this.notificationTimeout) {
-      window.clearTimeout(this.notificationTimeout);
+      globalThis.clearTimeout(this.notificationTimeout);
     }
     this.notificationMessage.set(null);
   }

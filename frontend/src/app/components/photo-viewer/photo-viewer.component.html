@@ -1,5 +1,12 @@
 @if (viewerState?.isOpen) {
-  <div class="photo-viewer-overlay" (click)="close()">
+  <div
+    class="photo-viewer-overlay"
+    (click)="close()"
+    (keydown.enter)="close()"
+    tabindex="0"
+    role="button"
+    aria-label="Close viewer"
+  >
     <div 
       class="photo-viewer-content" 
       (click)="$event.stopPropagation()"
@@ -36,7 +43,7 @@
         @if (imageUrl) {
           <img
             [src]="imageUrl"
-            [alt]="currentPhoto?.originalFilename || 'Photo'"
+            [alt]="currentPhoto?.originalFilename || 'Image'"
             class="photo-viewer-image"
             data-testid="viewer-image"
           />

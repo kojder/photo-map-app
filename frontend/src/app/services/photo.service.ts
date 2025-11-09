@@ -13,7 +13,7 @@ export class PhotoService {
   public photos$ = this.photosSubject.asObservable();
   private currentFilters: PhotoFilters | undefined;
 
-  constructor(private http: HttpClient) {}
+  constructor(private readonly http: HttpClient) {}
 
   getAllPhotos(filters?: PhotoFilters): Observable<PageResponse<Photo>> {
     let params = new HttpParams();

@@ -20,7 +20,7 @@ export class FilterFabComponent implements OnInit, OnDestroy {
 
   private filterSubscription?: Subscription;
 
-  constructor(private filterService: FilterService) {}
+  constructor(private readonly filterService: FilterService) {}
 
   ngOnInit(): void {
     const currentFilters = this.filterService.currentFilters();
