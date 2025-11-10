@@ -8,47 +8,102 @@
 
 ## 🔄 Current Status
 
-### ✅ Last Completed (2025-11-09)
+### ✅ Last Completed (2025-11-10)
 
-**User Deactivation & Orphaned Photos Cleanup:**
-- Database: V6 migration (CASCADE DELETE → SET NULL for photos.user_id)
-- Backend: UserService.deactivateUser(), getInactiveUsers()
-- Backend: AdminController - 3 new endpoints (inactive users, orphaned photos, bulk delete)
-- Frontend: Fixed registration admin email endpoint + deletion confirmation message
-- Frontend: Fixed MapComponent Cognitive Complexity (17 → <15, extracted helper methods)
-- Tests: 151 backend tests passing, 304 frontend tests passing
-- Coverage: UserService 100%, AdminController 92% (both >90%)
-- DTOs: BulkDeleteResponse, OrphanedPhotoDTO, UserSummaryDTO
-- Documentation: `.ai/features/feature-user-deactivation-cleanup.md`
+**Rebuild & Init Scripts - Environment Reset Automation:**
+- Created: `scripts/reset-data.sh` - helper do czyszczenia danych (z --dry-run)
+- Created: `scripts/rebuild.sh` - rebuild aplikacji z opcjonalnym --init
+- Created: `backend/src/main/resources/db/reset-data.sql` - SQL reset script
+- Modified: `deployment/scripts/deploy.sh` - dodano --init support dla remote
+- Modified: `deployment/scripts/deploy-marcin288.sh` - dodano --init flag
+- Modified: `scripts/start-dev.sh` - auto-start PostgreSQL jeśli nie działa
+- Documentation: Updated `scripts/README.md` i `deployment/README.md`
+- Safety: Interactive confirmation (dev: "yes", prod: hostname), --dry-run option
+- Commits: 2 commits (3a1e3ef, fc0b28f) - ready to push
 
 ### 🎯 Currently Working On
 
-**Priorytet 1: Naprawić problem z klastrowaniem na mapie**
-- Po refactoringu MapComponent marker z 74 zdjęciami wymaga wielokrotnego kliknięcia przed powiększeniem
-- Wcześniej zoom działał płynnie po pierwszym kliknięciu
-- Prawdopodobnie problem w metodzie updateMarkers() lub event handlerach
-- Lokalizacja: frontend/src/app/components/map/map.component.ts
+**Fix AdminComponent Tests - API Mock Errors**
 
-**Priorytet 2: Commit User Deactivation & Orphaned Photos Cleanup**
-- Po naprawie mapy: zacommitować zmiany z pokryciem testów >90%
-- Backend: UserService 100%, AdminController 92%
-- Frontend: wszystkie 304 testy przechodzą
-- Staged: V6 migration, DTOs, testy, dokumentacja
+**Priority:** High (GitHub Actions failing)
+**Time:** 1-2h
+**Status:** 🔴 In Progress
+
+**Problem:**
+```
+ERROR: 'Failed to update user role:', Error: API error
+Error: API error
+    at errorFactory (src/app/components/admin/admin.component.spec.ts:128:66)
+    at AdminComponent.onSaveRoleChange (src/app/components/admin/admin.component.ts:108:56)
+```
+
+**Root Cause:**
+- Testy mają błędne mockowanie API dla aktualizacji roli użytkownika
+- Mock zwraca `throwError('API error')` zamiast poprawnej odpowiedzi 200 OK
+- Ścieżka API lub response w mocku nie zgadzają się z wywołaniem w komponencie
+
+**Scope:**
+1. Sprawdzić `admin.component.spec.ts` - mockowanie HttpTestingController
+2. Zweryfikować ścieżkę API w mocku vs. rzeczywiste wywołanie w komponencie
+3. Poprawić mock, aby zwracał 200 OK dla poprawnych scenariuszy
+4. `throwError()` używać tylko w testach obsługi błędów
+5. Uruchomić testy lokalnie: `npm test -- --watch=false --browsers=ChromeHeadless`
+6. Zweryfikować GitHub Actions po pushu
+
+**Files:**
+- `frontend/src/app/components/admin/admin.component.spec.ts`
+- `frontend/src/app/components/admin/admin.component.ts`
 
 ### 🎯 Next Action
 
-**Rebuild & Init Scripts - Environment Reset Automation**
+**Test Rebuild & Init Scripts Locally**
 
-**Priority:** High (DevOps automation)
-**Time:** 3-4h
+**Priority:** High (validate before production use)
+**Time:** 1-2h
 **Status:** 🔜 Planned
 
 **Description:**
-Create scripts for rebuilding application with optional complete data reset (`--init` flag).
+Po naprawie testów AdminComponent - przetestować nowe skrypty rebuild/init lokalnie przed pushem do remote.
 
-**Scope:**
+**Testing Checklist:**
 
-1. **New Script: `scripts/rebuild.sh`**
+1. **Test `reset-data.sh --dry-run`**
+   - Sprawdzić output (podgląd bez usuwania)
+   - Zweryfikować że nie usuwa danych w trybie dry-run
+
+2. **Test `reset-data.sh` (with confirmation)**
+   - Wpisać "yes" dla potwierdzenia
+   - Sprawdzić czy truncate tables działa
+   - Sprawdzić czy pliki z uploads/ są usunięte
+   - Restart backend → admin user created
+
+3. **Test `rebuild.sh` (bez --init)**
+   - Normalny rebuild (zachowuje dane)
+   - Backend + frontend rebuild działa
+   - Restart serwisów OK
+
+4. **Test `rebuild.sh --skip-tests`**
+   - Szybki rebuild bez testów
+   - Backend + frontend rebuild działa
+
+5. **Test `rebuild.sh --init`** (⚠️ usuwa dane)
+   - Wpisać "yes" dla potwierdzenia
+   - Sprawdzić reset danych
+   - Sprawdzić rebuild + restart
+   - Admin user created z .env
+
+6. **Test `start-dev.sh` (auto-start PostgreSQL)**
+   - Zatrzymać PostgreSQL: `docker-compose down`
+   - Uruchomić: `./scripts/start-dev.sh`
+   - Sprawdzić czy PostgreSQL uruchomiony automatycznie
+
+**After Testing:**
+- Push 2 commits do remote (3a1e3ef, fc0b28f)
+- Update PROGRESS_TRACKER.md status
+
+**Previous Scope (for reference):**
+
+1. **Script: `scripts/rebuild.sh`** (✅ COMPLETED)
    - Rebuild both frontend and backend (clean + build + restart)
    - Flag `--init`: Reset all data to initial state
    - Interactive confirmation for `--init` (type "yes" to confirm)
