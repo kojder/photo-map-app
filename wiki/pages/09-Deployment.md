@@ -548,7 +548,7 @@ docker compose up -d
 # ...
 
 # 3. Verify deployment
-curl https://photos.tojest.dev/
+curl https://your-domain.com/
 ```
 
 **Help:**

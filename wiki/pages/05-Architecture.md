@@ -484,7 +484,7 @@ uploads/
 
 **Allowed Origins:**
 - Development: `http://localhost:4200`
-- Production: `https://photos.tojest.dev`
+- Production: `https://your-domain.com`
 
 **Allowed Methods:**
 - GET, POST, PUT, DELETE, OPTIONS

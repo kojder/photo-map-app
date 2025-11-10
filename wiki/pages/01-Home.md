@@ -59,7 +59,7 @@
 
 **Project:**
 - **Repository:** [github.com/kojder/photo-map-app](https://github.com/kojder/photo-map-app)
-- **Production:** [photos.tojest.dev](https://photos.tojest.dev/)
+- **Production:** `https://your-domain.com/` (example)
 
 **Dashboards:**
 - **GitHub Actions:** [CI/CD Workflows](https://github.com/kojder/photo-map-app/actions)

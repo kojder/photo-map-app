@@ -27,7 +27,7 @@
 
 **Photo Map MVP uses a manual registration process:**
 
-1. Navigate to the application URL (e.g., https://photos.tojest.dev/)
+1. Navigate to the application URL (e.g., https://your-domain.com/)
 2. Click **"Register"** button on the login page
 3. Fill in the registration form:
    - Email address
@@ -257,7 +257,7 @@
 **Access Requirements:**
 - ✅ **ADMIN role** required to access Admin Panel
 - Admin Panel link appears in navbar only for admin users
-- URL: `/admin` (e.g., https://photos.tojest.dev/admin)
+- URL: `/admin` (e.g., https://your-domain.com/admin)
 
 ### User Management
 

@@ -2,7 +2,7 @@
 
 **Created:** 2025-10-19
 **Status:** ✅ Core MVP Complete
-**Last Updated:** 2025-11-09
+**Last Updated:** 2025-11-10
 
 ---
 
@@ -10,18 +10,16 @@
 
 ### ✅ Last Completed (2025-11-10)
 
-**README.md Restructuring & GitHub Wiki Documentation:**
-- Created: 11 Wiki pages in `wiki/pages/` (~5,894 lines, ~154 KB)
-  - Home, User Guide, Quick Start, Development Setup, Architecture
-  - API Documentation, Testing & Quality, Scripts Reference, Deployment
-  - AI Development Methodology, Contributing
-- Modified: 3 README files in `wiki/modified-files/`
-  - README.md (main) - reduced from 612 to ~185 lines (~70% reduction)
-  - deployment-README.md - added Wiki link banner at top
-  - scripts-README.md - added Wiki link banner at top
-- Uploaded: All 11 pages to GitHub Wiki (https://github.com/kojder/photo-map-app/wiki)
-- Commits: a0d5896 (Wiki files), 2145e3c (README restructuring)
-- Status: ✅ Wiki live and accessible
+**Remove Sensitive Data from GitHub Wiki:**
+- Removed production URLs (photos.tojest.dev → your-domain.com) from 5 Wiki pages:
+  - 01-Home.md - Quick Links section
+  - 02-User-Guide.md - Registration and Admin Panel examples (2 locations)
+  - 05-Architecture.md - CORS configuration
+  - 09-Deployment.md - Deployment verification
+- Verified JWT tokens in examples are truncated placeholders (ending with `...`)
+- Updated local source files in `wiki/pages/` directory
+- Pushed changes to GitHub Wiki repository
+- Status: ✅ Wiki now uses generic examples only
 
 ### 🎯 Currently Working On
 
@@ -29,41 +27,85 @@ None - ready for next task
 
 ### 🎯 Next Action
 
-**Remove Sensitive Data from GitHub Wiki**
+**Remove Sensitive Data from Scripts & Clean Git History**
 
-**Priority:** High (security)
-**Time:** 30-60 min
-**Status:** 🔜 Planned
+**Priority:** Medium (security cleanup)
+**Time:** 2-3h
+**Status:** 🔜 Planned (after final production deployment)
 
-**Issue:** GitHub Wiki is public - need to remove production URLs and ensure no real tokens in examples.
+**Issue:** Scripts and deployment files may contain production URLs, server paths, or other sensitive data.
+
+**Phase 1: Remove Sensitive Data from Scripts**
 
 **Tasks:**
-1. Remove production URL references (photos.tojest.dev):
-   - 01-Home.md:62 - Production link
-   - 02-User-Guide.md:30, 260 - Example URLs
-   - 05-Architecture.md:487 - Production URL
-   - 09-Deployment.md:551 - Deployment verification
+1. Audit all scripts in `scripts/` directory:
+   - Check for production URLs (photos.tojest.dev, srv07-30288.wykr.es)
+   - Check for hardcoded server paths
+   - Check for sensitive configuration values
+   - Replace with environment variables or generic examples
 
-2. Verify JWT tokens in examples are placeholders only:
-   - 06-API-Documentation.md:127 - Login response example
-   - 09-Deployment.md:370 - Deployment verification example
+2. Audit deployment configuration:
+   - `deployment/` directory files
+   - Docker Compose configurations
+   - Nginx configurations
+   - Check for production-specific values
 
-3. Replace with generic examples:
-   - Production URL → `https://your-domain.com` or remove entirely
-   - JWT tokens → verify truncated with `...` (not full tokens)
-   - Example credentials → use clearly fake data
+3. Update files to use:
+   - Environment variables from `.env`
+   - Generic placeholders (your-domain.com, your-server.com)
+   - Configuration templates with `.example` suffix
 
-4. Update local Wiki files in `wiki/pages/`
-5. Push changes to GitHub Wiki repository
+**Phase 2: Clean Git History (Remove Sensitive Data Permanently)**
 
-**Files to modify:**
-- wiki/pages/01-Home.md
-- wiki/pages/02-User-Guide.md
-- wiki/pages/05-Architecture.md
-- wiki/pages/06-API-Documentation.md
-- wiki/pages/09-Deployment.md
+**Method:** BFG Repo-Cleaner (faster than git filter-branch)
 
-**Note:** Wiki is already live and will be modified later if needed.
+**Steps:**
+```bash
+# 1. Backup current state
+git clone --mirror https://github.com/kojder/photo-map-app.git
+git clone --mirror https://github.com/kojder/photo-map-app.wiki.git
+
+# 2. Create replacements.txt file
+photos.tojest.dev=your-domain.com
+srv07-30288.wykr.es=your-server.com
+[other sensitive data patterns]
+
+# 3. Run BFG Repo-Cleaner
+bfg --replace-text replacements.txt photo-map-app.git
+bfg --replace-text replacements.txt photo-map-app.wiki.git
+
+# 4. Clean and force push
+cd photo-map-app.git
+git reflog expire --expire=now --all
+git gc --prune=now --aggressive
+git push --force
+
+cd ../photo-map-app.wiki.git
+git reflog expire --expire=now --all
+git gc --prune=now --aggressive
+git push --force
+
+# 5. Fresh clone for local work
+cd ~/projects
+rm -rf photo-map-app
+git clone git@github.com:kojder/photo-map-app.git
+```
+
+**Consequences:**
+- ⚠️ Rewrites entire Git history (all commit SHAs change)
+- ⚠️ Requires fresh clone after force push
+- ⚠️ Links to old commits in GitHub issues/PRs will break
+- ✅ Sensitive data permanently removed from history
+- ✅ Safe for solo project (no collaborators affected)
+
+**Success Criteria:**
+- [ ] No production URLs in scripts or deployment files
+- [ ] All sensitive config uses environment variables
+- [ ] Git history cleaned with BFG Repo-Cleaner
+- [ ] Fresh clone verified to work correctly
+- [ ] No sensitive data in `git log -p` output
+
+**Note:** Execute after final production deployment to minimize disruption.
 
 ---
 
