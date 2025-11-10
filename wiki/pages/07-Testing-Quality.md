@@ -6,10 +6,10 @@
 
 ## 📖 Table of Contents
 
-- [Local Testing](#local-testing)
-- [CI/CD Pipeline](#cicd-pipeline)
-- [Writing Tests](#writing-tests)
-- [Code Quality Standards](#code-quality-standards)
+- Local Testing
+- CI/CD Pipeline
+- Writing Tests
+- Code Quality Standards
 
 ---
 

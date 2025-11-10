@@ -6,14 +6,14 @@
 
 ## 📖 Table of Contents
 
-- [Swagger UI](#swagger-ui)
-- [Authentication Flow](#authentication-flow)
-- [Authentication Endpoints](#authentication-endpoints)
-- [Photo Endpoints](#photo-endpoints)
-- [Admin Endpoints](#admin-endpoints)
-- [DTOs & Validation](#dtos--validation)
-- [Error Responses](#error-responses)
-- [Example Requests](#example-requests)
+- Swagger UI
+- Authentication Flow
+- Authentication Endpoints
+- Photo Endpoints
+- Admin Endpoints
+- DTOs & Validation
+- Error Responses
+- Example Requests
 
 ---
 

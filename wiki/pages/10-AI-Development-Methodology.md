@@ -6,11 +6,11 @@
 
 ## 📖 Table of Contents
 
-- [Overview](#overview)
-- [Claude Code](#claude-code)
-- [GitHub Copilot](#github-copilot)
-- [Gemini CLI](#gemini-cli)
-- [Best Practices](#best-practices)
+- Overview
+- Claude Code
+- GitHub Copilot
+- Gemini CLI
+- Best Practices
 
 ---
 

@@ -6,13 +6,13 @@
 
 ## 📖 Table of Contents
 
-- [Tech Stack Overview](#tech-stack-overview)
-- [Frontend Architecture](#frontend-architecture)
-- [Backend Architecture](#backend-architecture)
-- [Database Schema](#database-schema)
-- [Photo Processing Pipeline](#photo-processing-pipeline)
-- [Security Architecture](#security-architecture)
-- [Design Decisions](#design-decisions)
+- Tech Stack Overview
+- Frontend Architecture
+- Backend Architecture
+- Database Schema
+- Photo Processing Pipeline
+- Security Architecture
+- Design Decisions
 
 ---
 

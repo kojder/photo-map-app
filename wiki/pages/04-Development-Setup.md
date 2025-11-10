@@ -6,12 +6,12 @@
 
 ## 📖 Table of Contents
 
-- [Prerequisites](#prerequisites)
-- [First-Time Setup](#first-time-setup)
-- [Environment Configuration](#environment-configuration)
-- [Project Structure](#project-structure)
-- [Daily Workflow](#daily-workflow)
-- [Code Conventions](#code-conventions)
+- Prerequisites
+- First-Time Setup
+- Environment Configuration
+- Project Structure
+- Daily Workflow
+- Code Conventions
 
 ---
 

@@ -24,15 +24,15 @@ This guide describes the Docker Compose deployment strategy for Photo Map MVP on
 
 ## 📋 Table of Contents
 
-1. [Prerequisites](#prerequisites)
-2. [Deployment Architecture](#deployment-architecture)
-3. [Preparing .env](#preparing-env)
-4. [Build Images Locally](#build-images-locally)
-5. [Deploy to Mikrus VPS](#deploy-to-mikrus-vps)
-6. [Deployment Verification](#deployment-verification)
-7. [Updates and Maintenance](#updates-and-maintenance)
-8. [SSL Configuration (Automatic)](#ssl-configuration-automatic)
-9. [Troubleshooting](#troubleshooting)
+1. Prerequisites
+2. Deployment Architecture
+3. Preparing .env
+4. Build Images Locally
+5. Deploy to Mikrus VPS
+6. Deployment Verification
+7. Updates and Maintenance
+8. SSL Configuration (Automatic)
+9. Troubleshooting
 
 ---
 

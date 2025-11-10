@@ -6,18 +6,18 @@
 
 ## 📖 Table of Contents
 
-- [Registration & Login](#registration--login)
-- [Using the Application](#using-the-application)
-  - [Gallery View](#gallery-view)
-  - [Map View](#map-view)
-  - [Filters](#filters)
-  - [Rating Photos](#rating-photos)
-  - [Uploading Photos](#uploading-photos)
-  - [Photo Viewer](#photo-viewer)
-- [Admin Panel](#admin-panel)
-  - [User Management](#user-management)
-  - [Permissions](#permissions)
-  - [Photo Management](#photo-management)
+- Registration & Login
+- Using the Application
+  - Gallery View
+  - Map View
+  - Filters
+  - Rating Photos
+  - Uploading Photos
+  - Photo Viewer
+- Admin Panel
+  - User Management
+  - Permissions
+  - Photo Management
 
 ---
 
