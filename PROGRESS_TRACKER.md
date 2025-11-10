@@ -10,14 +10,17 @@
 
 ### ✅ Last Completed (2025-11-10)
 
-**Polish Content Cleanup - Language Policy Enforcement:**
-- Translated: 4 development scripts to English (`start-dev.sh`, `stop-dev.sh`, `start-ngrok.sh`, `stop-ngrok.sh`)
-- Fixed: 2 scripts with minor Polish content (`run-all-tests.sh`, `build-images.sh`)
-- Translated: `deployment/README.md` (222 changes - all Polish headers, instructions, and content)
-- Verified: 6 scripts already in English (no changes needed)
-- Updated: PROGRESS_TRACKER.md with complete checklist and status
-- Final verification: grep confirmed zero Polish content in scripts and main documentation
-- Commits: Ready to commit and amend to 98da1de
+**README.md Restructuring & GitHub Wiki Documentation:**
+- Created: 11 Wiki pages in `wiki/pages/` (~5,894 lines, ~154 KB)
+  - Home, User Guide, Quick Start, Development Setup, Architecture
+  - API Documentation, Testing & Quality, Scripts Reference, Deployment
+  - AI Development Methodology, Contributing
+- Modified: 3 README files in `wiki/modified-files/`
+  - README.md (main) - reduced from 612 to ~185 lines (~70% reduction)
+  - deployment-README.md - added Wiki link banner at top
+  - scripts-README.md - added Wiki link banner at top
+- Documentation: All content 100% in English, ready for GitHub Wiki upload
+- Status: ✅ Ready for user to upload Wiki pages (see `wiki/UPLOAD_INSTRUCTIONS.md`)
 
 ### 🎯 Currently Working On
 
@@ -25,40 +28,7 @@ None - ready for next task
 
 ### 🎯 Next Action
 
-**README.md Restructuring & GitHub Wiki Documentation**
-
-**Priority:** Medium (project organization & documentation)
-**Time:** 2-3h
-**Status:** 🔜 Planned
-
-**Problem:**
-Current README.md mixes project overview with detailed technical documentation. Need to:
-- Keep README.md focused on project introduction and quick start
-- Move detailed documentation to GitHub Wiki for better organization and searchability
-
-**Goals:**
-1. **Restructure README.md:**
-   - Project overview and description
-   - Key features and tech stack summary
-   - Quick start guide (minimal setup steps)
-   - Links to detailed documentation in Wiki
-
-2. **Create GitHub Wiki** (https://github.com/kojder/photo-map-app/wiki):
-   - Home page with navigation
-   - Development setup (detailed)
-   - Deployment guide
-   - Architecture overview
-   - API documentation
-   - Contributing guidelines
-   - Troubleshooting
-
-**Benefits:**
-- ✅ Clean, concise README for first-time visitors
-- ✅ Organized, searchable documentation in Wiki
-- ✅ Easier maintenance (Wiki has version control)
-- ✅ Better user experience for contributors
-
-**Note:** For details on completed rebuild/init scripts, see commits 3a1e3ef and fc0b28f, or check `scripts/README.md`.
+None - awaiting user instructions
 
 ---
 

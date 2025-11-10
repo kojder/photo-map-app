@@ -189,6 +189,30 @@ README.md                      # Project overview (for humans)
 4. Update `.snippets/README.md` index
 5. Later: check index, read relevant snippet, implement
 
+### 📖 GitHub Wiki (Public Documentation)
+
+**Location:** https://github.com/kojder/photo-map-app/wiki
+
+**Working files:** `wiki/` directory (local preparation before upload)
+- `wiki/PLAN.md` - Implementation plan and structure
+- `wiki/PROGRESS.md` - Progress tracker
+- `wiki/UPLOAD_INSTRUCTIONS.md` - How to upload to GitHub Wiki
+- `wiki/pages/` - 11 Wiki pages ready for upload
+- `wiki/modified-files/` - Modified local README files
+
+**Wiki Structure:** 11 pages
+- Home (navigation hub)
+- User Guide (for end users)
+- Quick Start, Development Setup, Architecture, API Docs (for developers)
+- Testing & Quality, Scripts Reference, Deployment (for devops)
+- AI Development Methodology, Contributing (for contributors)
+
+**Purpose:**
+- Comprehensive user and developer documentation
+- Organized, searchable content
+- Easier maintenance than single README
+- Better onboarding experience
+
 ---
 
 ## 🧹 Context Management

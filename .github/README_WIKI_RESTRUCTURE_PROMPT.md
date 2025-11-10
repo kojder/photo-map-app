@@ -204,5 +204,5 @@ Then consider next priorities from "Planned Next (Post-MVP)" section.
 ---
 
 **Date Created:** 2025-11-10
-**Status:** 🔜 Planned
+**Status:** 🔜 Planned/
 **Estimated Time:** 2-3h
