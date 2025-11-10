@@ -37,14 +37,11 @@ export class RegisterComponent implements OnInit {
   }
 
   loadAdminContact(): void {
-    // Try to fetch admin contact email from backend
-    // This endpoint requires ADMIN role, so we use fallback on error
-    this.http.get<AppSettings>('/api/admin/settings').subscribe({
+    this.http.get<AppSettings>('/api/public/settings').subscribe({
       next: (settings) => {
         this.adminContactEmail.set(settings.adminContactEmail);
       },
       error: () => {
-        // Fallback to default email if endpoint is not accessible
         this.adminContactEmail.set('admin@photomap.local');
       }
     });

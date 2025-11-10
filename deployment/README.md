@@ -479,6 +479,69 @@ docker compose down -v
 docker compose up -d
 ```
 
+### Initial Setup / Full Reset with --init Flag
+
+⚠️ **DANGER ZONE** - Reset ALL data on production server
+
+**Use ONLY for:**
+- Initial production setup
+- Development environment reset
+- Testing scenarios
+
+**What `--init` does:**
+1. Resets database (TRUNCATE users, photos, ratings)
+2. Deletes all physical files from uploads/
+3. Resets settings to defaults
+4. Deploys application
+5. Admin user re-created automatically from remote `.env`
+
+**Usage:**
+
+```bash
+# Deploy with full data reset (requires confirmation)
+./deployment/scripts/deploy-marcin288.sh --init
+
+# Generic syntax (for other VPS hosts)
+./deployment/scripts/deploy.sh [srv_host] [ssh_port] --init
+```
+
+**Safety features:**
+- ✅ Requires interactive confirmation
+- ✅ **Production**: Must type EXACT hostname (e.g., `marcin288.mikrus.xyz`)
+- ✅ Shows clear warning before execution
+- ✅ Cannot be bypassed with flags
+
+**Example workflow:**
+
+```bash
+# 1. Build images locally
+./deployment/scripts/build-images.sh
+
+# 2. Deploy with data reset (first deployment or reset scenario)
+./deployment/scripts/deploy-marcin288.sh --init
+
+# Output:
+# ⚠️  WARNING: This will DELETE ALL DATA on marcin288.mikrus.xyz
+# To confirm, type the EXACT server hostname: marcin288.mikrus.xyz
+# > marcin288.mikrus.xyz
+#
+# ✓ Confirmation accepted. Proceeding with data reset...
+# Step INIT: Resetting data on remote server...
+# ✓ Remote data reset completed
+# Step 1: Checking Docker images...
+# ...
+
+# 3. Verify deployment
+curl https://photos.tojest.dev/
+```
+
+**Help:**
+
+```bash
+# Show help for deploy-marcin288.sh
+./deployment/scripts/deploy-marcin288.sh --help
+```
+
 ---
 
 ## SSL Configuration (Automatyczne)

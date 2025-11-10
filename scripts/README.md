@@ -189,18 +189,139 @@ git push
 
 ---
 
+### `reset-data.sh`
+
+⚠️ **DANGER ZONE** - Resetuje WSZYSTKIE dane w bazie i plikach do stanu początkowego.
+
+**Podstawowe użycie:**
+```bash
+./scripts/reset-data.sh
+```
+
+**Dry-run (podgląd bez usuwania):**
+```bash
+./scripts/reset-data.sh --dry-run
+```
+
+**Co robi:**
+- ❌ **USUWA WSZYSTKIE DANE:**
+  - Wszystkich użytkowników (łącznie z adminem)
+  - Wszystkie zdjęcia i oceny
+  - Wszystkie pliki z `backend/uploads/`
+  - Resetuje ustawienia do domyślnych
+- ✅ Zachowuje strukturę katalogów
+- ✅ Admin zostanie utworzony ponownie przy restarcie backendu (z `.env`)
+
+**Wymagania:**
+- PostgreSQL musi działać
+- Plik `.env` z poświadczeniami bazy danych
+- `backend/src/main/resources/db/reset-data.sql` musi istnieć
+
+**Zabezpieczenia:**
+- ✅ Wymaga interaktywnego potwierdzenia (wpisanie "yes")
+- ✅ Pokazuje ile plików zostanie usuniętych
+- ✅ Opcja `--dry-run` do podglądu bez zmian
+
+**Przykład użycia:**
+```bash
+# Podgląd co zostanie usunięte
+./scripts/reset-data.sh --dry-run
+
+# Reset danych (z potwierdzeniem)
+./scripts/reset-data.sh
+# Wpisz: yes
+
+# Restart backendu (utworzy admina)
+./scripts/stop-dev.sh && ./scripts/start-dev.sh
+```
+
+**Użycie:**
+- 🔧 Reset środowiska deweloperskiego
+- 🧪 Przygotowanie czystych danych do testów
+- 🚀 Początkowa konfiguracja produkcji
+
+---
+
+### `rebuild.sh`
+
+Przebudowuje aplikację (frontend + backend) z opcjonalnym resetem danych.
+
+**Podstawowe użycie:**
+```bash
+./scripts/rebuild.sh
+```
+
+**Z resetem danych:**
+```bash
+./scripts/rebuild.sh --init
+```
+
+**Szybki rebuild (bez testów):**
+```bash
+./scripts/rebuild.sh --skip-tests
+```
+
+**Co robi (standardowy rebuild):**
+1. Zatrzymuje backend + frontend
+2. Clean build backendu: `./mvnw clean package`
+3. Clean install frontendu: usuwa `node_modules`, `npm install`, testy
+4. Uruchamia ponownie oba serwisy
+
+**Co robi (z flagą `--init`):**
+1. Zatrzymuje backend + frontend
+2. ⚠️ **Wywołuje `reset-data.sh`** (usuwa WSZYSTKIE dane)
+3. Clean build backendu i frontendu
+4. Uruchamia ponownie (admin utworzony z `.env`)
+
+**Opcje:**
+- `--init` - Reset danych przed rebuildem (⚠️ DANGER!)
+- `--skip-tests` - Pomija testy (szybszy rebuild)
+- `--help` - Pomoc
+
+**Zabezpieczenia (dla `--init`):**
+- ✅ Wymaga interaktywnego potwierdzenia
+- ✅ Wyświetla ostrzeżenie przed usunięciem danych
+- ✅ Automatycznie tworzy admina po restarcie
+
+**Przykład workflow:**
+```bash
+# 1. Normalny rebuild (zachowuje dane)
+./scripts/rebuild.sh
+
+# 2. Szybki rebuild bez testów (dev iterations)
+./scripts/rebuild.sh --skip-tests
+
+# 3. Rebuild z czystymi danymi (⚠️ DEV ONLY)
+./scripts/rebuild.sh --init
+# Potwierdź: yes
+```
+
+**Użycie:**
+- 🔄 Rebuild po zmianach w kodzie
+- 🧪 Reset środowiska do testów
+- 🚀 Przygotowanie czystej instalacji
+- ⚡ Szybkie iteracje z `--skip-tests`
+
+**UWAGA:**
+- `--init` usuwa WSZYSTKIE dane - używaj TYLKO w developmencie!
+- W produkcji użyj `deployment/scripts/deploy-marcin288.sh --init`
+
+---
+
 ## 📂 Struktura
 
 ```
 scripts/
-├── start-dev.sh       # Uruchamianie aplikacji
-├── stop-dev.sh        # Zatrzymywanie aplikacji
-├── run-all-tests.sh   # Uruchamianie wszystkich testów
-├── install-hooks.sh   # Instalacja git pre-commit hooka
-├── README.md          # Ta dokumentacja
-├── git-hooks/         # Templates git hooków
-│   └── pre-commit     # Pre-commit hook (kopiowany do .git/hooks/)
-└── .pid/              # PID files i logi (gitignored)
+├── start-dev.sh           # Uruchamianie aplikacji
+├── stop-dev.sh            # Zatrzymywanie aplikacji
+├── reset-data.sh          # ⚠️  Reset WSZYSTKICH danych (DANGER ZONE)
+├── rebuild.sh             # Rebuild aplikacji + opcjonalny --init
+├── run-all-tests.sh       # Uruchamianie wszystkich testów
+├── install-hooks.sh       # Instalacja git pre-push hooka
+├── README.md              # Ta dokumentacja
+├── git-hooks/             # Templates git hooków
+│   └── pre-push           # Pre-push hook (kopiowany do .git/hooks/)
+└── .pid/                  # PID files i logi (gitignored)
     ├── backend.pid
     ├── frontend.pid
     ├── backend.log
