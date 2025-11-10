@@ -14,8 +14,8 @@ import { Photo } from '../../models/photo.model';
   styleUrls: ['./photo-viewer.component.css']
 })
 export class PhotoViewerComponent implements OnInit, OnDestroy {
-  private destroy$ = new Subject<void>();
-  
+  private readonly destroy$ = new Subject<void>();
+
   viewerState: ViewerState | null = null;
   currentPhoto: Photo | null = null;
   imageUrl: SafeUrl | null = null;

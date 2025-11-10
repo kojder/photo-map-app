@@ -6,14 +6,14 @@ import { PhotoFilters } from '../models/photo.model';
   providedIn: 'root'
 })
 export class FilterService {
-  private defaultFilters: PhotoFilters = {
+  private readonly defaultFilters: PhotoFilters = {
     page: 0,
     size: 20,
     sort: 'uploadedAt,desc'
   };
 
-  private filtersSubject = new BehaviorSubject<PhotoFilters>(this.defaultFilters);
-  public filters$ = this.filtersSubject.asObservable();
+  private readonly filtersSubject = new BehaviorSubject<PhotoFilters>(this.defaultFilters);
+  public readonly filters$ = this.filtersSubject.asObservable();
 
   applyFilters(filters: Partial<PhotoFilters>): void {
     const currentFilters = this.filtersSubject.value;

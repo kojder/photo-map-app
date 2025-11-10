@@ -20,7 +20,7 @@ export class MapComponent implements OnInit, AfterViewInit, OnDestroy {
   private map?: L.Map;
   private markerClusterGroup?: L.MarkerClusterGroup;
   private resizeObserver?: ResizeObserver;
-  private thumbnailUrls = new Map<number, string>();
+  private readonly thumbnailUrls = new Map<number, string>();
 
   photos = signal<Photo[]>([]);
   loading = signal(false);

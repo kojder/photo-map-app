@@ -12,8 +12,8 @@ export class AuthService {
   private readonly TOKEN_KEY = 'auth_token';
   private readonly USER_KEY = 'current_user';
 
-  private currentUserSubject = new BehaviorSubject<User | null>(this.getCurrentUser());
-  public currentUser$ = this.currentUserSubject.asObservable();
+  private readonly currentUserSubject = new BehaviorSubject<User | null>(this.getCurrentUser());
+  public readonly currentUser$ = this.currentUserSubject.asObservable();
 
   constructor(private readonly http: HttpClient) {}
 

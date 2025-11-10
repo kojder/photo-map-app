@@ -61,6 +61,17 @@ describe('AdminService', () => {
     req.flush(mockSpringPage);
   });
 
+  it('should get users with default parameters', () => {
+    service.getUsers().subscribe(response => {
+      expect(response.content.length).toBe(1);
+      expect(response.content[0].email).toBe('user@example.com');
+    });
+
+    const req = httpMock.expectOne('/api/admin/users?page=0&size=10');
+    expect(req.request.method).toBe('GET');
+    req.flush(mockSpringPage);
+  });
+
   it('should delete user', () => {
     const userId = 1;
 
@@ -84,5 +95,84 @@ describe('AdminService', () => {
     expect(req.request.method).toBe('PUT');
     expect(req.request.body).toEqual({ role: 'ADMIN' });
     req.flush(updatedUser);
+  });
+
+  it('should get users with searchEmail parameter', () => {
+    const searchEmail = 'test@example.com';
+
+    service.getUsers(0, 10, searchEmail).subscribe(response => {
+      expect(response.content.length).toBe(1);
+      expect(response.content[0].email).toBe('user@example.com');
+    });
+
+    const req = httpMock.expectOne('/api/admin/users?page=0&size=10&searchEmail=test@example.com');
+    expect(req.request.method).toBe('GET');
+    req.flush(mockSpringPage);
+  });
+
+  it('should get users and ignore empty searchEmail', () => {
+    service.getUsers(0, 10, '   ').subscribe(response => {
+      expect(response.content.length).toBe(1);
+    });
+
+    const req = httpMock.expectOne('/api/admin/users?page=0&size=10');
+    expect(req.request.method).toBe('GET');
+    req.flush(mockSpringPage);
+  });
+
+  it('should get users without searchEmail when undefined', () => {
+    service.getUsers(0, 10, undefined).subscribe(response => {
+      expect(response.content.length).toBe(1);
+    });
+
+    const req = httpMock.expectOne('/api/admin/users?page=0&size=10');
+    expect(req.request.method).toBe('GET');
+    req.flush(mockSpringPage);
+  });
+
+  it('should update user permissions', () => {
+    const userId = 1;
+    const permissions = { canViewPhotos: true, canRate: false };
+    const updatedUser: User = { ...mockUser };
+
+    service.updateUserPermissions(userId, permissions).subscribe(response => {
+      expect(response).toEqual(updatedUser);
+    });
+
+    const req = httpMock.expectOne(`/api/admin/users/${userId}/permissions`);
+    expect(req.request.method).toBe('PUT');
+    expect(req.request.body).toEqual(permissions);
+    req.flush(updatedUser);
+  });
+
+  it('should get settings', () => {
+    const mockSettings = {
+      adminContactEmail: 'admin@example.com'
+    };
+
+    service.getSettings().subscribe(response => {
+      expect(response).toEqual(mockSettings);
+      expect(response.adminContactEmail).toBe('admin@example.com');
+    });
+
+    const req = httpMock.expectOne('/api/admin/settings');
+    expect(req.request.method).toBe('GET');
+    req.flush(mockSettings);
+  });
+
+  it('should update settings', () => {
+    const mockSettings = {
+      adminContactEmail: 'newemail@example.com'
+    };
+
+    service.updateSettings(mockSettings).subscribe(response => {
+      expect(response).toEqual(mockSettings);
+      expect(response.adminContactEmail).toBe('newemail@example.com');
+    });
+
+    const req = httpMock.expectOne('/api/admin/settings');
+    expect(req.request.method).toBe('PUT');
+    expect(req.request.body).toEqual(mockSettings);
+    req.flush(mockSettings);
   });
 });

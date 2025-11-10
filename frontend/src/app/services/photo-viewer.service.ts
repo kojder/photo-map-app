@@ -21,10 +21,10 @@ export class PhotoViewerService {
     sourceRoute: '/'
   };
 
-  private viewerStateSubject = new BehaviorSubject<ViewerState>(this.initialState);
-  public viewerState$: Observable<ViewerState> = this.viewerStateSubject.asObservable();
+  private readonly viewerStateSubject = new BehaviorSubject<ViewerState>(this.initialState);
+  public readonly viewerState$: Observable<ViewerState> = this.viewerStateSubject.asObservable();
 
-  constructor(private router: Router) {}
+  constructor(private readonly router: Router) {}
 
   openViewer(photos: Photo[], photoId: number, sourceRoute: string): void {
     const currentIndex = photos.findIndex(p => p.id === photoId);

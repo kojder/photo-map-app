@@ -8,9 +8,9 @@ import { AppSettings } from '../models/settings.model';
   providedIn: 'root'
 })
 export class PhotoService {
-  private baseUrl = '/api/photos';
-  private photosSubject = new BehaviorSubject<Photo[]>([]);
-  public photos$ = this.photosSubject.asObservable();
+  private readonly baseUrl = '/api/photos';
+  private readonly photosSubject = new BehaviorSubject<Photo[]>([]);
+  public readonly photos$ = this.photosSubject.asObservable();
   private currentFilters: PhotoFilters | undefined;
 
   constructor(private readonly http: HttpClient) {}
