@@ -2,7 +2,7 @@
 
 ################################################################################
 # Photo Map - Build Docker Images Script
-# Description: Buduje backend JAR + frontend Angular + Docker images
+# Description: Builds backend JAR + frontend Angular + Docker images
 # Usage: ./deployment/scripts/build-images.sh
 # Created: 2025-10-27
 ################################################################################

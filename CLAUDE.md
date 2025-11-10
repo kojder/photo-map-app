@@ -489,7 +489,14 @@ git push --no-verify
 - **Communication with user**: Polish
 - **Code**: English (all identifiers, class names, method names, variables)
 - **Documentation**: English (all .md files, README, comments, inline docs)
+- **Scripts**: English (all bash scripts, comments, help messages, log messages)
 - **Git commits**: Conventional Commits format (English)
+
+**IMPORTANT:**
+- ✅ All documentation files (.md) must be in English
+- ✅ All bash scripts must use English for: comments, help messages, log messages, variable names
+- ✅ Only user-facing communication in responses should be in Polish
+- ❌ Never mix Polish and English in documentation or scripts
 
 ### Code Quality
 

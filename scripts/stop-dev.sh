@@ -3,15 +3,15 @@
 # ============================================
 # Photo Map MVP - Development Stop Script
 # ============================================
-# Zatrzymuje backend (Spring Boot) i frontend (Angular)
-# z graceful shutdown i timeoutem
+# Stops backend (Spring Boot) and frontend (Angular)
+# with graceful shutdown and timeout
 #
 # Usage:
 #   ./scripts/stop-dev.sh          # Stop backend + frontend
 #   ./scripts/stop-dev.sh --with-db # Stop backend + frontend + PostgreSQL
 # ============================================
 
-# Kolory dla logów
+# Colors for logs
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
@@ -21,22 +21,22 @@ NC='\033[0m' # No Color
 # Debug mode (DEBUG=true ./scripts/stop-dev.sh)
 DEBUG=${DEBUG:-false}
 
-# Porty
+# Ports
 BACKEND_PORT=8080
 FRONTEND_PORT=4200
 
-# Ścieżki
+# Paths
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
 PID_DIR="$SCRIPT_DIR/.pid"
 BACKEND_PID_FILE="$PID_DIR/backend.pid"
 FRONTEND_PID_FILE="$PID_DIR/frontend.pid"
 
-# Timeout dla graceful shutdown (sekundy)
+# Timeout for graceful shutdown (seconds)
 SHUTDOWN_TIMEOUT=30
 
 # ============================================
-# Funkcje pomocnicze
+# Helper Functions
 # ============================================
 
 log_info() {
@@ -68,42 +68,42 @@ is_process_running() {
 
 get_pid_from_port() {
     local port=$1
-    debug_log "Szukam PID dla portu $port..."
+    debug_log "Searching for PID on port $port..."
 
-    # Metoda 1: ss z PID
+    # Method 1: ss with PID
     if command -v ss >/dev/null 2>&1; then
-        debug_log "Używam ss -tlnp dla portu $port"
+        debug_log "Using ss -tlnp for port $port"
         local pid=$(ss -tlnp 2>/dev/null | grep ":${port} " | sed -n 's/.*pid=\([0-9]*\).*/\1/p' | head -n1)
         if [ -n "$pid" ]; then
-            debug_log "Znaleziono PID $pid (przez ss)"
+            debug_log "Found PID $pid (via ss)"
             echo "$pid"
             return 0
         fi
     fi
 
-    # Metoda 2: lsof (fallback)
+    # Method 2: lsof (fallback)
     if command -v lsof >/dev/null 2>&1; then
-        debug_log "Używam lsof dla portu $port"
+        debug_log "Using lsof for port $port"
         local pid=$(lsof -t -i:$port -sTCP:LISTEN 2>/dev/null | head -n1)
         if [ -n "$pid" ]; then
-            debug_log "Znaleziono PID $pid (przez lsof)"
+            debug_log "Found PID $pid (via lsof)"
             echo "$pid"
             return 0
         fi
     fi
 
-    # Metoda 3: netstat (stary, ale często dostępny)
+    # Method 3: netstat (old but often available)
     if command -v netstat >/dev/null 2>&1; then
-        debug_log "Używam netstat dla portu $port"
+        debug_log "Using netstat for port $port"
         local pid=$(netstat -tlnp 2>/dev/null | grep ":${port} " | awk '{print $7}' | cut -d'/' -f1 | head -n1)
         if [ -n "$pid" ]; then
-            debug_log "Znaleziono PID $pid (przez netstat)"
+            debug_log "Found PID $pid (via netstat)"
             echo "$pid"
             return 0
         fi
     fi
 
-    debug_log "Nie znaleziono PID dla portu $port"
+    debug_log "PID not found for port $port"
     echo ""
 }
 
@@ -113,44 +113,44 @@ stop_process() {
     local timeout=${3:-$SHUTDOWN_TIMEOUT}
 
     if ! is_process_running $pid; then
-        log_warn "$name (PID: $pid) już nie działa"
+        log_warn "$name (PID: $pid) is not running"
         return 0
     fi
 
-    log_info "Zatrzymuję $name (PID: $pid)..."
-    debug_log "Szukam procesów potomnych PID $pid..."
+    log_info "Stopping $name (PID: $pid)..."
+    debug_log "Searching for child processes of PID $pid..."
 
-    # Znajdź wszystkie procesy potomne
+    # Find all child processes
     local children=$(pgrep -P $pid 2>/dev/null || true)
     if [ -n "$children" ]; then
-        debug_log "Znaleziono procesy potomne: $children"
+        debug_log "Found child processes: $children"
     fi
 
-    # Wyślij SIGTERM do procesu głównego (graceful shutdown)
+    # Send SIGTERM to main process (graceful shutdown)
     kill -TERM $pid 2>/dev/null || true
 
-    # Wyślij SIGTERM do wszystkich procesów potomnych
+    # Send SIGTERM to all child processes
     if [ -n "$children" ]; then
         for child in $children; do
-            debug_log "Wysyłam SIGTERM do potomka PID $child"
+            debug_log "Sending SIGTERM to child PID $child"
             kill -TERM $child 2>/dev/null || true
         done
     fi
 
-    # Czekaj na zakończenie
+    # Wait for termination
     local elapsed=0
     while is_process_running $pid; do
         if [ $elapsed -ge $timeout ]; then
-            log_warn "$name nie zakończył się w ciągu ${timeout}s, wysyłam SIGKILL..."
+            log_warn "$name did not terminate within ${timeout}s, sending SIGKILL..."
 
-            # SIGKILL do procesu głównego
+            # SIGKILL to main process
             kill -9 $pid 2>/dev/null || true
 
-            # SIGKILL do wszystkich potomków
+            # SIGKILL to all children
             if command -v pkill >/dev/null 2>&1; then
                 pkill -9 -P $pid 2>/dev/null || true
             else
-                # Fallback: zabij każdego potomka ręcznie
+                # Fallback: kill each child manually
                 local remaining=$(pgrep -P $pid 2>/dev/null || true)
                 for child in $remaining; do
                     kill -9 $child 2>/dev/null || true
@@ -164,20 +164,20 @@ stop_process() {
         elapsed=$((elapsed + 1))
     done
 
-    # Sprawdź czy pozostały jakieś procesy potomne
+    # Check if any child processes remain
     local remaining=$(pgrep -P $pid 2>/dev/null || true)
     if [ -n "$remaining" ]; then
-        log_warn "Pozostały procesy potomne: $remaining, zabijam..."
+        log_warn "Child processes remain: $remaining, killing..."
         for child in $remaining; do
             kill -9 $child 2>/dev/null || true
         done
     fi
 
     if is_process_running $pid; then
-        log_error "$name (PID: $pid) nadal działa po SIGKILL!"
+        log_error "$name (PID: $pid) still running after SIGKILL!"
         return 1
     else
-        log_success "$name zatrzymany"
+        log_success "$name stopped"
         return 0
     fi
 }
@@ -187,33 +187,33 @@ stop_process() {
 # ============================================
 
 stop_backend() {
-    log_info "Sprawdzam backend..."
+    log_info "Checking backend..."
 
     local backend_pid=""
 
-    # Sprawdź PID file
+    # Check PID file
     if [ -f "$BACKEND_PID_FILE" ]; then
         backend_pid=$(cat "$BACKEND_PID_FILE")
-        log_info "Znaleziono PID z pliku: $backend_pid"
+        log_info "Found PID from file: $backend_pid"
     fi
 
-    # Jeśli brak PID file, spróbuj znaleźć po porcie
+    # If no PID file, try finding by port
     if [ -z "$backend_pid" ] || ! is_process_running $backend_pid; then
-        log_info "Szukam procesu na porcie $BACKEND_PORT..."
+        log_info "Searching for process on port $BACKEND_PORT..."
         backend_pid=$(get_pid_from_port $BACKEND_PORT)
     fi
 
-    # Zatrzymaj proces główny
+    # Stop main process
     if [ -n "$backend_pid" ] && is_process_running $backend_pid; then
         stop_process "Backend" $backend_pid
     else
-        log_warn "Backend nie działa"
+        log_warn "Backend is not running"
     fi
 
-    # Sprawdź czy pozostały jakieś procesy na porcie (orphans)
+    # Check for orphan processes on port
     local remaining_pid=$(get_pid_from_port $BACKEND_PORT)
     if [ -n "$remaining_pid" ] && is_process_running $remaining_pid; then
-        log_warn "Znaleziono orphan process na porcie $BACKEND_PORT (PID: $remaining_pid), zabijam..."
+        log_warn "Found orphan process on port $BACKEND_PORT (PID: $remaining_pid), killing..."
         kill -9 $remaining_pid 2>/dev/null || true
         sleep 1
     fi
@@ -226,33 +226,33 @@ stop_backend() {
 # ============================================
 
 stop_frontend() {
-    log_info "Sprawdzam frontend..."
+    log_info "Checking frontend..."
 
     local frontend_pid=""
 
-    # Sprawdź PID file
+    # Check PID file
     if [ -f "$FRONTEND_PID_FILE" ]; then
         frontend_pid=$(cat "$FRONTEND_PID_FILE")
-        log_info "Znaleziono PID z pliku: $frontend_pid"
+        log_info "Found PID from file: $frontend_pid"
     fi
 
-    # Jeśli brak PID file, spróbuj znaleźć po porcie
+    # If no PID file, try finding by port
     if [ -z "$frontend_pid" ] || ! is_process_running $frontend_pid; then
-        log_info "Szukam procesu na porcie $FRONTEND_PORT..."
+        log_info "Searching for process on port $FRONTEND_PORT..."
         frontend_pid=$(get_pid_from_port $FRONTEND_PORT)
     fi
 
-    # Zatrzymaj proces główny
+    # Stop main process
     if [ -n "$frontend_pid" ] && is_process_running $frontend_pid; then
         stop_process "Frontend" $frontend_pid
     else
-        log_warn "Frontend nie działa"
+        log_warn "Frontend is not running"
     fi
 
-    # Sprawdź czy pozostały jakieś procesy na porcie (orphans)
+    # Check for orphan processes on port
     local remaining_pid=$(get_pid_from_port $FRONTEND_PORT)
     if [ -n "$remaining_pid" ] && is_process_running $remaining_pid; then
-        log_warn "Znaleziono orphan process na porcie $FRONTEND_PORT (PID: $remaining_pid), zabijam..."
+        log_warn "Found orphan process on port $FRONTEND_PORT (PID: $remaining_pid), killing..."
         kill -9 $remaining_pid 2>/dev/null || true
         sleep 1
     fi
@@ -265,10 +265,10 @@ stop_frontend() {
 # ============================================
 
 stop_postgres() {
-    log_info "Zatrzymuję PostgreSQL (docker-compose)..."
+    log_info "Stopping PostgreSQL (docker-compose)..."
     cd "$PROJECT_ROOT"
     docker-compose down
-    log_success "PostgreSQL zatrzymany"
+    log_success "PostgreSQL stopped"
 }
 
 # ============================================
@@ -301,20 +301,20 @@ main() {
     stop_frontend
     echo ""
 
-    # Stop PostgreSQL jeśli --with-db
+    # Stop PostgreSQL if --with-db
     if [ "$STOP_DB" = true ]; then
         stop_postgres
         echo ""
     fi
 
     log_info "=========================================="
-    log_success "Wszystkie serwisy zatrzymane!"
+    log_success "All services stopped!"
     log_info "=========================================="
     echo ""
 
-    # Wyczyść folder PID jeśli pusty
+    # Clean up PID folder if empty
     if [ -d "$PID_DIR" ] && [ -z "$(ls -A $PID_DIR/*.pid 2>/dev/null)" ]; then
-        log_info "Usuwam puste pliki logów..."
+        log_info "Removing empty log files..."
         rm -f "$PID_DIR"/*.log 2>/dev/null || true
     fi
 }

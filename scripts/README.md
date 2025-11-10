@@ -1,113 +1,113 @@
 # Development Scripts
 
-Skrypty do zarządzania środowiskiem deweloperskim Photo Map MVP.
+Scripts for managing Photo Map MVP development environment.
 
-## 🚀 Szybki start
+## 🚀 Quick Start
 
-### 1. Uruchom aplikację
+### 1. Start Application
 ```bash
-# Wystarczy jedno polecenie - PostgreSQL uruchomi się automatycznie jeśli nie działa:
+# Single command - PostgreSQL starts automatically if not running:
 ./scripts/start-dev.sh
 
-# Alternatywnie z wyraźną flagą --with-db (to samo działanie):
+# Alternatively with explicit --with-db flag (same behavior):
 ./scripts/start-dev.sh --with-db
 ```
 
-**WAŻNE:**
-- ✅ **PostgreSQL uruchamia się automatycznie** jeśli nie działa (docker-compose up -d)
-- ✅ Flaga `--with-db` jest opcjonalna - automatyczne wykrywanie działa bez niej
-- `./scripts/stop-dev.sh` **NIE zatrzymuje PostgreSQL** - działa w tle dalej
-- PostgreSQL wyłączy się dopiero po `docker-compose down` lub restarcie systemu
+**IMPORTANT:**
+- ✅ **PostgreSQL starts automatically** if not running (docker-compose up -d)
+- ✅ Flag `--with-db` is optional - automatic detection works without it
+- `./scripts/stop-dev.sh` **does NOT stop PostgreSQL** - keeps running in background
+- PostgreSQL stops only after `docker-compose down` or system restart
 
-### 2. Zatrzymaj aplikację (backend + frontend)
+### 2. Stop Application (backend + frontend)
 ```bash
 ./scripts/stop-dev.sh
-# PostgreSQL nadal działa - to normalne!
+# PostgreSQL keeps running - this is normal!
 ```
 
-### 3. Całkowite zatrzymanie (rzadko potrzebne)
+### 3. Complete Shutdown (rarely needed)
 ```bash
 ./scripts/stop-dev.sh --with-db
-# Zatrzymuje backend + frontend + PostgreSQL
+# Stops backend + frontend + PostgreSQL
 ```
 
 ---
 
-## 📜 Dostępne skrypty
+## 📜 Available Scripts
 
 ### `start-dev.sh`
 
-Uruchamia backend (Spring Boot) i frontend (Angular) w tle.
+Starts backend (Spring Boot) and frontend (Angular) in background.
 
-**Podstawowe użycie:**
+**Basic usage:**
 ```bash
 ./scripts/start-dev.sh
 ```
 
-**Z PostgreSQL:**
+**With PostgreSQL:**
 ```bash
 ./scripts/start-dev.sh --with-db
 ```
 
-**Funkcje:**
-- ✅ Sprawdza czy procesy już działają (unika duplikatów)
-- ✅ Zapisuje PID procesów do `scripts/.pid/`
-- ✅ Czeka na startup i weryfikuje porty (bez sudo - używa ss/lsof/nc fallback)
-- ✅ Automatyczne health checks dla backend i frontend
-- ✅ Loguje output do plików: `scripts/.pid/backend.log`, `scripts/.pid/frontend.log`
-- ✅ **Automatycznie uruchamia PostgreSQL** jeśli nie działa (docker-compose)
-- ✅ Debug mode dla diagnostyki problemów
+**Features:**
+- ✅ Checks if processes are already running (avoids duplicates)
+- ✅ Saves process PIDs to `scripts/.pid/`
+- ✅ Waits for startup and verifies ports (no sudo - uses ss/lsof/nc fallback)
+- ✅ Automatic health checks for backend and frontend
+- ✅ Logs output to files: `scripts/.pid/backend.log`, `scripts/.pid/frontend.log`
+- ✅ **Automatically starts PostgreSQL** if not running (docker-compose)
+- ✅ Debug mode for diagnostics
 
-**Wymagania:**
-- Docker + Docker Compose (dla PostgreSQL - automatycznie uruchamiane)
-- Maven wrapper w `backend/mvnw`
-- npm/Node.js dla frontendu
+**Requirements:**
+- Docker + Docker Compose (for PostgreSQL - automatically started)
+- Maven wrapper in `backend/mvnw`
+- npm/Node.js for frontend
 
 ---
 
 ### `stop-dev.sh`
 
-Zatrzymuje backend i frontend z graceful shutdown.
+Stops backend and frontend with graceful shutdown.
 
-**Podstawowe użycie:**
+**Basic usage:**
 ```bash
 ./scripts/stop-dev.sh
 ```
 
-**Z PostgreSQL:**
+**With PostgreSQL:**
 ```bash
 ./scripts/stop-dev.sh --with-db
 ```
 
-**Funkcje:**
+**Features:**
 - ✅ Graceful shutdown (SIGTERM → timeout → SIGKILL)
-- ✅ Znajduje procesy po PID lub porcie (bez sudo - używa ss/lsof/netstat fallback)
-- ✅ Timeout 30s na shutdown
-- ✅ Automatyczne czyszczenie plików PID
-- ✅ Opcjonalnie zatrzymuje PostgreSQL (docker-compose down)
-- ✅ Debug mode dla diagnostyki problemów
+- ✅ Finds processes by PID or port (no sudo - uses ss/lsof/netstat fallback)
+- ✅ Timeout 30s for shutdown
+- ✅ Automatic PID file cleanup
+- ✅ Optionally stops PostgreSQL (docker-compose down)
+- ✅ Debug mode for diagnostics
 
 ---
 
 ### `run-all-tests.sh`
 
-Uruchamia wszystkie testy: frontend unit, backend i E2E.
+Runs all tests: frontend unit, backend, and E2E.
 
-**Podstawowe użycie:**
+**Basic usage:**
 ```bash
 ./scripts/run-all-tests.sh
 ```
 
-**Funkcje:**
-- ✅ Automatycznie sprawdza i uruchamia PostgreSQL testową (port 5433)
-- ✅ Uruchamia po kolei:
+**Features:**
+- ✅ Automatically checks and starts test PostgreSQL (port 5433)
+- ✅ Runs sequentially:
   - Frontend Unit Tests (Karma): `npm run test:coverage`
   - Backend Tests (Maven): `./mvnw test`
   - E2E Tests (Playwright): `npm run test:e2e`
-- ✅ Zatrzymuje się przy pierwszym fail
-- ✅ Wyświetla szczegółowe summary z wynikami
-- ✅ Pokazuje ścieżki do coverage reports
-- ✅ Exit code 0 (sukces) lub 1 (fail)
+- ✅ Stops at first failure
+- ✅ Displays detailed summary with results
+- ✅ Shows paths to coverage reports
+- ✅ Exit code 0 (success) or 1 (failure)
 
 **Output:**
 ```
@@ -126,203 +126,224 @@ Coverage reports:
 - frontend/playwright-report/index.html
 ```
 
-**Wymagania:**
-- Docker (dla PostgreSQL testowej)
-- Maven wrapper w `backend/mvnw`
-- npm/Node.js dla frontendu
+**Requirements:**
+- Docker (for test PostgreSQL)
+- Maven wrapper in `backend/mvnw`
+- npm/Node.js for frontend
 
-**Zastosowanie:**
-- Przed commitem (ręcznie lub przez pre-commit hook)
-- Po większych zmianach w kodzie
-- Weryfikacja stanu przed pull requestem
+**Use cases:**
+- Before commit (manually or via pre-commit hook)
+- After major code changes
+- Verification before pull request
 - CI/CD pipeline
 
 ---
 
 ### `install-hooks.sh`
 
-Instaluje git pre-push hook, który automatycznie uruchamia wszystkie testy przed każdym pushem do remote.
+Installs git pre-push hook that automatically runs all tests before each push to remote.
 
-**Podstawowe użycie (jednorazowa instalacja):**
+**Basic usage (one-time installation):**
 ```bash
 ./scripts/install-hooks.sh
 ```
 
-**Funkcje:**
-- ✅ Kopiuje pre-push hook do `.git/hooks/`
-- ✅ Ustawia uprawnienia wykonywalne
-- ✅ Wyświetla instrukcje użycia
+**Features:**
+- ✅ Copies pre-push hook to `.git/hooks/`
+- ✅ Sets executable permissions
+- ✅ Displays usage instructions
 
-**Działanie pre-push hooka:**
-- Hook wywołuje `./scripts/run-all-tests.sh` automatycznie
-- Jeśli testy FAIL → push **przerwany**
-- Jeśli testy PASS → push przechodzi
+**Pre-push hook behavior:**
+- Hook calls `./scripts/run-all-tests.sh` automatically
+- If tests FAIL → push **aborted**
+- If tests PASS → push proceeds
 
-**Dlaczego pre-push zamiast pre-commit?**
-- ✅ Commit jest szybki (lokalna operacja, wielokrotna)
-- ✅ Push weryfikowany testami (przed wysłaniem na remote)
-- ✅ Mniej frustracji - testy tylko raz przed pushem
+**Why pre-push instead of pre-commit?**
+- ✅ Commit is fast (local operation, multiple commits)
+- ✅ Push verified by tests (before sending to remote)
+- ✅ Less frustration - tests only once before push
 
-**Bypass hooka (tylko w awaryjnych sytuacjach):**
+**Bypass hook (emergency situations only):**
 ```bash
 git push --no-verify
 ```
 
-**Przykład workflow:**
+**Example workflow:**
 ```bash
-# 1. Zainstaluj hook (raz)
+# 1. Install hook (once)
 ./scripts/install-hooks.sh
 
-# 2. Normalny commit (bez testów - szybko)
+# 2. Normal commit (no tests - fast)
 git add .
 git commit -m "feat: add feature"
 
-# 3. Push (hook uruchamia testy)
+# 3. Push (hook runs tests)
 git push
   ↓
-🧪 Hook uruchamia testy automatycznie
+🧪 Hook runs tests automatically
   ↓
-✅ Wszystkie OK → Push wykonany
-❌ Fail → Push przerwany
+✅ All OK → Push completed
+❌ Fail → Push aborted
 
-# 4. Jeśli fail - napraw kod i spróbuj ponownie
+# 4. If fail - fix code and try again
 ```
 
 ---
 
 ### `reset-data.sh`
 
-⚠️ **DANGER ZONE** - Resetuje WSZYSTKIE dane w bazie i plikach do stanu początkowego.
+⚠️ **DANGER ZONE** - Resets ALL data in database and files to initial state.
 
-**Podstawowe użycie:**
+**Basic usage:**
 ```bash
 ./scripts/reset-data.sh
 ```
 
-**Dry-run (podgląd bez usuwania):**
+**Dry-run (preview without deletion):**
 ```bash
 ./scripts/reset-data.sh --dry-run
 ```
 
-**Co robi:**
-- ❌ **USUWA WSZYSTKIE DANE:**
-  - Wszystkich użytkowników (łącznie z adminem)
-  - Wszystkie zdjęcia i oceny
-  - Wszystkie pliki z `backend/uploads/`
-  - Resetuje ustawienia do domyślnych
-- ✅ Zachowuje strukturę katalogów
-- ✅ Admin zostanie utworzony ponownie przy restarcie backendu (z `.env`)
+**What it does:**
+- ❌ **DELETES ALL DATA:**
+  - All users (including admin)
+  - All photos and ratings
+  - All files from `backend/uploads/`
+  - Resets settings to defaults
+- ✅ Preserves directory structure
+- ✅ Admin will be recreated on backend restart (from `.env`)
 
-**Wymagania:**
-- PostgreSQL musi działać
-- Plik `.env` z poświadczeniami bazy danych
-- `backend/src/main/resources/db/reset-data.sql` musi istnieć
+**Requirements:**
+- PostgreSQL must be running
+- `.env` file with database credentials
+- `backend/src/main/resources/db/reset-data.sql` must exist
 
-**Zabezpieczenia:**
-- ✅ Wymaga interaktywnego potwierdzenia (wpisanie "yes")
-- ✅ Pokazuje ile plików zostanie usuniętych
-- ✅ Opcja `--dry-run` do podglądu bez zmian
+**Safety features:**
+- ✅ Requires interactive confirmation (type "yes")
+- ✅ Shows how many files will be deleted
+- ✅ `--dry-run` option for preview without changes
 
-**Przykład użycia:**
+**Usage example:**
 ```bash
-# Podgląd co zostanie usunięte
+# Preview what will be deleted
 ./scripts/reset-data.sh --dry-run
 
-# Reset danych (z potwierdzeniem)
+# Reset data (with confirmation)
 ./scripts/reset-data.sh
-# Wpisz: yes
+# Type: yes
 
-# Restart backendu (utworzy admina)
+# Restart backend (will create admin)
 ./scripts/stop-dev.sh && ./scripts/start-dev.sh
 ```
 
-**Użycie:**
-- 🔧 Reset środowiska deweloperskiego
-- 🧪 Przygotowanie czystych danych do testów
-- 🚀 Początkowa konfiguracja produkcji
+**Use cases:**
+- 🔧 Development environment reset
+- 🧪 Preparing clean data for tests
+- 🚀 Initial production setup
 
 ---
 
 ### `rebuild.sh`
 
-Przebudowuje aplikację (frontend + backend) z opcjonalnym resetem danych.
+Rebuilds application (frontend + backend) with different levels of build cleanliness.
 
-**Podstawowe użycie:**
+**⚡ QUICK rebuild (default):**
 ```bash
 ./scripts/rebuild.sh
 ```
+- Backend: compilation only (`mvnw compile`)
+- Frontend: restart without reinstalling `node_modules`
+- Tests: skipped
+- ⏱️ Time: ~30-60 seconds
 
-**Z resetem danych:**
-```bash
-./scripts/rebuild.sh --init
-```
-
-**Szybki rebuild (bez testów):**
-```bash
-./scripts/rebuild.sh --skip-tests
-```
-
-**Co robi (standardowy rebuild):**
-1. Zatrzymuje backend + frontend
-2. Clean build backendu: `./mvnw clean package`
-3. Clean install frontendu: usuwa `node_modules`, `npm install`, testy
-4. Uruchamia ponownie oba serwisy
-
-**Co robi (z flagą `--init`):**
-1. Zatrzymuje backend + frontend
-2. ⚠️ **Wywołuje `reset-data.sh`** (usuwa WSZYSTKIE dane)
-3. Clean build backendu i frontendu
-4. Uruchamia ponownie (admin utworzony z `.env`)
-
-**Opcje:**
-- `--init` - Reset danych przed rebuildem (⚠️ DANGER!)
-- `--skip-tests` - Pomija testy (szybszy rebuild)
-- `--help` - Pomoc
-
-**Zabezpieczenia (dla `--init`):**
-- ✅ Wymaga interaktywnego potwierdzenia
-- ✅ Wyświetla ostrzeżenie przed usunięciem danych
-- ✅ Automatycznie tworzy admina po restarcie
-
-**Przykład workflow:**
-```bash
-# 1. Normalny rebuild (zachowuje dane)
-./scripts/rebuild.sh
-
-# 2. Szybki rebuild bez testów (dev iterations)
-./scripts/rebuild.sh --skip-tests
-
-# 3. Rebuild z czystymi danymi (⚠️ DEV ONLY)
-./scripts/rebuild.sh --init
-# Potwierdź: yes
-```
-
-**Użycie:**
-- 🔄 Rebuild po zmianach w kodzie
-- 🧪 Reset środowiska do testów
-- 🚀 Przygotowanie czystej instalacji
-- ⚡ Szybkie iteracje z `--skip-tests`
-
-**UWAGA:**
-- `--init` usuwa WSZYSTKIE dane - używaj TYLKO w developmencie!
-- W produkcji użyj `deployment/scripts/deploy-marcin288.sh --init`
+**Use case:** Quickly see changes in components during development
 
 ---
 
-## 📂 Struktura
+**🧹 CLEAN rebuild:**
+```bash
+./scripts/rebuild.sh --clean
+```
+- Backend: clean build (`mvnw clean compile`)
+- Frontend: `rm -rf node_modules && npm install`
+- Tests: skipped (unless `--full`)
+- ⏱️ Time: ~5-10 minutes
+
+**Use case:** Build problems, need clean environment
+
+---
+
+**🔬 FULL rebuild (with tests):**
+```bash
+./scripts/rebuild.sh --full
+```
+- Backend: full build (`mvnw clean package`) + tests
+- Frontend: clean install + tests
+- Tests: always run
+- ⏱️ Time: ~10-15 minutes
+
+**Use case:** Before push, ensure everything works
+
+---
+
+**Options:**
+- `--clean` - clean build (rm node_modules, mvnw clean)
+- `--full` - full build with tests (forces tests)
+- `--skip-tests` - skip tests (for `--clean`, default for quick)
+- `--help` - help
+
+**Combinations:**
+```bash
+./scripts/rebuild.sh                        # Quick rebuild (default)
+./scripts/rebuild.sh --clean                # Clean without tests
+./scripts/rebuild.sh --clean --skip-tests   # Clean without tests (identical)
+./scripts/rebuild.sh --full                 # Full with tests (forces --skip-tests=false)
+```
+
+**What it does:**
+1. Stops backend + frontend
+2. Rebuilds according to level (quick/clean/full)
+3. Restarts both services
+
+**⚠️ IMPORTANT CHANGES:**
+- ❌ **Flag `--init` REMOVED** - use `./scripts/reset-data.sh` instead
+- ✅ Default rebuild is now **QUICK** (~1 min instead of 10-15 min)
+- ✅ Tests are skipped by default (use `--full` for tests)
+
+**Example workflow:**
+```bash
+# 1. Quick rebuild - component change (~1 min)
+./scripts/rebuild.sh
+
+# 2. Clean rebuild - build problem (~5-10 min)
+./scripts/rebuild.sh --clean
+
+# 3. Full rebuild - before push (~10-15 min)
+./scripts/rebuild.sh --full
+```
+
+**Use cases:**
+- 🔄 Quick rebuild: see changes immediately
+- 🧹 Clean rebuild: dependency problems
+- 🔬 Full rebuild: before push (verification)
+- ⚡ Time saved: ~10-14 min on each rebuild!
+
+---
+
+## 📂 Structure
 
 ```
 scripts/
-├── start-dev.sh           # Uruchamianie aplikacji
-├── stop-dev.sh            # Zatrzymywanie aplikacji
-├── reset-data.sh          # ⚠️  Reset WSZYSTKICH danych (DANGER ZONE)
-├── rebuild.sh             # Rebuild aplikacji + opcjonalny --init
-├── run-all-tests.sh       # Uruchamianie wszystkich testów
-├── install-hooks.sh       # Instalacja git pre-push hooka
-├── README.md              # Ta dokumentacja
-├── git-hooks/             # Templates git hooków
-│   └── pre-push           # Pre-push hook (kopiowany do .git/hooks/)
-└── .pid/                  # PID files i logi (gitignored)
+├── start-dev.sh           # Start application
+├── stop-dev.sh            # Stop application
+├── reset-data.sh          # ⚠️  Reset ALL data (DANGER ZONE)
+├── rebuild.sh             # Rebuild application + optional --init
+├── run-all-tests.sh       # Run all tests
+├── install-hooks.sh       # Install git pre-push hook
+├── README.md              # This documentation
+├── git-hooks/             # Git hooks templates
+│   └── pre-push           # Pre-push hook (copied to .git/hooks/)
+└── .pid/                  # PID files and logs (gitignored)
     ├── backend.pid
     ├── frontend.pid
     ├── backend.log
@@ -331,9 +352,9 @@ scripts/
 
 ---
 
-## 🔍 Sprawdzanie statusu
+## 🔍 Status Check
 
-### Procesy
+### Processes
 ```bash
 # Backend
 lsof -i:8080
@@ -345,7 +366,7 @@ lsof -i:4200
 lsof -i:5432
 ```
 
-### Logi w czasie rzeczywistym
+### Real-time logs
 ```bash
 # Backend
 tail -f scripts/.pid/backend.log
@@ -363,7 +384,7 @@ curl http://localhost:8080/actuator/health
 curl -I http://localhost:4200
 ```
 
-**Uwaga:** Skrypt `start-dev.sh` automatycznie weryfikuje health endpoints po starcie i pokazuje status ✅ lub ⚠️.
+**Note:** Script `start-dev.sh` automatically verifies health endpoints after startup and shows status ✅ or ⚠️.
 
 ---
 
@@ -371,35 +392,35 @@ curl -I http://localhost:4200
 
 ### Problem: "Port 8080 already in use"
 ```bash
-# Znajdź i zabij proces
+# Find and kill process
 lsof -ti:8080 | xargs kill -9
 ```
 
-### Problem: "PostgreSQL nie działa"
+### Problem: "PostgreSQL not running"
 ```bash
-# Uruchom ręcznie
+# Start manually
 docker-compose up -d
 
-# Sprawdź status
+# Check status
 docker-compose ps
 ```
 
-### Problem: "Backend nie startuje"
+### Problem: "Backend not starting"
 ```bash
-# Sprawdź logi
+# Check logs
 cat scripts/.pid/backend.log
 
-# Lub uruchom ręcznie w terminalu
+# Or run manually in terminal
 cd backend
 ./mvnw spring-boot:run
 ```
 
-### Problem: "Frontend nie startuje"
+### Problem: "Frontend not starting"
 ```bash
-# Sprawdź logi
+# Check logs
 cat scripts/.pid/frontend.log
 
-# Przebuduj node_modules
+# Rebuild node_modules
 cd frontend
 rm -rf node_modules
 npm install
@@ -409,73 +430,73 @@ npm install
 
 ## 🐞 Debug Mode
 
-Oba skrypty wspierają tryb debug, który pokazuje szczegółowe informacje o procesie wykrywania portów i PIDów.
+Both scripts support debug mode that shows detailed information about port and PID detection process.
 
-**Włączenie debug mode:**
+**Enable debug mode:**
 ```bash
-# Start z debugiem
+# Start with debug
 DEBUG=true ./scripts/start-dev.sh
 
-# Stop z debugiem
+# Stop with debug
 DEBUG=true ./scripts/stop-dev.sh
 ```
 
-**Co pokazuje debug mode:**
-- Metody wykrywania portów (ss → lsof → nc)
-- Metody wykrywania PID (ss → lsof → netstat)
+**What debug mode shows:**
+- Port detection methods (ss → lsof → nc)
+- PID detection methods (ss → lsof → netstat)
 - Health check endpoints
-- Szczegółowe informacje o procesach
+- Detailed process information
 
-**Przykład outputu:**
+**Example output:**
 ```
-[DEBUG] Sprawdzam port 5432...
-[DEBUG] Używam ss dla portu 5432
-[DEBUG] Port 5432 jest zajęty (wykryte przez ss)
-[DEBUG] Sprawdzam backend health endpoint...
+[DEBUG] Checking port 5432...
+[DEBUG] Using ss for port 5432
+[DEBUG] Port 5432 is in use (detected by ss)
+[DEBUG] Checking backend health endpoint...
 [DEBUG] Backend health: UP
 ```
 
-**Użyteczne gdy:**
-- Skrypty nie wykrywają procesów poprawnie
-- Problemy z wykrywaniem portów
-- Diagnozowanie problemów ze startupem
+**Useful when:**
+- Scripts don't detect processes correctly
+- Problems with port detection
+- Diagnosing startup problems
 
 ---
 
-## 💡 Wskazówki
+## 💡 Tips
 
-**Zalecany workflow:**
-1. **Start aplikacji (zawsze to samo polecenie):**
+**Recommended workflow:**
+1. **Start application (always same command):**
    ```bash
    ./scripts/start-dev.sh
    ```
-   PostgreSQL uruchomi się automatycznie jeśli nie działa!
+   PostgreSQL will start automatically if not running!
 
-2. **Restart backend/frontend (szybko):**
+2. **Restart backend/frontend (quick):**
    ```bash
-   ./scripts/stop-dev.sh      # Zatrzymuje tylko backend + frontend
-   ./scripts/start-dev.sh     # PostgreSQL nadal działa (wykryte automatycznie)
+   ./scripts/stop-dev.sh      # Stops only backend + frontend
+   ./scripts/start-dev.sh     # PostgreSQL still running (detected automatically)
    ```
 
-3. **Całkowite wyczyszczenie (koniec dnia):**
+3. **Complete shutdown (end of day):**
    ```bash
    ./scripts/stop-dev.sh --with-db
-   # Lub ręcznie:
+   # Or manually:
    docker-compose down
    ```
 
-**PostgreSQL w tle:**
-- ✅ **Automatycznie uruchamiane** gdy nie działa (wykrywanie przy każdym start-dev.sh)
-- `start-dev.sh --with-db` - flaga opcjonalna (automatyczne wykrywanie działa bez niej)
-- `stop-dev.sh` **NIE zatrzymuje** PostgreSQL - zostaje w tle
-- `stop-dev.sh --with-db` zatrzymuje PostgreSQL (docker-compose down)
-- PostgreSQL jest lekki - można zostawić włączony cały dzień
+**PostgreSQL in background:**
+- ✅ **Automatically started** when not running (detection on every start-dev.sh)
+- `start-dev.sh --with-db` - optional flag (automatic detection works without it)
+- `stop-dev.sh` **does NOT stop** PostgreSQL - stays in background
+- `stop-dev.sh --with-db` stops PostgreSQL (docker-compose down)
+- PostgreSQL is lightweight - can stay running all day
 
-**Wielokrotne uruchomienie:**
-- Skrypt `start-dev.sh` wykrywa już działające procesy
-- Można uruchomić ponownie bez zatrzymywania (bezpieczne)
+**Multiple runs:**
+- Script `start-dev.sh` detects already running processes
+- Can be run again without stopping (safe)
 
-**Logi:**
-- Backend/Frontend logują do `scripts/.pid/*.log`
-- Logi są nadpisywane przy każdym starcie
-- Użyj `tail -f` do monitorowania w czasie rzeczywistym
+**Logs:**
+- Backend/Frontend log to `scripts/.pid/*.log`
+- Logs are overwritten on each start
+- Use `tail -f` for real-time monitoring

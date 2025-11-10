@@ -6,43 +6,43 @@
 
 ---
 
-## 📋 Spis treści
+## 📋 Table of Contents
 
-1. [Wymagania wstępne](#wymagania-wstępne)
-2. [Architektura deployment](#architektura-deployment)
-3. [Przygotowanie .env](#przygotowanie-env)
-4. [Build images lokalnie](#build-images-lokalnie)
-5. [Deploy na Mikrus VPS](#deploy-na-mikrus-vps)
-6. [Weryfikacja deployment](#weryfikacja-deployment)
-7. [Updates i maintenance](#updates-i-maintenance)
-8. [SSL Configuration (Automatyczne)](#ssl-configuration-automatyczne)
+1. [Prerequisites](#prerequisites)
+2. [Deployment Architecture](#deployment-architecture)
+3. [Preparing .env](#preparing-env)
+4. [Build Images Locally](#build-images-locally)
+5. [Deploy to Mikrus VPS](#deploy-to-mikrus-vps)
+6. [Deployment Verification](#deployment-verification)
+7. [Updates and Maintenance](#updates-and-maintenance)
+8. [SSL Configuration (Automatic)](#ssl-configuration-automatic)
 9. [Troubleshooting](#troubleshooting)
 
 ---
 
-## Wymagania wstępne
+## Prerequisites
 
-### Na lokalnej maszynie (development):
-- ✅ Docker 20+ (do budowania images)
-- ✅ Docker Compose 2+ (opcjonalne - tylko do testów lokalnych)
-- ✅ SSH client (do połączenia z Mikrus VPS)
-- ✅ Java 17 JDK + Maven (do build backend JAR)
-- ✅ Node.js 18+ + Angular CLI (do build frontend)
+### On local machine (development):
+- ✅ Docker 20+ (for building images)
+- ✅ Docker Compose 2+ (optional - only for local testing)
+- ✅ SSH client (for connecting to Mikrus VPS)
+- ✅ Java 17 JDK + Maven (for building backend JAR)
+- ✅ Node.js 18+ + Angular CLI (for building frontend)
 
-### Na Mikrus VPS:
-- ✅ Docker + Docker Compose - instalacja przez skrypt
-- ✅ SSH access - dostęp root
+### On Mikrus VPS:
+- ✅ Docker + Docker Compose - installation via script
+- ✅ SSH access - root access
 - ✅ PostgreSQL - Shared service (psql01.mikr.us)
-- ✅ 4GB RAM - wystarczające dla Docker
+- ✅ 4GB RAM - sufficient for Docker
 
-### Wymagane informacje z panelu Mikrus:
-- SSH host i port: `srvXX.mikr.us`, port `10XXX` (10000 + numer maszyny)
+### Required information from Mikrus panel:
+- SSH host and port: `srvXX.mikr.us`, port `10XXX` (10000 + machine number)
 - PostgreSQL credentials: https://mikr.us/panel/?a=postgres
-- Przydzielone porty: sprawdź w panelu (format: 201xx, 301xx)
+- Assigned ports: check in panel (format: 201xx, 301xx)
 
 ---
 
-## Architektura deployment
+## Deployment Architecture
 
 ### Docker Compose Services
 
@@ -59,7 +59,7 @@ docker-compose.yml
     └── Proxy: /api → backend:8080
 ```
 
-### Architektura SSL (Mikrus Proxy)
+### SSL Architecture (Mikrus Proxy)
 
 ```
 Internet (HTTPS)
@@ -73,44 +73,44 @@ Backend Container (Spring Boot:8080)
 PostgreSQL (psql01.mikr.us - shared service)
 ```
 
-**Ważne:**
-- Backend serwuje **HTTP** (port 8080 internal)
-- Frontend nginx nasłuchuje na **port 30288** (external)
-- Mikrus proxy dodaje SSL i przekierowuje do `https://srv07-30288.wykr.es/`
-- Użytkownicy łączą się przez HTTPS, kontenery widzą HTTP
+**Important:**
+- Backend serves **HTTP** (port 8080 internal)
+- Frontend nginx listens on **port 30288** (external)
+- Mikrus proxy adds SSL and redirects to `https://srv07-30288.wykr.es/`
+- Users connect via HTTPS, containers see HTTP
 
 ### Volumes
 
 ```
 photo-map-uploads/
 ├── input/      # Drop zone (web uploads)
-├── original/   # Pełne rozdzielczości
+├── original/   # Full resolution
 ├── medium/     # 300px thumbnails
-└── failed/     # Błędy przetwarzania
+└── failed/     # Processing errors
 ```
 
-**Persistence:** Volume `/var/lib/docker/volumes/photo-map-uploads` przetrwa restart kontenerów
+**Persistence:** Volume `/var/lib/docker/volumes/photo-map-uploads` survives container restarts
 
 ---
 
-## Przygotowanie .env
+## Preparing .env
 
-### Krok 1: Skopiuj template
+### Step 1: Copy template
 
 ```bash
 cp deployment/.env.production.example deployment/.env
 ```
 
-### Krok 2: Uzupełnij PostgreSQL credentials
+### Step 2: Fill in PostgreSQL credentials
 
-Login do panelu Mikrus: https://mikr.us/panel/?a=postgres
+Login to Mikrus panel: https://mikr.us/panel/?a=postgres
 
-Skopiuj:
+Copy:
 - Database name: `db_xxxxx`
 - Username: `userxxxxx`
 - Password: `********`
 
-Wklej do `deployment/.env`:
+Paste into `deployment/.env`:
 
 ```env
 # Spring Boot datasource configuration (REQUIRED)
@@ -126,54 +126,54 @@ DATABASE_USERNAME=userxxxxx
 DATABASE_PASSWORD=********
 ```
 
-**Ważne:** Spring Boot używa `DB_*` zmiennych (nie `DATABASE_URL`). Obie wersje są w `.env` dla kompatybilności.
+**Important:** Spring Boot uses `DB_*` variables (not `DATABASE_URL`). Both versions are in `.env` for compatibility.
 
-### Krok 3: Wygeneruj JWT secret
+### Step 3: Generate JWT secret
 
 ```bash
 openssl rand -base64 32
 ```
 
-Wklej wynik do `deployment/.env`:
+Paste the result into `deployment/.env`:
 
 ```env
 JWT_SECRET=xK8vN2pQr5tYw9zA1bCdE3fGhI4jKlM6nOpRqS7uVxY=
 ```
 
-### Krok 4: Ustaw port frontendu
+### Step 4: Set frontend port
 
-Sprawdź przydzielone porty w panelu Mikrus (format: 201xx, 301xx).
+Check assigned ports in Mikrus panel (format: 201xx, 301xx).
 
 ```env
 FRONTEND_PORT=30288
 ```
 
-### Krok 5: Ustaw admin credentials
+### Step 5: Set admin credentials
 
 ```env
 ADMIN_EMAIL=admin@example.com
 ADMIN_PASSWORD=YourSecurePassword123!
 ```
 
-**Ważne:** Hasło musi mieć minimum 8 znaków (walidacja frontendu).
+**Important:** Password must have minimum 8 characters (frontend validation).
 
 ---
 
-## Build images lokalnie
+## Build Images Locally
 
-### Opcja A: Skrypt automatyczny (zalecane)
+### Option A: Automatic script (recommended)
 
 ```bash
 ./deployment/scripts/build-images.sh
 ```
 
-**Skrypt wykonuje:**
+**Script performs:**
 1. Build backend JAR: `./mvnw clean package -DskipTests`
 2. Build frontend: `ng build --configuration production`
 3. Build Docker image backend: `docker build -t photo-map-backend:latest backend/`
 4. Build Docker image frontend: `docker build -t photo-map-frontend:latest frontend/`
 
-### Opcja B: Manual build (krok po kroku)
+### Option B: Manual build (step by step)
 
 #### 1. Build backend JAR
 
@@ -205,7 +205,7 @@ docker build -t photo-map-frontend:latest .
 cd ..
 ```
 
-#### 5. Weryfikacja images
+#### 5. Verify images
 
 ```bash
 docker images | grep photo-map
@@ -219,9 +219,9 @@ photo-map-frontend  latest   def456   1 minute ago    50MB
 
 ---
 
-## Deploy na Mikrus VPS
+## Deploy to Mikrus VPS
 
-### Krok 1: Instalacja Docker na VPS (jednorazowo)
+### Step 1: Install Docker on VPS (one-time)
 
 ```bash
 # SSH to VPS
@@ -237,7 +237,7 @@ docker --version
 docker compose version
 ```
 
-### Krok 2: Transfer files na VPS
+### Step 2: Transfer files to VPS
 
 ```bash
 # Transfer docker-compose.yml + .env
@@ -248,9 +248,9 @@ scp -P 10XXX deployment/.env root@srvXX.mikr.us:/opt/photo-map/
 ssh root@srvXX.mikr.us -p 10XXX "ls -la /opt/photo-map/"
 ```
 
-### Krok 3: Transfer Docker images
+### Step 3: Transfer Docker images
 
-**Opcja A: Save/Load (zalecane dla pierwszego deployment)**
+**Option A: Save/Load (recommended for first deployment)**
 
 ```bash
 # Save images locally
@@ -274,14 +274,14 @@ docker images | grep photo-map
 rm photo-map-*.tar.gz
 ```
 
-**Opcja B: Docker Registry (opcjonalne, dla kolejnych updates)**
+**Option B: Docker Registry (optional, for subsequent updates)**
 
-Możesz użyć Docker Hub lub GitHub Container Registry dla prostszych updates.
+You can use Docker Hub or GitHub Container Registry for simpler updates.
 
-### Krok 4: Start Docker Compose
+### Step 4: Start Docker Compose
 
 ```bash
-# SSH to VPS (jeśli nie jesteś już połączony)
+# SSH to VPS (if not already connected)
 ssh root@srvXX.mikr.us -p 10XXX
 
 # Navigate to deployment directory
@@ -299,7 +299,7 @@ docker compose ps
 # photo-map-frontend    Up 10 seconds   0.0.0.0:30288->80/tcp
 ```
 
-### Krok 5: Weryfikacja logów
+### Step 5: Verify logs
 
 ```bash
 # Backend logs
@@ -320,7 +320,7 @@ docker compose logs -f
 
 ---
 
-## Weryfikacja deployment
+## Deployment Verification
 
 ### 1. Backend Health Check
 
@@ -334,10 +334,10 @@ curl http://localhost:8080/actuator/health
 # Expected: {"status":"UP"}
 ```
 
-### 2. Frontend Availability (przez Mikrus proxy)
+### 2. Frontend Availability (via Mikrus proxy)
 
 ```bash
-# Test HTTPS access (zastąp srvXX i PORT własnymi wartościami)
+# Test HTTPS access (replace srvXX and PORT with your values)
 curl https://srv07-30288.wykr.es/
 
 # Expected: Angular index.html
@@ -356,12 +356,12 @@ curl -X POST https://srv07-30288.wykr.es/api/auth/login \
 
 ### 4. Upload Photos (Web Interface)
 
-1. Otwórz przeglądarkę: `https://srv07-30288.wykr.es/`
-2. Zaloguj się (admin credentials z .env)
-3. Przejdź do `/gallery`
-4. Kliknij "Upload Photos"
-5. Wybierz zdjęcie JPG/PNG z GPS EXIF
-6. Sprawdź czy pojawia się w gallery + na mapie
+1. Open browser: `https://srv07-30288.wykr.es/`
+2. Log in (admin credentials from .env)
+3. Navigate to `/gallery`
+4. Click "Upload Photos"
+5. Select a JPG/PNG photo with GPS EXIF
+6. Verify it appears in gallery and on map
 
 ### 5. Docker Status
 
@@ -378,12 +378,12 @@ docker volume ls | grep photo-map
 
 ---
 
-## Updates i maintenance
+## Updates and Maintenance
 
-### Update Backend (po zmianach w kodzie)
+### Update Backend (after code changes)
 
 ```bash
-# 1. Build JAR + Docker image lokalnie
+# 1. Build JAR + Docker image locally
 ./mvnw clean package -DskipTests
 docker build -t photo-map-backend:latest backend/
 
@@ -403,10 +403,10 @@ docker compose up -d backend
 docker compose logs backend -f
 ```
 
-### Update Frontend (po zmianach w UI)
+### Update Frontend (after UI changes)
 
 ```bash
-# 1. Build Angular + Docker image lokalnie
+# 1. Build Angular + Docker image locally
 ng build --configuration production
 docker build -t photo-map-frontend:latest frontend/
 
@@ -434,7 +434,7 @@ cd /opt/photo-map
 docker compose restart
 ```
 
-**Ważne:** `docker compose restart` **NIE** wczytuje nowych zmiennych z `.env`. Jeśli zmieniłeś `.env`, użyj:
+**Important:** `docker compose restart` does **NOT** load new variables from `.env`. If you changed `.env`, use:
 
 ```bash
 docker compose down && docker compose up -d
@@ -442,13 +442,13 @@ docker compose down && docker compose up -d
 
 ### Update Environment Variables (.env)
 
-Po zmianie zmiennych środowiskowych w `deployment/.env`:
+After changing environment variables in `deployment/.env`:
 
 ```bash
 # 1. Transfer updated .env to VPS
 scp -P 10XXX deployment/.env root@srvXX.mikr.us:/opt/photo-map/
 
-# 2. Recreate containers (restart nie wystarczy!)
+# 2. Recreate containers (restart is not enough!)
 ssh root@srvXX.mikr.us -p 10XXX
 cd /opt/photo-map
 docker compose down
@@ -493,7 +493,7 @@ docker compose up -d
 2. Deletes all physical files from uploads/
 3. Resets settings to defaults
 4. Deploys application
-5. Admin user re-created automatically from remote `.env`
+5. Admin user recreated automatically from remote `.env`
 
 **Usage:**
 
@@ -544,25 +544,25 @@ curl https://photos.tojest.dev/
 
 ---
 
-## SSL Configuration (Automatyczne)
+## SSL Configuration (Automatic)
 
-**Status:** ✅ Automatyczne - Mikrus zapewnia SSL dla współdzielonych domen
+**Status:** ✅ Automatic - Mikrus provides SSL for shared domains
 
-### Współdzielona domena (*.wykr.es)
+### Shared domain (*.wykr.es)
 
-- **Format domeny:** `srvXX-PORT.wykr.es` (np. `srv07-30288.wykr.es`)
-- **Automatyczny SSL:** Mikrus zapewnia certyfikat SSL dla `*.wykr.es`
-- **Konfiguracja:** Zero - SSL działa automatycznie
-- **Dostęp:** `https://srvXX-PORT.wykr.es/`
-- **Dokumentacja:** https://wiki.mikr.us/wspoldzielona_domena
+- **Domain format:** `srvXX-PORT.wykr.es` (e.g., `srv07-30288.wykr.es`)
+- **Automatic SSL:** Mikrus provides SSL certificate for `*.wykr.es`
+- **Configuration:** Zero - SSL works automatically
+- **Access:** `https://srvXX-PORT.wykr.es/`
+- **Documentation:** https://wiki.mikr.us/wspoldzielona_domena
 
-**Porty dla współdzielonej domeny:**
-- Mikrus przydziela 2 porty na serwer (format: 201xx, 301xx)
-- Sprawdź porty w panelu Mikrus
-- Domyślny port 80 NIE działa z współdzieloną domeną
-- Ustaw `FRONTEND_PORT` w `.env` (np. 30288)
+**Ports for shared domain:**
+- Mikrus assigns 2 ports per server (format: 201xx, 301xx)
+- Check ports in Mikrus panel
+- Default port 80 does NOT work with shared domain
+- Set `FRONTEND_PORT` in `.env` (e.g., 30288)
 
-### Weryfikacja SSL
+### Verify SSL
 
 ```bash
 # Test HTTPS access
@@ -578,7 +578,7 @@ openssl s_client -connect srv07-30288.wykr.es:443 -servername srv07-30288.wykr.e
 
 ## Troubleshooting
 
-### Problem 1: Backend nie startuje (container exits)
+### Problem 1: Backend won't start (container exits)
 
 **Symptom:**
 ```bash
@@ -651,11 +651,11 @@ docker compose down
 docker compose up -d
 ```
 
-### Problem 3: Uploads nie działają
+### Problem 3: Uploads not working
 
 **Symptom:**
 - Upload returns 202 Accepted
-- Po 10-15 sekundach zdjęcie nie pojawia się w gallery
+- After 10-15 seconds photo doesn't appear in gallery
 
 **Diagnostic:**
 ```bash
@@ -692,20 +692,20 @@ docker compose logs backend
 ENTRYPOINT ["java", "-Xms256m", "-Xmx2048m", "-jar", "app.jar"]
 ```
 
-Rebuild image i redeploy.
+Rebuild image and redeploy.
 
 ---
 
-## Przydatne komendy Docker
+## Useful Docker Commands
 
 ```bash
-# Status wszystkich kontenerów
+# Status of all containers
 docker compose ps
 
-# Logi wszystkich serwisów
+# Logs of all services
 docker compose logs -f
 
-# Logi backend
+# Backend logs
 docker compose logs backend -f
 
 # Resource usage
@@ -731,30 +731,30 @@ docker volume inspect photo-map-uploads
 
 ## FAQ
 
-### Q: Czy mogę użyć native deployment zamiast Docker?
+### Q: Can I use native deployment instead of Docker?
 
-**A:** Tak, ale Docker Compose jest prostszy i zalecany dla Mikrus (4GB RAM wystarczające).
+**A:** Yes, but Docker Compose is simpler and recommended for Mikrus (4GB RAM sufficient).
 
-### Q: Ile miejsca zajmują kontenery?
+### Q: How much space do containers take?
 
 **A:**
 - Backend image: ~300 MB (openjdk:17-jre-slim + JAR)
 - Frontend image: ~50 MB (nginx:alpine + Angular build)
-- Uploads volume: zależy od liczby zdjęć (~5-8 MB/photo)
+- Uploads volume: depends on number of photos (~5-8 MB/photo)
 
-### Q: Jak zwiększyć upload limit?
+### Q: How to increase upload limit?
 
-**A:** Nginx już ma `client_max_body_size 50M`. Jeśli potrzebujesz więcej:
-1. Edytuj `frontend/nginx.conf`
+**A:** Nginx already has `client_max_body_size 50M`. If you need more:
+1. Edit `frontend/nginx.conf`
 2. Rebuild frontend image
 3. Redeploy
 
 ---
 
-## Przydatne linki
+## Useful Links
 
 ### Mikrus Wiki
-- Współdzielona domena (SSL): https://wiki.mikr.us/wspoldzielona_domena
+- Shared domain (SSL): https://wiki.mikr.us/wspoldzielona_domena
 - IPv6: https://wiki.mikr.us/o_co_chodzi_z_ipv6
 
 ### Project Documentation

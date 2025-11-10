@@ -26,7 +26,7 @@ echo -e "${BLUE}  Photo Map MVP - Test Suite${NC}"
 echo -e "${BLUE}============================================${NC}"
 echo ""
 
-# Check if PostgreSQL testowa is running
+# Check if PostgreSQL test database is running
 check_postgres() {
     echo -e "${YELLOW}[0/4] Checking PostgreSQL test database (port 5433)...${NC}"
 
