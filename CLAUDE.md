@@ -11,67 +11,36 @@ This file provides guidance to Claude Code for implementing the Photo Map MVP pr
 - Backend: Spring Boot 3, Java 17, PostgreSQL 15, Spring Security (JWT)
 - Deployment: Nginx, Systemd, Mikrus VPS
 
-**Status:** Fresh start - implementation from scratch
+**Status:** Core MVP Complete
 
 ## 🔐 CRITICAL: Credentials & Environment Variables
 
 **⚠️ ALWAYS read credentials from `.env` file - NEVER hardcode or guess passwords!**
 
-### Password Policy
-
 **DO:**
 - ✅ **ALWAYS** read `.env` file before using credentials
-- ✅ Use `ADMIN_PASSWORD` value from `.env` (currently: `10xdevsx10`)
-- ✅ Use `TEST_USER_PASSWORD` from `.env` for test users
+- ✅ Use `ADMIN_PASSWORD` value from `.env`
 - ✅ Verify current values before login tests, curl commands, or documentation examples
 
 **DON'T:**
-- ❌ **NEVER** hardcode passwords (e.g., `admin123`, `password`, etc.)
+- ❌ **NEVER** hardcode passwords (e.g., `admin123`, `password`)
 - ❌ **NEVER** guess password values from memory
-- ❌ **NEVER** use outdated passwords from old documentation
-- ❌ **NEVER** commit real passwords to Git (only `.env.example` with placeholders)
+- ❌ **NEVER** commit real passwords to Git
 
-### Where to find credentials
-
-**Production/Development (.env):**
+**Where to find credentials:**
 ```bash
-# Read current admin password
+# Read admin password
 grep ADMIN_PASSWORD /home/andrew/projects/photo-map-app/.env
 
-# Read test user password
-grep TEST_USER_PASSWORD /home/andrew/projects/photo-map-app/.env
-```
-
-**E2E Tests (frontend/.env.test):**
-```bash
-# E2E tests use their own .env.test
+# E2E tests
 grep E2E_ADMIN_PASSWORD /home/andrew/projects/photo-map-app/frontend/.env.test
 ```
 
-**Before ANY operation involving credentials:**
-1. Read `.env` file first
-2. Use exact value from file
-3. Never assume or guess
+## 📚 Documentation Structure
 
-### Example: Correct workflow
+### Core Context (.ai/) - Always Read
 
-```bash
-# ❌ WRONG - hardcoded password
-curl -X POST http://localhost:8080/api/auth/login \
-  -d '{"username":"admin@example.com","password":"admin123"}'
-
-# ✅ CORRECT - read from .env first
-ADMIN_PWD=$(grep ADMIN_PASSWORD .env | cut -d'=' -f2)
-curl -X POST http://localhost:8080/api/auth/login \
-  -d "{\"username\":\"admin@example.com\",\"password\":\"$ADMIN_PWD\"}"
-```
-
-## 📚 Documentation - When to Read What
-
-### 🤖 Core Context (.ai/) - Always Read
-
-**Folder:** `.ai/` - **Implementation specs for Claude Code**
-
+**Implementation specs:**
 ```
 .ai/prd.md          # MVP requirements
 .ai/tech-stack.md   # Technology specs
@@ -80,185 +49,28 @@ curl -X POST http://localhost:8080/api/auth/login \
 .ai/ui-plan.md      # Frontend architecture
 ```
 
-**Complete implementation specs (logic-focused, no code examples)**
-
 **When to read:**
 - ✅ **Always at start** - read prd.md + tech-stack.md
-- ✅ **Before Backend Setup** - read db-plan.md (tables, relations, indexes)
-- ✅ **Before Backend API** - read api-plan.md (endpoints, DTOs, security)
-- ✅ **Before Frontend** - read ui-plan.md (components, services, routing)
+- ✅ **Before Backend Setup** - read db-plan.md
+- ✅ **Before Backend API** - read api-plan.md
+- ✅ **Before Frontend** - read ui-plan.md
 
-### 🔍 Decision Context (.decisions/) - Read On-Demand
+### Decision Context (.decisions/) - Read On-Demand
 
-**Folder:** `.decisions/` - **Decision rationale for humans + optional reference**
+**Only when:**
+- Considering alternative library/approach
+- User asks "why X?" (business/tech rationale)
+- Doubts about architectural decision
 
-```
-.decisions/prd-context.md       # Business context
-.decisions/tech-decisions.md    # Technology rationale
-```
-
-**Decision context (not loaded by default)**
-
-**When to read:**
-- ✅ Considering alternative library/approach (check if it was already evaluated)
-- ✅ Adding new dependency (check `.decisions/tech-decisions.md`)
-- ✅ User asks "why X?" (business/tech rationale)
-- ✅ Doubts about architectural decision (e.g., "Should we add Redis?")
-- ❌ **DON'T read by default** for standard implementation
-
-**Example workflow:**
-```
-Task: "Add caching for photo list"
-
-1. Check .ai/tech-stack.md
-   → "Caching: in-memory (60s TTL) for photo lists"
-
-2. Implement according to spec
-
-3. If question: "Maybe Redis instead of in-memory?"
-   → Check .decisions/tech-decisions.md
-   → Redis in EXCLUDED: "overkill for MVP, in-memory enough"
-
-4. Stick to spec from .ai/
-```
-
-### 📋 Other Core Context Files
+### Other Files
 
 ```
-CLAUDE.md                      # This file - workflow instructions
-PROGRESS_TRACKER.md            # Progress tracker (6 phases)
-README.md                      # Project overview (for humans)
+CLAUDE.md           # This file - workflow instructions
+PROGRESS_TRACKER.md # Progress tracker (6 phases)
+README.md           # Project overview
 ```
 
-### 🔍 SonarCloud API Integration
-
-**File:** `.vscode/SONARCLOUD_API_SETUP.md`
-
-**Purpose:** Instructions for connecting to SonarCloud API to retrieve and analyze code quality issues.
-
-**Use when:**
-- ✅ Checking backend/frontend issues programmatically
-- ✅ Retrieving SonarCloud metrics (bugs, vulnerabilities, code smells, coverage)
-- ✅ Analyzing quality gate status
-- ✅ Planning code quality improvements
-
-**Contains:**
-- API authentication setup
-- curl examples for common queries (issues, hotspots, metrics)
-- Project keys for backend and frontend
-- Filtering and pagination patterns
-
-**Note:** File is git-ignored for security reasons.
-
-### 📚 Code Snippets from Context7
-
-**Folder:** `.snippets/` - **Saved snippets from Context7 for future reference**
-
-**Purpose:** When using MCP Context7 and retrieving extensive documentation (>50% unused immediately), save snippets for later use.
-
-**Structure:**
-```
-.snippets/
-├── README.md                           # Index of all snippets
-├── spring-security-jwt-config.md       # Spring Security 6 JWT setup
-├── spring-boot-file-upload.md          # Multipart file upload patterns
-├── flyway-migrations-postgresql.md     # Flyway best practices
-├── leaflet-marker-clustering.md        # Leaflet.js clustering API
-└── angular-signals-patterns.md         # Angular 18 Signals + BehaviorSubject
-```
-
-**Naming Convention:**
-- Descriptive names (technology-feature-scope.md)
-- Examples: `spring-security-jwt-config.md`, `leaflet-marker-clustering.md`
-
-**When to Save Snippets:**
-- ✅ Context7 retrieval with >50% content unused immediately
-- ✅ Complex API documentation for later phases
-- ✅ Library-specific patterns likely needed multiple times
-
-**Important:**
-- **Snippets ARE committed** (documentation, not secrets)
-- Safe to commit (public documentation from Context7)
-- Backup for VM loss scenarios
-- Add to `.snippets/README.md` index with: phase reference, use case, date
-
-**Workflow:**
-1. Use Context7 to retrieve library docs
-2. Use 10-20% immediately for current task
-3. Save remaining 80-90% to `.snippets/descriptive-name.md`
-4. Update `.snippets/README.md` index
-5. Later: check index, read relevant snippet, implement
-
-### 📖 GitHub Wiki (Public Documentation)
-
-**Location:** https://github.com/kojder/photo-map-app/wiki
-
-**Status:** ✅ Live and accessible (uploaded 2025-11-10)
-
-**Working files:** `wiki/` directory (local source files)
-- `wiki/PLAN.md` - Implementation plan and structure
-- `wiki/PROGRESS.md` - Progress tracker
-- `wiki/UPLOAD_INSTRUCTIONS.md` - How to upload to GitHub Wiki
-- `wiki/pages/` - 11 Wiki pages (source files)
-- `wiki/modified-files/` - Modified local README files
-
-**Wiki Structure:** 11 pages
-- Home (navigation hub)
-- User Guide (for end users)
-- Quick Start, Development Setup, Architecture, API Docs (for developers)
-- Testing & Quality, Scripts Reference, Deployment (for devops)
-- AI Development Methodology, Contributing (for contributors)
-
-**Purpose:**
-- Comprehensive user and developer documentation
-- Organized, searchable content
-- Easier maintenance than single README
-- Better onboarding experience
-
-**Important:**
-- Wiki is **public** - ensure no sensitive data (production URLs, real tokens)
-- Local files in `wiki/pages/` can be modified and re-uploaded if needed
-- Wiki repo: https://github.com/kojder/photo-map-app.wiki.git
-
----
-
-## 🧹 Context Management
-
-**Monitor token usage** and proactively signal when to compact/clean context.
-
-### When to Signal /compact
-
-**Trigger conditions:**
-- Token usage > 150k (75% of 200k context window)
-- Before starting complex multi-step task (e.g., full JWT auth flow implementation)
-- User asks "gdzie jesteśmy?" or similar status questions
-
-**Signal format:**
-```
-💡 Sugestia: Warto zrobić /compact - zbliżamy się do 150k tokenów
-i zacznę złożone zadanie (JWT authentication flow z wieloma plikami).
-```
-
-### When to Signal /clean
-
-**Trigger conditions:**
-- ✅ Finished complete phase (e.g., Phase 1 complete, starting Phase 2)
-- ✅ Moving to entirely different area (backend → frontend, auth → photos)
-- ✅ All needed info documented in `.ai/` files + PROGRESS_TRACKER Current Status
-- ✅ No active debugging or complex state to maintain
-
-**Signal format:**
-```
-💡 Sugestia: Możesz zrobić /clean - kończymy Phase 1 (Backend Setup & Auth),
-przechodzimy do Phase 2 (Frontend Setup & Auth).
-
-Wszystko potrzebne jest w:
-- PROGRESS_TRACKER.md (Current Status → Task 2.1)
-- .ai/ui-plan.md (Angular architecture)
-- .ai/tech-stack.md (Tailwind 3.4.17, standalone components)
-```
-
-### After /compact or /clean
+### Context Recovery After /compact or /clean
 
 **First action:**
 1. Read `PROGRESS_TRACKER.md` → check **Current Status** section
@@ -266,268 +78,42 @@ Wszystko potrzebne jest w:
 3. Read relevant `.ai/` file for current phase
 4. Continue from **Next Action** steps
 
-**This ensures:**
-- ✅ Immediate context recovery
-- ✅ No lost progress
-- ✅ Clear next steps
-
----
-
-## 🤖 AI Model Strategy - Claude Sonnet 4.5
-
-### Model Knowledge Scope
-
-**Implementation based on Claude Sonnet 4.5 knowledge base:**
-- **Knowledge cutoff:** January 2025
-- **Stack in scope:**
-  - ✅ Angular 18 (released 2024)
-  - ✅ Spring Boot 3 (released 2023)
-  - ✅ PostgreSQL 15 (released 2022)
-  - ✅ Tailwind CSS 3.4 (Angular 18 incompatible with Tailwind 4 - important!)
-  - ✅ Leaflet.js 1.9 (stable)
-  - ✅ Java 17 LTS
-  - ✅ JWT authentication patterns
-  - ✅ RxJS 7, BehaviorSubject patterns
-
-### When to Use MCP Context7
-
-**MCP Context7** - tool for retrieving up-to-date library documentation
-
-**Use when:**
-- ✅ New API (e.g., Angular 19+ features, Spring Boot 3.3+)
-- ✅ Doubts about syntax/patterns (e.g., Leaflet plugin API)
-- ✅ Library-specific details (e.g., JWT lib configuration, EXIF metadata-extractor)
-- ✅ Breaking changes in dependencies
-
-**DON'T use when:**
-- ❌ Core patterns known to Sonnet 4.5 (standalone components, Spring Data JPA)
-- ❌ Standard implementations (REST endpoints, JWT flow)
-- ❌ Simple configurations (Tailwind setup, TypeScript strict)
-
-### Workflow: Core Knowledge → MCP On-Demand
-
-1. **Implement using core knowledge of Sonnet 4.5**
-   - Majority of MVP is within model scope
-   - `.ai/tech-stack.md` contains all specs
-
-2. **On doubts → MCP Context7**
-   ```
-   mcp__context7__resolve-library-id(libraryName: "leaflet-markercluster")
-   → mcp__context7__get-library-docs(...)
-   ```
-
-3. **Stick to proven patterns** from project skills
-   - Angular patterns in skills
-   - Spring Boot patterns in skills
-   - Tailwind patterns in skills
-
-### Important Constraints
-
-⚠️ **Tailwind 3.x (not 4.x)**
-- Reason: Angular 18 incompatibility with Tailwind 4
-- Source: `.ai/tech-stack.md` + `.decisions/tech-decisions.md`
-- **Action:** Use Tailwind 3.4.17
-
-⚠️ **Standalone Components (no NgModules)**
-- Angular 18 pattern
-- No `@NgModule` - only standalone components
-- Check `.ai/ui-plan.md` for details
-
-⚠️ **BehaviorSubject Pattern (no NgRx)**
-- Simple state management
-- `BehaviorSubject` (private) → `Observable` (public)
-- Check `.ai/tech-stack.md` for pattern
-
 ## 🚀 Implementation Workflow
 
-### Step 0: Development Environment
+### Development Environment
 
-**Available development scripts** (in `scripts/` directory):
-
-#### Start Development Environment
+**Start/Stop scripts:**
 ```bash
-# Uruchom backend + frontend (PostgreSQL musi być uruchomiony wcześniej)
-./scripts/start-dev.sh
-
-# Uruchom wszystko włącznie z PostgreSQL
-./scripts/start-dev.sh --with-db
+./scripts/start-dev.sh          # Start backend + frontend
+./scripts/stop-dev.sh --with-db # Stop all including PostgreSQL
 ```
-
-#### Stop Development Environment
-```bash
-# Zatrzymaj backend + frontend
-./scripts/stop-dev.sh
-
-# Zatrzymaj wszystko włącznie z PostgreSQL
-./scripts/stop-dev.sh --with-db
-```
-
-**Features:**
-- ✅ Automatyczne sprawdzanie czy procesy już działają
-- ✅ Zapisywanie PID do `scripts/.pid/`
-- ✅ Graceful shutdown z timeoutem
-- ✅ Logi w `scripts/.pid/backend.log` i `frontend.log`
-- ✅ Weryfikacja portów przed startem
 
 **Recommended workflow:**
-1. Uruchom PostgreSQL raz: `docker-compose up -d`
-2. Używaj `start-dev.sh` / `stop-dev.sh` wielokrotnie w sesji
-3. PostgreSQL może zostać włączony cały czas (niskie zużycie zasobów)
+1. Start PostgreSQL once: `docker-compose up -d`
+2. Use `start-dev.sh` / `stop-dev.sh` multiple times during session
+3. PostgreSQL can stay running (low resource usage)
 
-**Documentation:** `scripts/README.md`
+### Implementation Steps
 
----
-
-### Step 1: Read Core Context
-
-Before starting implementation **ALWAYS**:
-
-1. Read `.ai/prd.md` - WHAT we're building (MVP requirements)
-2. Read `.ai/tech-stack.md` - HOW to implement (tech specs)
-3. Read `PROGRESS_TRACKER.md` - STATUS and roadmap (6 main phases)
-4. Read relevant `.ai/` plan for current phase:
-   - Backend Setup → read `.ai/db-plan.md`
-   - Backend API → read `.ai/api-plan.md`
-   - Frontend → read `.ai/ui-plan.md`
-
-**Time:** ~10-15 minutes | **Result:** Full understanding of MVP context
-
-**Optional:** If you need business context or decision rationale → read `.decisions/`
-
-### Step 2: Implement According to Current Phase
-
-**Always implement according to:**
-- Current phase in `PROGRESS_TRACKER.md`, OR
-- Specific user instruction
+**Before starting:**
+1. Read `.ai/prd.md` - WHAT we're building
+2. Read `.ai/tech-stack.md` - HOW to implement
+3. Read `PROGRESS_TRACKER.md` - Current status
+4. Read relevant `.ai/` plan for current phase
 
 **After completing work:**
-- ✅ Wait for user verification before continuing to next phase
-- ✅ Update PROGRESS_TRACKER.md - mark completed tasks
-
-**Implementation pattern:**
-- Follow git workflow guidelines (see Git Workflow section)
-- Show progress to user regularly
-
-## 🧪 Pre-push Test Hook
-
-**Automatyczne uruchamianie testów przed każdym pushem do remote**
-
-### Instalacja (jednorazowa)
-
-```bash
-./scripts/install-hooks.sh
-```
-
-Po instalacji hook będzie aktywny dla wszystkich przyszłych pushów.
-
-### Działanie
-
-Pre-push hook działa automatycznie przy każdym `git push`:
-
-1. **Automatyczne uruchomienie**: Hook wywołuje `./scripts/run-all-tests.sh`
-2. **Pełny test suite**: Uruchamia wszystkie testy (frontend unit + backend + E2E)
-3. **Zatrzymanie przy fail**: Jeśli którykolwiek test fail → push **przerwany**
-4. **Kontynuacja przy success**: Jeśli wszystkie testy pass → push przechodzi
-
-**Workflow:**
-```
-git push
-  ↓
-🧪 Hook uruchamia testy automatycznie
-  ↓
-✅ Wszystkie OK → Push wykonany
-❌ Fail → Push przerwany (musisz naprawić)
-```
-
-**Dlaczego pre-push zamiast pre-commit?**
-- ✅ Commit jest szybki (lokalna operacja, wielokrotna)
-- ✅ Push weryfikowany testami (przed wysłaniem na remote)
-- ✅ Mniej frustracji - testy tylko raz przed pushem, nie przy każdym commicie
-
-### Ręczne uruchomienie testów (bez pusha)
-
-```bash
-# Uruchom wszystkie testy w dowolnym momencie
-./scripts/run-all-tests.sh
-```
-
-**Zastosowanie:**
-- Przed rozpoczęciem pracy (sprawdzenie stanu)
-- Po dużych zmianach (przed commitowaniem)
-- Przed pushem (weryfikacja lokalna)
-- Debugging (sprawdzenie co nie działa)
-
-### Output skryptu testowego
-
-Skrypt wyświetla szczegółowe summary:
-
-```
-============================================
-  TEST RESULTS SUMMARY
-============================================
-Frontend Unit Tests (Karma):    ✅ PASSED
-Backend Tests (Maven):           ✅ PASSED
-E2E Tests (Playwright):          ✅ PASSED
-============================================
-✓ All tests PASSED - OK to push!
-
-Coverage reports:
-- frontend/coverage/frontend/index.html
-- backend/target/site/jacoco/index.html
-- frontend/playwright-report/index.html
-```
-
-### Bypass hooka (tylko w awaryjnych sytuacjach!)
-
-```bash
-# Pomiń pre-push hook
-git push --no-verify
-```
-
-**⚠️ Używaj tylko gdy:**
-- Masz pewność że testy przejdą na CI/CD
-- Musisz szybko wypchnąć hotfix (i naprawisz testy w następnym commicie)
-- Świadomie pushujesz WIP branch (nie main!)
-
-**Nigdy nie bypass dla pushów do main/mastera!**
-
-### Wytyczne dla Claude Code
-
-**Przed każdym pushem:**
-- ✅ Hook automatycznie uruchomi wszystkie testy
-- ✅ NIE pushuj jeśli testy failują - napraw błędy najpierw
-- ✅ Jeśli hook zatrzymał push → przeanalizuj błędy testów i popraw kod
-- ✅ Możesz uruchomić `./scripts/run-all-tests.sh` ręcznie przed pushem
-- ❌ **NIE używaj `--no-verify`** bez wyraźnej zgody użytkownika
-
-**Kolejność pracy:**
-1. Implementuj feature/fix
-2. Stage changes: `git add .`
-3. Commit lokalnie: `git commit -m "..."` (szybko, bez testów)
-4. (Opcjonalnie) Uruchom `./scripts/run-all-tests.sh` ręcznie
-5. Napraw ewentualne błędy testów
-6. Push: `git push` (hook uruchomi się automatycznie)
-7. Jeśli fail → wróć do kroku 5
-
-**Pamiętaj:** Hook wymusza quality standard przed wysłaniem na remote - to dobra praktyka!
-
----
+- ✅ Wait for user verification before next phase
+- ✅ Update PROGRESS_TRACKER.md
 
 ## 🎨 Project Conventions
 
-### Language and Communication
+### Language Standards
 
 - **Communication with user**: Polish
-- **Code**: English (all identifiers, class names, method names, variables)
-- **Documentation**: English (all .md files, README, comments, inline docs)
-- **Scripts**: English (all bash scripts, comments, help messages, log messages)
+- **Code**: English (all identifiers, class names, methods, variables)
+- **Documentation**: English (all .md files, README, comments)
+- **Scripts**: English (bash scripts, comments, help messages)
 - **Git commits**: Conventional Commits format (English)
-
-**IMPORTANT:**
-- ✅ All documentation files (.md) must be in English
-- ✅ All bash scripts must use English for: comments, help messages, log messages, variable names
-- ✅ Only user-facing communication in responses should be in Polish
-- ❌ Never mix Polish and English in documentation or scripts
 
 ### Code Quality
 
@@ -535,69 +121,59 @@ git push --no-verify
 - **Minimize comments** - only for complex business logic
 - **TypeScript strict mode** - all types explicit
 
-### Testing & Quality Standards
+### Testing Standards
 
-**Testing Policy (Approved 2025-10-23):**
-
-#### Unit Tests
-- **When:** PRZED KAŻDYM COMMITEM (TDD-like approach)
-- **What:** All service methods, utility classes, business logic
+**Unit Tests:**
+- **When:** Before every commit (TDD-like approach)
 - **Coverage:** >70% for new code
-- **Framework:** JUnit 5 + Mockito + Spring Boot Test (backend), Jasmine + Karma (frontend)
-- **Pattern:**
-  1. Implement feature
-  2. Verify with curl/Postman (backend) or manual test (frontend)
-  3. Write unit tests (>70% coverage)
-  4. Run tests: `./mvnw test` (backend) or `ng test` (frontend)
-  5. All tests passing → commit
+- **Framework:** JUnit 5 + Mockito (backend), Jasmine + Karma (frontend)
 
-#### Integration Tests
-- **When:** NA KOŃCU KAŻDEJ FAZY (przed przejściem do następnej fazy)
-- **What:** Full flow tests with Spring Context, database, HTTP endpoints
+**Integration Tests:**
+- **When:** At end of each phase
 - **Framework:** @SpringBootTest + MockMvc (backend), Playwright (frontend E2E)
-- **Example:** End of Phase 1 → test all /api/auth/* endpoints with real DB
 
-#### Frontend Manual Testing & Debugging
-- **Tool:** Use the `chrome-devtools` MCP for interacting with the running application's frontend.
-- **Purpose:**
-    - Manually test new implementations.
-    - Inspect the UI and component states.
-    - Check for console errors and network requests.
-    - Debug front-end issues in a live environment.
+**Frontend Testing:**
+- Use `chrome-devtools` MCP for manual testing and debugging
 
-#### i18n Policy
-- **Validation messages:** Use message codes from `ValidationMessages.properties`
-  - Format: `{validation.field.rule}` (e.g., `{validation.email.required}`)
-  - File: `src/main/resources/ValidationMessages.properties`
-  - All `@NotBlank`, `@Email`, `@Size` etc. use message codes
-  - Languages: English (required), Polish (optional)
-- **API error messages:** Hardcoded OK for MVP
-  - ErrorResponse messages can be hardcoded
-  - Refactoring i18n post-MVP
-
-#### Commit Checklist (Updated)
+**Commit Checklist:**
 ```
 - [ ] Code implementation ready
 - [ ] Verification passing (curl/Postman or manual test)
 - [ ] Unit tests written (coverage >70%)
 - [ ] All tests passing (./mvnw test or ng test)
-- [ ] Code review (git diff --cached)
 - [ ] Commit message (Conventional Commits)
 ```
 
-### Git Workflow
+### Pre-push Test Hook
 
-**Commit Strategy:**
-- **Small, focused changes** - each commit should represent one logical change
-- **Test immediately** - verify changes work before committing
-- **Commit frequently** - regular commits make it easy to track progress and revert if needed
-- **Clear messages** - use Conventional Commits format
+**Before every push:**
+- ✅ Hook automatically runs all tests
+- ✅ DO NOT push if tests fail - fix errors first
+- ✅ Can run `./scripts/run-all-tests.sh` manually before push
+- ❌ **DO NOT use `--no-verify`** without explicit user consent
+- ⚠️ **CRITICAL: ONLY user performs manual push - Claude Code NEVER executes push**
 
-**Conventional Commits Format:**
+**Workflow:**
+1. Implement feature/fix
+2. Stage: `git add .`
+3. Commit: `git commit -m "..."` (fast, no tests)
+4. (Optional) Run `./scripts/run-all-tests.sh` manually
+5. Fix any test errors
+6. Push: `git push` (hook runs automatically)
+7. If fail → go back to step 5
+
+## Git Workflow
+
+### Commit Strategy
+
+- **Small, focused changes** - one logical change per commit
+- **Test immediately** - verify before committing
+- **Commit frequently** - easy tracking and reverting
+- **Clear messages** - Conventional Commits format
+
+**Format:**
 ```
 <type>[optional scope]: <description>
-
-[optional body]
 ```
 
 **Types:** `feat`, `fix`, `docs`, `style`, `refactor`, `perf`, `test`, `chore`
@@ -607,35 +183,25 @@ git push --no-verify
 - `fix(photo): resolve EXIF extraction error`
 - `docs: update PROGRESS_TRACKER.md after Phase 1`
 
-**CRITICAL RULES:**
-- ✅ **BEFORE EVERY commit - show changes for review:**
-  - Run `git status` to show modified files
-  - Run `git diff --cached --stat` to show summary of staged changes
-  - **ASK USER: "Czy zacommitować te zmiany?"**
-  - ⚠️ **STOP AND WAIT** - DO NOT execute `git commit` until user explicitly confirms
-  - ⚠️ **NEVER commit in the same response** where you ask for confirmation
-  - User will review changes and either approve or request corrections
-  - If corrections needed - make changes and repeat review process
-- ✅ **EVERY push MUST be confirmed by user** - NEVER auto-push (critical!)
-- ❌ NO promotional messages ("Generated with Claude Code")
-- ✅ Professional commits focused on changes only
+### CRITICAL RULES
 
-**Commit Review Workflow:**
+**Commit Review Process:**
 1. Make changes to files
-2. Stage changes: `git add <files>`
+2. Stage: `git add <files>`
 3. Show summary: `git status` + `git diff --cached --stat`
-4. **ASK USER: "Czy zacommitować te zmiany?"**
-5. ⚠️ **STOP HERE** - Wait for user's explicit response (DO NOT continue in the same message)
-6. After user confirms YES → create commit with Conventional Commits message
-7. If user says NO → make corrections, return to step 3
+4. **ASK USER: "Should I commit these changes?"**
+5. ⚠️ **STOP HERE** - Wait for explicit user response
+6. After user confirms YES → create commit
+7. If NO → make corrections, return to step 3
 
-**ABSOLUTE PROHIBITION:**
-- ❌ **NEVER execute `git commit` in the same response where you ask for confirmation**
-- ❌ **NEVER execute `git push` without explicit user confirmation** - ALWAYS ask first and wait
+**ABSOLUTE PROHIBITIONS:**
+- ❌ **NEVER execute `git commit` in same response where you ask for confirmation**
+- ❌ **NEVER execute `git push` without explicit user confirmation** - ALWAYS ask first
 - ❌ **NEVER assume user's answer** - always wait for explicit "yes"/"tak"/"commit"/"push"
 - ❌ **NEVER bundle question + commit in one response**
 - ❌ **NEVER bundle question + push in one response**
-- ❌ **NEVER auto-push** even if user says "finish everything" or "zrób wszystko"
+- ❌ **NEVER auto-push** even if user says "finish everything"
+- ❌ **NO promotional messages** ("Generated with Claude Code")
 
 ## 🛠️ Tech Stack Guidelines
 
@@ -643,66 +209,69 @@ git push --no-verify
 
 - **Standalone components** - no NgModules
 - **Routing** - `app.routes.ts` with flat Routes array
-- **State management** - Signals + BehaviorSubject (see below)
+- **State management:**
+  - **Signals** - component-local state (UI flags, counters)
+  - **BehaviorSubject** - shared state in Services (PhotoService, FilterService)
+  - Pattern: `BehaviorSubject` (private) → `Observable` (public)
+  - NO NgRx for MVP
 - **Reactive approach** - `async` pipe in templates
-- **Test IDs** - all interactive elements have `data-testid="component-element"` (e.g., `data-testid="gallery-photo-card"`)
+- **Test IDs** - all interactive elements: `data-testid="component-element"`
 
-**State Management Strategy:**
-- **Signals** - for component-local state (counters, UI flags, computed values)
-- **BehaviorSubject** - for shared state in Services (cross-component communication, e.g., PhotoService, FilterService)
-- Pattern: `BehaviorSubject` (private) → `Observable` (public) → Component subscribes
-- NO NgRx for MVP (too complex)
-
-Details: See `.ai/ui-plan.md` and `.ai/tech-stack.md`
+Details: `.ai/ui-plan.md` and `.ai/tech-stack.md`
 
 ### Spring Boot 3 (Backend)
 
 - **REST API** - `@RestController` with DTOs
 - **Security** - JWT tokens with Spring Security
 - **JPA** - Entity relationships with proper cascading
-- **Photo processing** - metadata-extractor for EXIF, Thumbnailator for thumbnails
+- **Photo processing** - metadata-extractor (EXIF), Thumbnailator (thumbnails)
 
-Details: See `.ai/api-plan.md` and `.ai/tech-stack.md`
+Details: `.ai/api-plan.md` and `.ai/tech-stack.md`
 
-### Tailwind CSS 3 (Styling)
+### Tailwind CSS 3
 
-- **Utility-first** - use utility classes in templates
+- **Utility-first** - utility classes in templates
 - **Component styles** - only for complex patterns
 - **Responsive** - mobile-first approach
+- ⚠️ **Use Tailwind 3.x** (Angular 18 incompatible with Tailwind 4)
 
-Details: See `.ai/tech-stack.md`
+Details: `.ai/tech-stack.md`
+
+### i18n Policy
+
+- **Validation messages:** Use codes from `ValidationMessages.properties`
+  - Format: `{validation.field.rule}` (e.g., `{validation.email.required}`)
+  - Languages: English (required), Polish (optional)
+- **API error messages:** Hardcoded OK for MVP
 
 ## 📋 Implementation Checklist
 
 **Before starting phase:**
-- [ ] Development environment ready (use `./scripts/start-dev.sh` if needed)
+- [ ] Development environment ready
 - [ ] Read core docs (PRD, tech-stack, PROGRESS_TRACKER)
-- [ ] Know which phase I'm implementing (check PROGRESS_TRACKER.md)
-- [ ] Know which `.ai/` plan to use (db-plan? api-plan? ui-plan?)
-- [ ] Understand acceptance criteria for phase
+- [ ] Know current phase and acceptance criteria
 
 **During implementation:**
-- [ ] Follow git workflow guidelines (see Git Workflow section)
-- [ ] Compliance with specs in `.ai/` files
-- [ ] TypeScript strict mode
+- [ ] Follow git workflow guidelines
+- [ ] Compliance with `.ai/` specs
 - [ ] Self-documenting code
 
-**After completing phase:**
+**After phase:**
 - [ ] All tests passing
-- [ ] Update PROGRESS_TRACKER.md - mark completed tasks
-- [ ] Wait for user verification before next phase
+- [ ] Update PROGRESS_TRACKER.md
+- [ ] Wait for user verification
 
 ## ⚠️ Common Pitfalls
 
-1. **Don't skip core docs** - read PRD and tech-stack before code
+1. **Don't skip core docs** - read PRD and tech-stack first
 2. **Don't implement too much** - small focused changes, frequent commits
 3. **Don't skip testing** - test each change immediately
-4. **Don't use NgModules** - Angular 18 = standalone components
+4. **Don't use NgModules** - Angular 18 = standalone components only
 5. **Don't auto-push** - always ask for confirmation
 
-## 📊 Progress and Status
+## 📊 Progress Tracking
 
-Project status tracked in: `PROGRESS_TRACKER.md`
+Project status: `PROGRESS_TRACKER.md`
 
 **6 main phases:**
 1. Backend - Setup and Auth
@@ -711,8 +280,6 @@ Project status tracked in: `PROGRESS_TRACKER.md`
 4. Frontend - Gallery and Map
 5. Admin Panel
 6. Deployment
-
-Each phase has checkboxes with tasks and clear acceptance criteria.
 
 ## 📖 Additional Resources
 

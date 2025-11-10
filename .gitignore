@@ -183,3 +183,19 @@ $RECYCLE.BIN/
 # PID files from start-dev.sh
 scripts/.pid/
 .vscode/SONARCLOUD_API_SETUP.md
+
+# ============================================
+# SERVER-SPECIFIC DEPLOYMENT (SENSITIVE DATA)
+# ============================================
+
+# Server-specific deployment scripts (contain VPS credentials/config)
+deployment/scripts/deploy-marcin288.sh
+*marcin288*
+
+# Screenshots and sensitive documentation
+*.png
+*.jpg
+*.jpeg
+*.gif
+!wiki/assets/*.png
+!wiki/assets/*.jpg

@@ -10,104 +10,19 @@
 
 ### ✅ Last Completed (2025-11-10)
 
-**Remove Sensitive Data from GitHub Wiki:**
-- Removed production URLs (photos.tojest.dev → your-domain.com) from 5 Wiki pages:
-  - 01-Home.md - Quick Links section
-  - 02-User-Guide.md - Registration and Admin Panel examples (2 locations)
-  - 05-Architecture.md - CORS configuration
-  - 09-Deployment.md - Deployment verification
-- Verified JWT tokens in examples are truncated placeholders (ending with `...`)
-- Updated local source files in `wiki/pages/` directory
-- Pushed changes to GitHub Wiki repository
-- Status: ✅ Wiki now uses generic examples only
+**Wiki Content Corrections**
+- Reviewed and updated all 11 Wiki pages
+- Progress tracked separately in: `wiki/PROGRESS.md` (Phase 9)
 
 ### 🎯 Currently Working On
 
-**Wiki Content Corrections**
-- Reviewing and updating all 11 Wiki pages
-- Progress tracked separately in: `wiki/PROGRESS.md` (Phase 9)
+**Final project cleanup**
+- Removing server-specific deployment files
+- Cleanup documentation and .gitignore
 
 ### 🎯 Next Action
 
-**Remove Sensitive Data from Scripts & Clean Git History**
-
-**Priority:** Medium (security cleanup)
-**Time:** 2-3h
-**Status:** 🔜 Planned (after final production deployment)
-
-**Issue:** Scripts and deployment files may contain production URLs, server paths, or other sensitive data.
-
-**Phase 1: Remove Sensitive Data from Scripts**
-
-**Tasks:**
-1. Audit all scripts in `scripts/` directory:
-   - Check for production URLs (photos.tojest.dev, srv07-30288.wykr.es)
-   - Check for hardcoded server paths
-   - Check for sensitive configuration values
-   - Replace with environment variables or generic examples
-
-2. Audit deployment configuration:
-   - `deployment/` directory files
-   - Docker Compose configurations
-   - Nginx configurations
-   - Check for production-specific values
-
-3. Update files to use:
-   - Environment variables from `.env`
-   - Generic placeholders (your-domain.com, your-server.com)
-   - Configuration templates with `.example` suffix
-
-**Phase 2: Clean Git History (Remove Sensitive Data Permanently)**
-
-**Method:** BFG Repo-Cleaner (faster than git filter-branch)
-
-**Steps:**
-```bash
-# 1. Backup current state
-git clone --mirror https://github.com/kojder/photo-map-app.git
-git clone --mirror https://github.com/kojder/photo-map-app.wiki.git
-
-# 2. Create replacements.txt file
-photos.tojest.dev=your-domain.com
-srv07-30288.wykr.es=your-server.com
-[other sensitive data patterns]
-
-# 3. Run BFG Repo-Cleaner
-bfg --replace-text replacements.txt photo-map-app.git
-bfg --replace-text replacements.txt photo-map-app.wiki.git
-
-# 4. Clean and force push
-cd photo-map-app.git
-git reflog expire --expire=now --all
-git gc --prune=now --aggressive
-git push --force
-
-cd ../photo-map-app.wiki.git
-git reflog expire --expire=now --all
-git gc --prune=now --aggressive
-git push --force
-
-# 5. Fresh clone for local work
-cd ~/projects
-rm -rf photo-map-app
-git clone git@github.com:kojder/photo-map-app.git
-```
-
-**Consequences:**
-- ⚠️ Rewrites entire Git history (all commit SHAs change)
-- ⚠️ Requires fresh clone after force push
-- ⚠️ Links to old commits in GitHub issues/PRs will break
-- ✅ Sensitive data permanently removed from history
-- ✅ Safe for solo project (no collaborators affected)
-
-**Success Criteria:**
-- [ ] No production URLs in scripts or deployment files
-- [ ] All sensitive config uses environment variables
-- [ ] Git history cleaned with BFG Repo-Cleaner
-- [ ] Fresh clone verified to work correctly
-- [ ] No sensitive data in `git log -p` output
-
-**Note:** Execute after final production deployment to minimize disruption.
+**Project ready for handover**
 
 ---
 
