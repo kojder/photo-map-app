@@ -4,17 +4,18 @@ Skrypty do zarządzania środowiskiem deweloperskim Photo Map MVP.
 
 ## 🚀 Szybki start
 
-### 1. Uruchom PostgreSQL (raz na początek sesji)
+### 1. Uruchom aplikację
 ```bash
-# Przy PIERWSZYM uruchomieniu po starcie środowiska:
-./scripts/start-dev.sh --with-db
-
-# Kolejne uruchomienia (PostgreSQL już działa w Dockerze):
+# Wystarczy jedno polecenie - PostgreSQL uruchomi się automatycznie jeśli nie działa:
 ./scripts/start-dev.sh
+
+# Alternatywnie z wyraźną flagą --with-db (to samo działanie):
+./scripts/start-dev.sh --with-db
 ```
 
-**WAŻNE:** 
-- `--with-db` uruchamia PostgreSQL w Dockerze
+**WAŻNE:**
+- ✅ **PostgreSQL uruchamia się automatycznie** jeśli nie działa (docker-compose up -d)
+- ✅ Flaga `--with-db` jest opcjonalna - automatyczne wykrywanie działa bez niej
 - `./scripts/stop-dev.sh` **NIE zatrzymuje PostgreSQL** - działa w tle dalej
 - PostgreSQL wyłączy się dopiero po `docker-compose down` lub restarcie systemu
 
@@ -54,11 +55,11 @@ Uruchamia backend (Spring Boot) i frontend (Angular) w tle.
 - ✅ Czeka na startup i weryfikuje porty (bez sudo - używa ss/lsof/nc fallback)
 - ✅ Automatyczne health checks dla backend i frontend
 - ✅ Loguje output do plików: `scripts/.pid/backend.log`, `scripts/.pid/frontend.log`
-- ✅ Opcjonalnie uruchamia PostgreSQL (docker-compose)
+- ✅ **Automatycznie uruchamia PostgreSQL** jeśli nie działa (docker-compose)
 - ✅ Debug mode dla diagnostyki problemów
 
 **Wymagania:**
-- PostgreSQL musi działać (lub użyj `--with-db`)
+- Docker + Docker Compose (dla PostgreSQL - automatycznie uruchamiane)
 - Maven wrapper w `backend/mvnw`
 - npm/Node.js dla frontendu
 
@@ -444,24 +445,19 @@ DEBUG=true ./scripts/stop-dev.sh
 ## 💡 Wskazówki
 
 **Zalecany workflow:**
-1. **Pierwszy start po włączeniu komputera:**
+1. **Start aplikacji (zawsze to samo polecenie):**
    ```bash
-   ./scripts/start-dev.sh --with-db
-   ```
-   
-2. **Kolejne starty (w tej samej sesji):**
-   ```bash
-   # PostgreSQL już działa w Dockerze, więc:
    ./scripts/start-dev.sh
    ```
+   PostgreSQL uruchomi się automatycznie jeśli nie działa!
 
-3. **Restart backend/frontend bez DB:**
+2. **Restart backend/frontend (szybko):**
    ```bash
    ./scripts/stop-dev.sh      # Zatrzymuje tylko backend + frontend
-   ./scripts/start-dev.sh     # PostgreSQL nadal działa!
+   ./scripts/start-dev.sh     # PostgreSQL nadal działa (wykryte automatycznie)
    ```
 
-4. **Całkowite wyczyszczenie (koniec dnia):**
+3. **Całkowite wyczyszczenie (koniec dnia):**
    ```bash
    ./scripts/stop-dev.sh --with-db
    # Lub ręcznie:
@@ -469,7 +465,8 @@ DEBUG=true ./scripts/stop-dev.sh
    ```
 
 **PostgreSQL w tle:**
-- `start-dev.sh --with-db` uruchamia PostgreSQL jako kontener Docker
+- ✅ **Automatycznie uruchamiane** gdy nie działa (wykrywanie przy każdym start-dev.sh)
+- `start-dev.sh --with-db` - flaga opcjonalna (automatyczne wykrywanie działa bez niej)
 - `stop-dev.sh` **NIE zatrzymuje** PostgreSQL - zostaje w tle
 - `stop-dev.sh --with-db` zatrzymuje PostgreSQL (docker-compose down)
 - PostgreSQL jest lekki - można zostawić włączony cały dzień

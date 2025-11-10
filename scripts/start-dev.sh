@@ -329,16 +329,16 @@ main() {
     # Stwórz folder na PID files
     mkdir -p "$PID_DIR"
 
-    # Start PostgreSQL jeśli --with-db
+    # Start PostgreSQL jeśli --with-db LUB jeśli nie działa (automatycznie)
     if [ "$START_DB" = true ]; then
         start_postgres
         echo ""
     else
         # Sprawdź czy PostgreSQL działa
         if ! is_port_in_use $POSTGRES_PORT; then
-            log_warn "PostgreSQL nie działa! Uruchom: docker-compose up -d"
-            log_warn "Lub użyj: ./scripts/start-dev.sh --with-db"
-            exit 1
+            log_warn "PostgreSQL nie działa - uruchamiam automatycznie..."
+            start_postgres
+            echo ""
         else
             log_success "PostgreSQL działa na porcie $POSTGRES_PORT"
             echo ""
