@@ -8,7 +8,7 @@
 
 ## 📊 Overall Progress
 
-**Completed:** 8/9 tasks (89%) - Phases 1-6 completed, awaiting user action (Phases 7-8)
+**Completed:** 6/9 phases (67%) - Phases 1-6 completed, Phase 9 in progress, awaiting user action (Phases 7-8)
 
 ---
 
@@ -251,6 +251,32 @@
 - [x] Commit changes
 
 **Status:** ✅ Completed
+
+---
+
+## 🔄 Phase 9: Wiki Content Corrections
+
+### Task 9.1: Review and correct Wiki content
+- [ ] Review all 11 Wiki pages for content quality
+- [ ] Mark corrections with `<!-- CORR_* -->` markers (see `wiki/CORRECTION_FORMAT.md`)
+- [ ] Process corrections with Claude Code
+- [ ] Test changes locally (preview in Markdown)
+- [ ] Push corrected pages to GitHub Wiki
+
+**Status:** ⏳ In Progress
+
+**Correction Format:**
+```markdown
+<!-- CORR_001: delete this -->
+Content to remove
+<!-- /CORR_001 -->
+
+<!-- CORR_002: shorten to 3 sentences -->
+Long content to shorten...
+<!-- /CORR_002 -->
+```
+
+**Instructions Format:** Polish is OK (e.g., "usuń to", "skróć do 5 zdań", "przepisz jako lista")
 
 ---
 
