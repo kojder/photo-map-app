@@ -19,8 +19,9 @@
   - README.md (main) - reduced from 612 to ~185 lines (~70% reduction)
   - deployment-README.md - added Wiki link banner at top
   - scripts-README.md - added Wiki link banner at top
-- Documentation: All content 100% in English, ready for GitHub Wiki upload
-- Status: ✅ Ready for user to upload Wiki pages (see `wiki/UPLOAD_INSTRUCTIONS.md`)
+- Uploaded: All 11 pages to GitHub Wiki (https://github.com/kojder/photo-map-app/wiki)
+- Commits: a0d5896 (Wiki files), 2145e3c (README restructuring)
+- Status: ✅ Wiki live and accessible
 
 ### 🎯 Currently Working On
 
@@ -28,7 +29,41 @@ None - ready for next task
 
 ### 🎯 Next Action
 
-None - awaiting user instructions
+**Remove Sensitive Data from GitHub Wiki**
+
+**Priority:** High (security)
+**Time:** 30-60 min
+**Status:** 🔜 Planned
+
+**Issue:** GitHub Wiki is public - need to remove production URLs and ensure no real tokens in examples.
+
+**Tasks:**
+1. Remove production URL references (photos.tojest.dev):
+   - 01-Home.md:62 - Production link
+   - 02-User-Guide.md:30, 260 - Example URLs
+   - 05-Architecture.md:487 - Production URL
+   - 09-Deployment.md:551 - Deployment verification
+
+2. Verify JWT tokens in examples are placeholders only:
+   - 06-API-Documentation.md:127 - Login response example
+   - 09-Deployment.md:370 - Deployment verification example
+
+3. Replace with generic examples:
+   - Production URL → `https://your-domain.com` or remove entirely
+   - JWT tokens → verify truncated with `...` (not full tokens)
+   - Example credentials → use clearly fake data
+
+4. Update local Wiki files in `wiki/pages/`
+5. Push changes to GitHub Wiki repository
+
+**Files to modify:**
+- wiki/pages/01-Home.md
+- wiki/pages/02-User-Guide.md
+- wiki/pages/05-Architecture.md
+- wiki/pages/06-API-Documentation.md
+- wiki/pages/09-Deployment.md
+
+**Note:** Wiki is already live and will be modified later if needed.
 
 ---
 
@@ -52,8 +87,6 @@ None - awaiting user instructions
 | 📝 Documentation | ✅ | .ai/ specs, README, CLAUDE.md |
 
 **Legend:** 🔜 Pending | ⏳ In Progress | ✅ Completed
-
-**Production URL:** https://photos.tojest.dev/
 
 ---
 

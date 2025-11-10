@@ -193,11 +193,13 @@ README.md                      # Project overview (for humans)
 
 **Location:** https://github.com/kojder/photo-map-app/wiki
 
-**Working files:** `wiki/` directory (local preparation before upload)
+**Status:** ✅ Live and accessible (uploaded 2025-11-10)
+
+**Working files:** `wiki/` directory (local source files)
 - `wiki/PLAN.md` - Implementation plan and structure
 - `wiki/PROGRESS.md` - Progress tracker
 - `wiki/UPLOAD_INSTRUCTIONS.md` - How to upload to GitHub Wiki
-- `wiki/pages/` - 11 Wiki pages ready for upload
+- `wiki/pages/` - 11 Wiki pages (source files)
 - `wiki/modified-files/` - Modified local README files
 
 **Wiki Structure:** 11 pages
@@ -212,6 +214,11 @@ README.md                      # Project overview (for humans)
 - Organized, searchable content
 - Easier maintenance than single README
 - Better onboarding experience
+
+**Important:**
+- Wiki is **public** - ensure no sensitive data (production URLs, real tokens)
+- Local files in `wiki/pages/` can be modified and re-uploaded if needed
+- Wiki repo: https://github.com/kojder/photo-map-app.wiki.git
 
 ---
 
