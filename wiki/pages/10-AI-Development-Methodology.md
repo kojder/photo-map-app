@@ -10,7 +10,6 @@
 - [Claude Code](#claude-code)
 - [GitHub Copilot](#github-copilot)
 - [Gemini CLI](#gemini-cli)
-- [Prompt Engineering](#prompt-engineering)
 - [Best Practices](#best-practices)
 
 ---
@@ -287,7 +286,7 @@ Napraw błędy z .sonarqube/CURRENT_ISSUES.md
 **Location:** `.ai/features/`
 
 **Structure:**
-```markdown
+````markdown
 # Feature: User Authentication
 
 ## Status
@@ -314,7 +313,7 @@ Napraw błędy z .sonarqube/CURRENT_ISSUES.md
 - Login component
 - Auth service
 - Route guards
-```
+````
 
 ### Decision Documentation
 
@@ -323,7 +322,7 @@ Napraw błędy z .sonarqube/CURRENT_ISSUES.md
 **Purpose:** Document "why" behind technology and architecture choices.
 
 **Example:**
-```markdown
+````markdown
 # Decision: Why Tailwind 3.x (not 4.x)?
 
 **Date:** 2025-10-15
@@ -341,7 +340,7 @@ Napraw błędy z .sonarqube/CURRENT_ISSUES.md
 - ✅ Stable, well-tested
 - ✅ Good Angular 18 integration
 - ❌ Missing some Tailwind 4 features
-```
+````
 
 ---
 
