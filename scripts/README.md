@@ -1,5 +1,9 @@
 # Development Scripts
 
+> 📖 **Full documentation:** [Wiki - Scripts Reference](https://github.com/kojder/photo-map-app/wiki/Scripts-Reference)
+>
+> This file is a **quick reference** for development scripts.
+
 Scripts for managing Photo Map MVP development environment.
 
 ## 🚀 Quick Start

@@ -1,5 +1,9 @@
 # Photo Map - Deployment Guide (Docker Compose)
 
+> 📖 **Full documentation:** [Wiki - Deployment Guide](https://github.com/kojder/photo-map-app/wiki/Deployment)
+>
+> This file is a **quick reference** for deployment commands.
+
 **Strategy:** Docker Compose (backend + nginx/frontend)
 **Target:** Mikrus VPS (4GB RAM, Shared PostgreSQL)
 **Last Updated:** 2025-10-27
