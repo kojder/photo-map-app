@@ -47,7 +47,47 @@ cd photo-map-app
 
 ### Step 2: Setup Database
 
-**Option A: Docker Compose (Recommended)**
+**Quick Setup (Recommended - One Command):**
+
+```bash
+# 1. Copy environment template
+cp .env.example .env
+
+# 2. Edit .env with your credentials (see below)
+nano .env
+
+# 3. Initialize database with reset-data.sh script
+./scripts/reset-data.sh
+```
+
+**What `reset-data.sh` does:**
+- ✅ Checks PostgreSQL connection (starts Docker Compose if needed)
+- ✅ Creates database schema (runs Flyway migrations)
+- ✅ Sets up directory structure (`uploads/input/`, `uploads/original/`, etc.)
+- ✅ Creates admin user from `.env` credentials
+
+**Required .env variables:**
+```bash
+# Database credentials
+DB_HOST=localhost
+DB_PORT=5432
+DB_NAME=photomap
+DB_USERNAME=photomap_user
+DB_PASSWORD=photomap_pass
+
+# Admin account (created automatically)
+ADMIN_EMAIL=admin@example.com
+ADMIN_PASSWORD=<your-secure-password>
+
+# JWT secret (generate with: openssl rand -base64 32)
+JWT_SECRET=<generated-secret>
+```
+
+---
+
+**Alternative: Manual Setup**
+
+**Option A: Docker Compose**
 
 ```bash
 # Start PostgreSQL in Docker
@@ -79,6 +119,18 @@ GRANT ALL PRIVILEGES ON DATABASE photomap TO photomap_user;
 
 ### Step 3: Backend Setup
 
+**If you used `reset-data.sh` in Step 2, backend is ready!**
+
+Just start it:
+```bash
+cd backend
+./mvnw spring-boot:run
+```
+
+---
+
+**Alternative: Manual Backend Setup**
+
 ```bash
 cd backend
 
@@ -91,11 +143,14 @@ nano .env  # or use any editor
 
 **Required .env variables:**
 ```bash
-DB_URL=jdbc:postgresql://localhost:5432/photomap
+DB_HOST=localhost
+DB_PORT=5432
+DB_NAME=photomap
 DB_USERNAME=photomap_user
 DB_PASSWORD=photomap_pass
 JWT_SECRET=<generate-with-openssl>
-STORAGE_PATH=./uploads
+ADMIN_EMAIL=admin@example.com
+ADMIN_PASSWORD=<your-secure-password>
 ```
 
 **Generate JWT_SECRET:**
@@ -162,11 +217,8 @@ ng serve
 **Faster startup for daily development:**
 
 ```bash
-# Start backend + frontend (PostgreSQL must be running)
+# Start backend + frontend (PostgreSQL will start automatically)
 ./scripts/start-dev.sh
-
-# Start backend + frontend + PostgreSQL
-./scripts/start-dev.sh --with-db
 
 # Stop backend + frontend
 ./scripts/stop-dev.sh
@@ -258,10 +310,10 @@ For more details, see [Scripts Reference](Scripts-Reference).
    - Check password in `.env` file: `ADMIN_PASSWORD=...`
    - Password is case-sensitive
 
-2. **"Account not activated":**
-   - Admin account is created automatically on first startup
-   - Check backend logs for errors
-   - Restart backend: `./mvnw spring-boot:run`
+2. **Empty gallery after login:**
+   - You need **VIEW_PHOTOS** permission from admin
+   - Contact administrator shown on screen
+   - Admin will grant permissions through Admin Panel
 
 3. **"Network error":**
    - Verify backend is running: http://localhost:8080/swagger-ui/index.html

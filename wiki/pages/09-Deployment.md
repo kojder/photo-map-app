@@ -6,13 +6,13 @@
 
 ## 📖 Introduction
 
-This guide describes the Docker Compose deployment strategy for Photo Map MVP on Mikrus VPS. The application runs in two containers (backend + frontend/nginx) with automatic SSL via Mikrus proxy and shared PostgreSQL service.
+This guide describes the Docker Compose deployment strategy for Photo Map MVP on VPS hosting. The application runs in two containers (backend + frontend/nginx) with automatic SSL via provider proxy and shared PostgreSQL service.
 
 **Deployment Strategy:**
 - **Method:** Docker Compose (2 containers)
-- **Target:** Mikrus VPS (4GB RAM, srv07.mikr.us)
-- **SSL:** Automatic (*.wykr.es)
-- **PostgreSQL:** Shared service (psql01.mikr.us)
+- **Target:** VPS hosting (4GB RAM recommended)
+- **SSL:** Automatic (provider-managed wildcard domain)
+- **PostgreSQL:** Shared service or dedicated instance
 - **Storage:** Docker volume (photo-map-uploads)
 
 **Related Pages:**
@@ -45,16 +45,16 @@ This guide describes the Docker Compose deployment strategy for Photo Map MVP on
 - ✅ Java 17 JDK + Maven (for building backend JAR)
 - ✅ Node.js 18+ + Angular CLI (for building frontend)
 
-### On Mikrus VPS:
+### On VPS:
 - ✅ Docker + Docker Compose - installation via script
-- ✅ SSH access - root access
-- ✅ PostgreSQL - Shared service (psql01.mikr.us)
-- ✅ 4GB RAM - sufficient for Docker
+- ✅ SSH access - root access recommended
+- ✅ PostgreSQL - Shared service or dedicated instance
+- ✅ 4GB RAM - sufficient for Docker containers
 
-### Required information from Mikrus panel:
-- SSH host and port: `srvXX.mikr.us`, port `10XXX` (10000 + machine number)
-- PostgreSQL credentials: https://mikr.us/panel/?a=postgres
-- Assigned ports: check in panel (format: 201xx, 301xx)
+### Required information from VPS provider:
+- SSH host and port (e.g., `yourserver.example.com`, port `22` or custom)
+- PostgreSQL credentials (check your provider's panel)
+- Assigned ports for web services (check provider documentation)
 
 ---
 
@@ -70,29 +70,29 @@ docker-compose.yml
 │   └── Env: .env (PostgreSQL, JWT, Admin)
 │
 └── frontend (photo-map-frontend:latest)
-    ├── Port: 30288 (external - Mikrus proxy)
+    ├── Port: <your-assigned-port> (external - provider proxy)
     ├── Nginx + Angular SPA
     └── Proxy: /api → backend:8080
 ```
 
-### SSL Architecture (Mikrus Proxy)
+### SSL Architecture (Provider Proxy)
 
 ```
 Internet (HTTPS)
     ↓
-Mikrus Proxy (SSL termination - *.wykr.es)
+Provider Proxy (SSL termination - wildcard domain)
     ↓ HTTP
 Frontend Container (nginx:80)
     ↓ HTTP (internal Docker network)
 Backend Container (Spring Boot:8080)
     ↓
-PostgreSQL (psql01.mikr.us - shared service)
+PostgreSQL (shared service or dedicated)
 ```
 
 **Important:**
 - Backend serves **HTTP** (port 8080 internal)
-- Frontend nginx listens on **port 30288** (external)
-- Mikrus proxy adds SSL and redirects to `https://srv07-30288.wykr.es/`
+- Frontend nginx listens on **assigned port** (external, e.g., 30288 or your provider's port)
+- Provider proxy adds SSL and redirects to `https://<your-domain>/`
 - Users connect via HTTPS, containers see HTTP
 
 ### Volumes
@@ -237,12 +237,52 @@ photo-map-frontend  latest   def456   1 minute ago    50MB
 
 ## Deploy to Mikrus VPS
 
-### Step 1: Install Docker on VPS (one-time)
+### Automated Deployment (Recommended)
+
+**If you have a deployment helper script configured (e.g., `deployment/scripts/deploy-<yourhost>.sh`):**
+
+```bash
+# 1. Build Docker images locally
+./deployment/scripts/build-images.sh
+
+# 2. Deploy to your VPS
+./deployment/scripts/deploy-<yourhost>.sh
+```
+
+**For initial setup with data reset:**
+```bash
+./deployment/scripts/deploy-<yourhost>.sh --init
+```
+
+**What `--init` flag does:**
+- ⚠️ **DANGER**: Deletes ALL data (users, photos, ratings, files)
+- Resets database schema
+- Recreates upload directories
+- Admin user will be created on backend startup from remote `.env`
+- **Use ONLY for:** initial production setup, development environment reset
+
+**Deployment script handles:**
+- ✅ SSH connection to VPS
+- ✅ Docker image transfer (save/load)
+- ✅ Docker Compose configuration
+- ✅ Container start/restart
+- ✅ Health checks
+
+**After deployment completes:**
+- Application will be available at your configured URL
+- Check deployment script output for exact URL
+
+---
+
+### Manual Deployment (Alternative)
+
+**Use manual steps if you don't have a deployment helper script.**
+
+#### Step 1: Install Docker on VPS (one-time)
 
 ```bash
 # SSH to VPS
-ssh root@srvXX.mikr.us -p 10XXX
-
+ssh root@<your-vps-host> -p <your-ssh-port>
 # Install Docker + Docker Compose
 curl -fsSL https://get.docker.com | sh
 systemctl enable docker
@@ -253,18 +293,18 @@ docker --version
 docker compose version
 ```
 
-### Step 2: Transfer files to VPS
+#### Step 2: Transfer files to VPS
 
 ```bash
 # Transfer docker-compose.yml + .env
-scp -P 10XXX deployment/docker-compose.yml root@srvXX.mikr.us:/opt/photo-map/
-scp -P 10XXX deployment/.env root@srvXX.mikr.us:/opt/photo-map/
+scp -P <ssh-port> deployment/docker-compose.yml root@<your-vps-host>:/opt/photo-map/
+scp -P <ssh-port> deployment/.env root@<your-vps-host>:/opt/photo-map/
 
 # Verify
-ssh root@srvXX.mikr.us -p 10XXX "ls -la /opt/photo-map/"
+ssh root@<your-vps-host> -p <ssh-port> "ls -la /opt/photo-map/"
 ```
 
-### Step 3: Transfer Docker images
+#### Step 3: Transfer Docker images
 
 **Option A: Save/Load (recommended for first deployment)**
 
@@ -274,11 +314,11 @@ docker save photo-map-backend:latest | gzip > photo-map-backend.tar.gz
 docker save photo-map-frontend:latest | gzip > photo-map-frontend.tar.gz
 
 # Transfer to VPS
-scp -P 10XXX photo-map-backend.tar.gz root@srvXX.mikr.us:/opt/photo-map/
-scp -P 10XXX photo-map-frontend.tar.gz root@srvXX.mikr.us:/opt/photo-map/
+scp -P <ssh-port> photo-map-backend.tar.gz root@<your-vps-host>:/opt/photo-map/
+scp -P <ssh-port> photo-map-frontend.tar.gz root@<your-vps-host>:/opt/photo-map/
 
 # SSH to VPS and load images
-ssh root@srvXX.mikr.us -p 10XXX
+ssh root@<your-vps-host> -p <ssh-port>
 cd /opt/photo-map
 docker load < photo-map-backend.tar.gz
 docker load < photo-map-frontend.tar.gz
@@ -294,11 +334,11 @@ rm photo-map-*.tar.gz
 
 You can use Docker Hub or GitHub Container Registry for simpler updates.
 
-### Step 4: Start Docker Compose
+#### Step 4: Start Docker Compose
 
 ```bash
 # SSH to VPS (if not already connected)
-ssh root@srvXX.mikr.us -p 10XXX
+ssh root@<your-vps-host> -p <ssh-port>
 
 # Navigate to deployment directory
 cd /opt/photo-map
@@ -312,10 +352,10 @@ docker compose ps
 # Expected output:
 # NAME                  STATUS          PORTS
 # photo-map-backend     Up 10 seconds   0.0.0.0:8080->8080/tcp
-# photo-map-frontend    Up 10 seconds   0.0.0.0:30288->80/tcp
+# photo-map-frontend    Up 10 seconds   0.0.0.0:<your-port>->80/tcp
 ```
 
-### Step 5: Verify logs
+#### Step 5: Verify logs
 
 ```bash
 # Backend logs
@@ -342,7 +382,7 @@ docker compose logs -f
 
 ```bash
 # SSH to VPS
-ssh root@srvXX.mikr.us -p 10XXX
+ssh root@<your-vps-host> -p <ssh-port>
 
 # Health check (internal)
 curl http://localhost:8080/actuator/health
@@ -350,11 +390,11 @@ curl http://localhost:8080/actuator/health
 # Expected: {"status":"UP"}
 ```
 
-### 2. Frontend Availability (via Mikrus proxy)
+### 2. Frontend Availability
 
 ```bash
-# Test HTTPS access (replace srvXX and PORT with your values)
-curl https://srv07-30288.wykr.es/
+# Test HTTPS access (replace with your actual domain)
+curl https://<your-domain>/
 
 # Expected: Angular index.html
 ```
@@ -362,8 +402,8 @@ curl https://srv07-30288.wykr.es/
 ### 3. API Connectivity (End-to-End)
 
 ```bash
-# Test login endpoint
-curl -X POST https://srv07-30288.wykr.es/api/auth/login \
+# Test login endpoint (replace with your domain and actual password)
+curl -X POST https://<your-domain>/api/auth/login \
   -H "Content-Type: application/json" \
   -d '{"email":"admin@example.com","password":"your-password"}'
 
@@ -372,8 +412,8 @@ curl -X POST https://srv07-30288.wykr.es/api/auth/login \
 
 ### 4. Upload Photos (Web Interface)
 
-1. Open browser: `https://srv07-30288.wykr.es/`
-2. Log in (admin credentials from .env)
+1. Open browser: `https://<your-domain>/` (replace with your actual domain)
+2. Log in (admin credentials from remote `.env`)
 3. Navigate to `/gallery`
 4. Click "Upload Photos"
 5. Select a JPG/PNG photo with GPS EXIF
@@ -407,10 +447,10 @@ docker build -t photo-map-backend:latest backend/
 docker save photo-map-backend:latest | gzip > photo-map-backend.tar.gz
 
 # 3. Transfer to VPS
-scp -P 10XXX photo-map-backend.tar.gz root@srvXX.mikr.us:/opt/photo-map/
+scp -P <ssh-port> photo-map-backend.tar.gz root@<your-vps-host>:/opt/photo-map/
 
 # 4. SSH to VPS and update
-ssh root@srvXX.mikr.us -p 10XXX
+ssh root@<your-vps-host> -p <ssh-port>
 cd /opt/photo-map
 docker load < photo-map-backend.tar.gz
 docker compose up -d backend
@@ -430,22 +470,22 @@ docker build -t photo-map-frontend:latest frontend/
 docker save photo-map-frontend:latest | gzip > photo-map-frontend.tar.gz
 
 # 3. Transfer to VPS
-scp -P 10XXX photo-map-frontend.tar.gz root@srvXX.mikr.us:/opt/photo-map/
+scp -P <ssh-port> photo-map-frontend.tar.gz root@<your-vps-host>:/opt/photo-map/
 
 # 4. SSH to VPS and update
-ssh root@srvXX.mikr.us -p 10XXX
+ssh root@<your-vps-host> -p <ssh-port>
 cd /opt/photo-map
 docker load < photo-map-frontend.tar.gz
 docker compose up -d frontend
 
 # 5. Verify
-curl https://srv07-30288.wykr.es/
+curl https://<your-domain>/
 ```
 
 ### Restart All Containers
 
 ```bash
-ssh root@srvXX.mikr.us -p 10XXX
+ssh root@<your-vps-host> -p <ssh-port>
 cd /opt/photo-map
 docker compose restart
 ```
@@ -462,10 +502,10 @@ After changing environment variables in `deployment/.env`:
 
 ```bash
 # 1. Transfer updated .env to VPS
-scp -P 10XXX deployment/.env root@srvXX.mikr.us:/opt/photo-map/
+scp -P <ssh-port> deployment/.env root@<your-vps-host>:/opt/photo-map/
 
 # 2. Recreate containers (restart is not enough!)
-ssh root@srvXX.mikr.us -p 10XXX
+ssh root@<your-vps-host> -p <ssh-port>
 cd /opt/photo-map
 docker compose down
 docker compose up -d
@@ -477,7 +517,7 @@ docker exec photo-map-backend env | grep YOUR_VARIABLE
 ### Stop All Containers
 
 ```bash
-ssh root@srvXX.mikr.us -p 10XXX
+ssh root@<your-vps-host> -p <ssh-port>
 cd /opt/photo-map
 docker compose down
 ```
@@ -485,7 +525,7 @@ docker compose down
 ### Clean Rebuild (reset volumes)
 
 ```bash
-ssh root@srvXX.mikr.us -p 10XXX
+ssh root@<your-vps-host> -p <ssh-port>
 cd /opt/photo-map
 
 # Stop and remove containers + volumes
@@ -514,16 +554,16 @@ docker compose up -d
 **Usage:**
 
 ```bash
-# Deploy with full data reset (requires confirmation)
-./deployment/scripts/deploy-marcin288.sh --init
+# If you have a deployment helper script:
+./deployment/scripts/deploy-<yourhost>.sh --init
 
-# Generic syntax (for other VPS hosts)
-./deployment/scripts/deploy.sh [srv_host] [ssh_port] --init
+# Generic syntax (using deploy.sh directly):
+./deployment/scripts/deploy.sh <srv_host> <ssh_port> --init
 ```
 
 **Safety features:**
 - ✅ Requires interactive confirmation
-- ✅ **Production**: Must type EXACT hostname (e.g., `marcin288.mikrus.xyz`)
+- ✅ **Production**: Must type EXACT hostname
 - ✅ Shows clear warning before execution
 - ✅ Cannot be bypassed with flags
 
@@ -534,12 +574,12 @@ docker compose up -d
 ./deployment/scripts/build-images.sh
 
 # 2. Deploy with data reset (first deployment or reset scenario)
-./deployment/scripts/deploy-marcin288.sh --init
+./deployment/scripts/deploy.sh <your-vps-host> <ssh-port> --init
 
 # Output:
-# ⚠️  WARNING: This will DELETE ALL DATA on marcin288.mikrus.xyz
-# To confirm, type the EXACT server hostname: marcin288.mikrus.xyz
-# > marcin288.mikrus.xyz
+# ⚠️  WARNING: This will DELETE ALL DATA on <your-vps-host>
+# To confirm, type the EXACT server hostname: <your-vps-host>
+# > <your-vps-host>
 #
 # ✓ Confirmation accepted. Proceeding with data reset...
 # Step INIT: Resetting data on remote server...
@@ -548,46 +588,47 @@ docker compose up -d
 # ...
 
 # 3. Verify deployment
-curl https://your-domain.com/
+curl https://<your-domain>/
 ```
 
 **Help:**
 
 ```bash
-# Show help for deploy-marcin288.sh
-./deployment/scripts/deploy-marcin288.sh --help
+# Show help for deployment script
+./deployment/scripts/deploy.sh --help
+
+# Or for your custom helper:
+./deployment/scripts/deploy-<yourhost>.sh --help
 ```
 
 ---
 
 ## SSL Configuration (Automatic)
 
-**Status:** ✅ Automatic - Mikrus provides SSL for shared domains
+**Status:** ✅ Automatic - Most VPS providers (including Mikrus) offer SSL for shared domains
 
-### Shared domain (*.wykr.es)
+### Shared domain setup
 
-- **Domain format:** `srvXX-PORT.wykr.es` (e.g., `srv07-30288.wykr.es`)
-- **Automatic SSL:** Mikrus provides SSL certificate for `*.wykr.es`
+- **Domain format:** `<server>-<port>.<provider-domain>` (e.g., `srv01-30100.example.com`)
+- **Automatic SSL:** Provider offers SSL certificate for wildcard domains
 - **Configuration:** Zero - SSL works automatically
-- **Access:** `https://srvXX-PORT.wykr.es/`
-- **Documentation:** https://wiki.mikr.us/wspoldzielona_domena
+- **Access:** `https://<your-subdomain>.<provider-domain>/` (replace with your actual domain)
 
-**Ports for shared domain:**
-- Mikrus assigns 2 ports per server (format: 201xx, 301xx)
-- Check ports in Mikrus panel
-- Default port 80 does NOT work with shared domain
-- Set `FRONTEND_PORT` in `.env` (e.g., 30288)
+**Ports configuration:**
+- Check your provider's documentation for assigned ports
+- Shared domains usually require specific port ranges (not default port 80)
+- Set `FRONTEND_PORT` in `.env` to your assigned port
 
 ### Verify SSL
 
 ```bash
-# Test HTTPS access
-curl https://srv07-30288.wykr.es/
+# Test HTTPS access (replace with your actual domain)
+curl https://<your-domain>/
 
-# Test SSL certificate
-openssl s_client -connect srv07-30288.wykr.es:443 -servername srv07-30288.wykr.es < /dev/null | grep subject
+# Test SSL certificate (replace with your actual domain)
+openssl s_client -connect <your-domain>:443 -servername <your-domain> < /dev/null | grep subject
 
-# Expected: subject=CN=*.wykr.es
+# Expected: subject=CN=*.<provider-domain>
 ```
 
 ---
@@ -635,7 +676,7 @@ lsof -i :8080
 
 **Symptom:**
 ```bash
-curl https://srv07-30288.wykr.es/
+curl https://<your-domain>/
 # 502 Bad Gateway
 ```
 

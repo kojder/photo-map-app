@@ -244,9 +244,9 @@ Napraw błędy z .sonarqube/CURRENT_ISSUES.md
 
 ### Overview
 
-**Gemini CLI** (powered by Google Gemini 1.5 Pro) is used for large context analysis tasks where understanding the entire codebase is needed.
+**Gemini CLI** (powered by Google Gemini 2.5 Pro) is used for large context analysis tasks where understanding the entire codebase is needed.
 
-**Key Feature:** 2M token context window (entire codebase fits)
+**Key Feature:** 1M token context window (entire codebase fits)
 
 ### Use Cases
 
@@ -281,42 +281,6 @@ Napraw błędy z .sonarqube/CURRENT_ISSUES.md
 - ✅ Task execution (git commands, file operations)
 
 ---
-
-## 📝 Prompt Engineering
-
-### Structured Prompts
-
-**Best Practice:** Provide context-rich prompts with clear specifications.
-
-**Good Prompt Pattern:**
-```
-Task: Implement user authentication with JWT tokens
-
-Context:
-- Stack: Spring Boot 3 + Spring Security 6
-- Database: PostgreSQL with existing users table
-- Requirements: See .ai/api-plan.md section 2.1
-
-Acceptance Criteria:
-1. POST /api/auth/login endpoint
-2. JWT token generation with 24h expiration
-3. BCrypt password hashing
-4. Unit tests with >70% coverage
-
-Files to Modify:
-- backend/src/main/java/com/photomap/controller/AuthController.java
-- backend/src/main/java/com/photomap/service/AuthService.java
-- backend/src/main/java/com/photomap/security/JwtTokenProvider.java
-
-Follow:
-- .ai/tech-stack.md for JWT configuration
-- CLAUDE.md for testing policy
-```
-
-**Poor Prompt:**
-```
-Add login
-```
 
 ### Feature Specifications
 

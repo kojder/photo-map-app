@@ -41,22 +41,26 @@ After starting the backend:
 
 1. Start backend: `./scripts/start-dev.sh`
 2. Open Swagger UI: http://localhost:8080/swagger-ui/index.html
-3. Click **"Authorize"** button (top right)
-4. Login via `/api/auth/login` to get JWT token:
+3. **Login to get JWT token:**
+   - Scroll to `/api/auth/login` endpoint
    - Click **"Try it out"**
-   - Enter credentials:
+   - Enter credentials in request body:
      ```json
      {
        "email": "admin@example.com",
-       "password": "<check .env file>"
+       "password": "<check ADMIN_PASSWORD in .env file>"
      }
      ```
    - Click **"Execute"**
-   - Copy JWT token from response body
-5. Click **"Authorize"** button again
-6. Enter: `Bearer <your-token>` (include "Bearer " prefix)
-7. Click **"Authorize"**
-8. Now you can test any authenticated endpoint
+   - **Copy JWT token from response body** (the long string after `"token":`)
+
+4. **Authorize with token:**
+   - Click **"Authorize"** button (🔒 icon at top right)
+   - Enter: `Bearer <your-token>` (include "Bearer " prefix)
+   - Click **"Authorize"**
+   - Click **"Close"**
+
+5. Now you can test any authenticated endpoint (marked with 🔒 lock icon)
 
 ---
 
@@ -91,7 +95,7 @@ After starting the backend:
 {
   "sub": "user@example.com",
   "roles": ["USER", "ADMIN"],
-  "permissions": ["VIEW_PHOTOS", "UPLOAD_PHOTOS", "RATE_PHOTOS"],
+  "permissions": ["VIEW_PHOTOS", "RATE_PHOTOS"],
   "iat": 1234567890,
   "exp": 1234571490
 }
@@ -127,7 +131,7 @@ Content-Type: application/json
   "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
   "email": "user@example.com",
   "role": "USER",
-  "permissions": ["VIEW_PHOTOS", "UPLOAD_PHOTOS", "RATE_PHOTOS"]
+  "permissions": ["VIEW_PHOTOS", "RATE_PHOTOS"]
 }
 ```
 
@@ -167,9 +171,9 @@ Content-Type: application/json
 **Response (Success - 201 Created):**
 ```json
 {
-  "message": "Registration successful! Please contact the administrator to activate your account.",
+  "message": "Registration successful! You can now log in. Contact the administrator to request permissions.",
   "email": "newuser@example.com",
-  "isActive": false
+  "isActive": true
 }
 ```
 
@@ -346,10 +350,10 @@ files: [photo1.jpg, photo2.jpg]
 
 **Validation:**
 - `files` - Required, multipart/form-data
-- File size limit: Configurable (check with admin)
+- File size limit: 10MB (default)
 - Supported formats: JPEG, PNG
 
-**Permissions Required:** `UPLOAD_PHOTOS`
+**Note:** Upload available to all logged-in users in MVP
 
 ---
 
@@ -450,7 +454,7 @@ Authorization: Bearer <token>
     "name": "Admin User",
     "role": "ADMIN",
     "isActive": true,
-    "permissions": ["VIEW_PHOTOS", "UPLOAD_PHOTOS", "RATE_PHOTOS"],
+    "permissions": ["VIEW_PHOTOS", "RATE_PHOTOS"],
     "createdAt": "2025-01-01T00:00:00Z"
   },
   {
@@ -458,37 +462,11 @@ Authorization: Bearer <token>
     "email": "user@example.com",
     "name": "John Doe",
     "role": "USER",
-    "isActive": false,
+    "isActive": true,
     "permissions": [],
     "createdAt": "2025-01-20T12:00:00Z"
   }
 ]
-```
-
-**Role Required:** `ADMIN`
-
----
-
-### PUT /api/admin/users/{id}/activate
-
-**Description:** Activate user account.
-
-**Authentication:** Required (JWT token with ADMIN role)
-
-**Request:**
-```
-PUT /api/admin/users/user2-uuid/activate
-Authorization: Bearer <token>
-```
-
-**Response (Success - 200 OK):**
-```json
-{
-  "id": "user2-uuid",
-  "email": "user@example.com",
-  "isActive": true,
-  "message": "User activated successfully"
-}
 ```
 
 **Role Required:** `ADMIN`
@@ -508,7 +486,7 @@ Authorization: Bearer <token>
 Content-Type: application/json
 
 {
-  "permissions": ["VIEW_PHOTOS", "UPLOAD_PHOTOS", "RATE_PHOTOS"]
+  "permissions": ["VIEW_PHOTOS", "RATE_PHOTOS"]
 }
 ```
 
@@ -517,16 +495,14 @@ Content-Type: application/json
 {
   "id": "user2-uuid",
   "email": "user@example.com",
-  "permissions": ["VIEW_PHOTOS", "UPLOAD_PHOTOS", "RATE_PHOTOS"],
+  "permissions": ["VIEW_PHOTOS", "RATE_PHOTOS"],
   "message": "Permissions updated successfully"
 }
 ```
 
 **Available Permissions:**
 - `VIEW_PHOTOS` - View photos in Gallery and Map
-- `UPLOAD_PHOTOS` - Upload new photos
 - `RATE_PHOTOS` - Rate photos (1-5 stars)
-- `DELETE_PHOTOS` - Delete photos (future feature)
 
 **Role Required:** `ADMIN`
 

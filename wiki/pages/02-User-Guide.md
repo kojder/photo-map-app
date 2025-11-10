@@ -37,24 +37,30 @@
 
 **After registration:**
 - ✅ Your account is created successfully
-- ⚠️ **Your account is NOT active yet** - you'll see an on-screen message:
-  > "Registration successful! Please contact the administrator to activate your account."
-- 📧 Contact the administrator via email to request account activation
-- Administrator will activate your account and notify you
+- ✅ **You can log in immediately** - your account is active
+- ⚠️ **But you won't see any photos yet** - you need permissions from admin
+- 📧 Contact the administrator to request **VIEW_PHOTOS** and **RATE_PHOTOS** permissions
+- After admin grants permissions, you'll be able to view and rate photos
 
-**Why manual activation?**
-- Security: Prevents unauthorized access and spam registrations
-- Control: Administrator verifies each new user before granting access
-- Privacy: Ensures only trusted users can view and upload photos
-
+**Why permission-based access?**
+- **Family & friends focus:** Photo Map MVP is designed for sharing photos with family and close friends
+- **Privacy:** Only trusted users can view photos
+- **Security:** Prevents unauthorized access and spam registrations
+- **Control:** Administrator verifies each new user before granting permissions
+- **Simple for MVP:** No email verification needed - suitable for small trusted groups
 ### Login
 
-**After your account is activated by the administrator:**
+**After registration, you can log in immediately:**
 
 1. Navigate to the login page
 2. Enter your email and password
 3. Click **"Login"** button
 4. You'll be redirected to the Gallery page
+
+**If you don't have permissions yet:**
+- Gallery will be empty with a message: "You don't have permission to view photos"
+- Contact the administrator (email shown on screen) to request **VIEW_PHOTOS** permission
+- The email shown is the administrator's contact email configured in the admin panel
 
 **JWT Authentication:**
 - Your session is secured with JWT tokens
@@ -64,7 +70,8 @@
 
 **Troubleshooting:**
 - **"Invalid credentials"** → Check your email and password
-- **"Account not activated"** → Contact the administrator
+- **Empty gallery after login** → You need **VIEW_PHOTOS** permission from admin
+- **Can't rate photos** → You need **RATE_PHOTOS** permission from admin
 - **"Token expired"** → Log in again to refresh your session
 
 ---
@@ -80,8 +87,8 @@
 - **Photo Cards:** Each card shows:
   - Thumbnail (300px medium-sized image)
   - Filename
-  - Overall rating (average from all users)
-  - Your personal rating
+  - Average rating from all users (e.g., 4.5 stars from 10 ratings)
+  - Indicator if you've rated this photo
 - **Loading:** Automatic loading when scrolling to bottom (infinite scroll)
 - **Empty State:** Shows helpful message when no photos match filters
 
@@ -92,8 +99,7 @@
 
 **Permissions:**
 - ✅ **VIEW_PHOTOS** permission required to see photos
-- ✅ **UPLOAD_PHOTOS** permission required to upload new photos
-- Without permissions, you'll see an empty state with a message
+- Without VIEW_PHOTOS permission, you'll see an empty state with a message
 
 ### Map View
 
@@ -123,22 +129,21 @@
 - **Date Range:**
   - Start Date: Filter photos taken after this date
   - End Date: Filter photos taken before this date
-  - Format: YYYY-MM-DD (date picker available)
+  - Format: DD.MM.YYYY (date picker available)
 - **Rating:**
   - Minimum Rating: Show only photos with rating >= selected value (1-5 stars)
   - Filter by average rating (all users) or your personal rating
 - **GPS Location:**
-  - Show only photos with GPS coordinates
-  - Show only photos without GPS coordinates
+  - Map view automatically shows only photos with GPS coordinates
+  - Gallery view shows all photos (with and without GPS)
 
 **How to Use Filters:**
-1. Click **Filter FAB** (floating action button) on Gallery or Map page
+1. Click **Filter FAB** (floating action button in bottom right corner) on Gallery or Map page
 2. Filter panel slides in from the side
 3. Select your filter criteria
-4. Click **"Apply"** button
-5. Results are filtered immediately
-6. Click **"Clear Filters"** to reset
-7. Close filter panel by clicking FAB again or clicking outside
+4. Results are filtered automatically (no Apply button needed)
+5. Click **"Clear Filters"** to reset
+6. Close filter panel by clicking FAB again or clicking outside
 
 **Filter Behavior:**
 - Filters are applied immediately (no page reload)
@@ -151,13 +156,13 @@
 **Rate photos from 1 to 5 stars.**
 
 **Features:**
-- **Two Rating Types:**
-  - **Overall Rating:** Average rating from all users (read-only)
-  - **Your Rating:** Your personal rating (editable)
-- **View Ratings:** Each photo card shows both overall and personal rating
-- **Change Rating:** Click on stars to change your personal rating
-- **Delete Rating:** Click on the same star again to remove your rating
+- **Average Rating Display:**
+  - Shows average rating from all users (e.g., 4.5 stars)
+  - Indicator if you've already rated this photo
+- **View Ratings:** Each photo card shows average rating from all users
+- **Add/Change Rating:** Click on stars to rate or change your rating
 - **Real-time Update:** Ratings are updated immediately (no page reload)
+- **Rating Calculation:** Average is recalculated automatically when you rate
 
 **How to Rate:**
 1. Find the photo you want to rate (Gallery view)
@@ -171,18 +176,19 @@
 - Without permission, you can only view ratings (read-only)
 
 **Rating Statistics:**
-- Overall rating = Average of all users' ratings
+- Average rating = Average of all users' ratings
 - Rating count = Number of users who rated the photo
-- Your rating = Your personal rating (visible only to you)
+- If you rated = Indicator shows you've already rated this photo
 
 ### Uploading Photos
 
 **Upload your geotagged photos to the gallery.**
 
 **Features:**
-- **Drag & Drop:** Drag photos directly onto the upload dialog
-- **File Select:** Click "Choose Files" button to select photos from your device
-- **Multiple Upload:** Upload multiple photos at once
+- **Single Photo Upload:** Upload one photo at a time (max 10MB per file)
+- **Batch Upload Alternative:** For multiple photos, use server-side upload (see deployment documentation)
+- **Drag & Drop:** Drag photo directly onto the upload dialog
+- **File Select:** Click "Choose File" button to select photo from your device
 - **EXIF Extraction:** GPS coordinates and timestamp are extracted automatically
 - **Thumbnail Generation:** Thumbnails (300px) are generated automatically
 - **Progress Indicator:** See upload progress for each photo
@@ -191,25 +197,22 @@
 **How to Upload:**
 1. Click **Upload FAB** (floating action button with + icon)
 2. Upload dialog appears
-3. Drag & drop photos OR click "Choose Files"
-4. Select one or more photos (JPEG format recommended)
+3. Drag & drop photo OR click "Choose File"
+4. Select a photo (JPEG format recommended, max 10MB)
 5. Click **"Upload"** button
-6. Wait for upload to complete
-7. Photos appear in Gallery immediately
+6. Photo appears in Gallery after processing
 
-**Permissions:**
-- ✅ **UPLOAD_PHOTOS** permission required to upload photos
-- Without permission, Upload button is hidden
+**Note:** Upload functionality is available to all logged-in users in MVP (no special permission required)
 
 **Supported Formats:**
 - JPEG/JPG (recommended - contains EXIF metadata)
 - PNG (supported but usually lacks GPS data)
-- Max file size: Check with administrator
+- Max file size: 10MB (default)
 
 **EXIF Metadata:**
 - **GPS Coordinates:** Latitude, Longitude (required for Map view)
 - **Timestamp:** Photo taken date and time
-- **Camera Info:** Camera model, lens, settings (extracted but not displayed)
+- Other EXIF data may be extracted but is not displayed in MVP
 
 **Troubleshooting:**
 - **"Upload failed"** → Check file size and format
@@ -234,8 +237,8 @@
   - Filename
   - Date taken (from EXIF)
   - GPS coordinates (if available)
-  - Rating (overall and personal)
-- **High Quality:** Displays medium-sized image (300px thumbnail)
+  - Average rating from all users
+- **High Quality:** Displays original full-resolution image (best quality)
 
 **How to Use:**
 1. Click on any photo in Gallery
@@ -265,24 +268,21 @@
 
 **Features:**
 - **User List:** View all registered users
-  - Email, Name, Status (Active/Inactive), Roles
-- **Search:** Search users by email or name
-- **User Details:** Click on user to view details
-- **Activate/Deactivate:** Enable or disable user accounts
-- **Delete User:** Remove user account (future: soft delete with anonymization)
+  - Email, Role (USER/ADMIN), Permissions
+- **Search:** Search users by email
+- **User Details:** Click on user row to see details and manage permissions
+- **Change Role:** Switch user between USER and ADMIN roles
+- **Manage Permissions:** Grant or revoke VIEW_PHOTOS and RATE_PHOTOS permissions
+- **Delete User:** Remove user account (use with caution)
 
 **Actions:**
 1. Navigate to Admin Panel
 2. View list of all users
 3. Search for specific user (optional)
-4. Click on user row to view details
-5. Activate/Deactivate user account
-6. Manage permissions (see Permissions section)
-
-**User Activation:**
-- **Activate:** Enable user account (user can log in)
-- **Deactivate:** Disable user account (user cannot log in)
-- **Newly Registered Users:** Inactive by default (admin must activate)
+4. Click on user row to open details panel
+5. Grant or revoke permissions (VIEW_PHOTOS, RATE_PHOTOS)
+6. Change user role (USER ↔ ADMIN)
+7. Delete user if needed (cannot be undone in MVP)
 
 ### Permissions
 
@@ -290,9 +290,7 @@
 
 **Available Permissions:**
 1. **VIEW_PHOTOS** - View photos in Gallery and Map
-2. **UPLOAD_PHOTOS** - Upload new photos
-3. **RATE_PHOTOS** - Rate photos (1-5 stars)
-4. **DELETE_PHOTOS** - Delete photos (future feature)
+2. **RATE_PHOTOS** - Rate photos (1-5 stars)
 
 **How to Manage Permissions:**
 1. Navigate to Admin Panel
@@ -303,41 +301,29 @@
 6. Permissions are updated immediately
 
 **Default Permissions:**
-- New users: No permissions (admin must grant)
-- Recommended: VIEW_PHOTOS + UPLOAD_PHOTOS + RATE_PHOTOS
+- **New users:** No permissions by default (admin must grant)
+- **Recommended for trusted users:** VIEW_PHOTOS + RATE_PHOTOS
 
 **Permission Effects:**
 - **VIEW_PHOTOS:**
   - Disabled → User sees empty Gallery/Map with message
   - Enabled → User can view all photos
-- **UPLOAD_PHOTOS:**
-  - Disabled → Upload button hidden
-  - Enabled → Upload button visible, user can upload photos
 - **RATE_PHOTOS:**
   - Disabled → Rating is read-only (view only)
   - Enabled → User can rate photos
 
 ### Photo Management
 
-**Manage photos uploaded by all users.**
+**Photo management features are planned for post-MVP releases.**
 
-**Features:**
-- **Photo List:** View all uploaded photos
-  - Filename, Uploader, Upload Date, GPS Status
-- **Search:** Search photos by filename or uploader
-- **Photo Details:** View photo metadata (EXIF, GPS, ratings)
-- **Delete Photo:** Remove photo from gallery (future: admin can delete)
-- **Orphaned Photos:** Manage photos without owner (future feature)
 
-**Orphaned Photos:**
-- Photos uploaded by deleted/deactivated users
-- Admin can reassign ownership or delete
-- Prevents data loss when users are removed
-
-**Future Features:**
-- **Bulk Actions:** Select multiple photos and delete at once
-- **Photo Statistics:** View upload statistics, most rated photos
-- **Photo Moderation:** Approve/reject uploaded photos
+**Planned Features (Post-MVP):**
+- **Photo List:** View all uploaded photos with metadata
+- **Photo Details:** View EXIF data, GPS, ratings for each photo
+- **Delete Photos:** Admin can delete photos from gallery
+- **Orphaned Photos:** Manage photos from deleted users
+- **Bulk Actions:** Select and delete multiple photos at once
+- **Photo Statistics:** View upload stats, most rated photos
 
 ---
 
@@ -362,9 +348,9 @@
 - Wait for upload to complete before navigating away
 
 **Admin:**
-- Activate new users promptly to improve their experience
-- Grant VIEW_PHOTOS permission to all trusted users
-- Grant UPLOAD_PHOTOS and RATE_PHOTOS based on trust level
+- Grant VIEW_PHOTOS permission to new users after verifying they're trusted
+- Grant RATE_PHOTOS permission to users who should be able to rate photos
+- Regularly check for new registrations and grant permissions promptly
 
 ---
 
@@ -372,7 +358,6 @@
 
 **Login Issues:**
 - Check email and password (case-sensitive)
-- Contact admin if account not activated
 - Clear browser cache and try again
 
 **Photo Upload Issues:**

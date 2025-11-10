@@ -15,6 +15,55 @@
 
 ## 🧪 Local Testing
 
+### Run All Tests (Recommended)
+
+<!-- CORR_035: To bym dał na samą górę jako rekomendowane, a kolejne informacje jako rozwinięcie. Ten test sprawdza jednocześnie backend i frontend z e2e -->
+**One command to run all tests** (frontend unit + backend + E2E):
+
+```bash
+./scripts/run-all-tests.sh
+```
+
+**What it does:**
+- ✅ Automatically checks and starts test PostgreSQL (port 5433)
+- ✅ Runs sequentially:
+  1. Frontend Unit Tests (Karma): `npm run test:coverage`
+  2. Backend Tests (Maven): `./mvnw test`
+  3. E2E Tests (Playwright): `npm run test:e2e`
+- ✅ Stops at first failure
+- ✅ Displays detailed summary with results
+- ✅ Shows paths to coverage reports
+- ✅ Exit code 0 (success) or 1 (failure)
+
+**Output:**
+```
+============================================
+  TEST RESULTS SUMMARY
+============================================
+Frontend Unit Tests (Karma):    ✅ PASSED
+Backend Tests (Maven):           ✅ PASSED
+E2E Tests (Playwright):          ✅ PASSED
+============================================
+✓ All tests PASSED - OK to push!
+
+Coverage reports:
+- frontend/coverage/frontend/index.html
+- backend/target/site/jacoco/index.html
+- frontend/playwright-report/index.html
+```
+
+**Use cases:**
+- Before commit (manually or via pre-commit hook)
+- After major code changes
+- Verification before pull request
+- Local debugging
+
+**For selective testing, see individual test suites below.**
+
+<!-- /CORR_035 -->
+
+---
+
 ### Frontend Unit Tests (Karma + Jasmine)
 
 **Run tests:**
@@ -120,50 +169,6 @@ test('should display login page', async ({ page }) => {
   await expect(page.locator('h1')).toHaveText('Login');
 });
 ```
-
----
-
-### Run All Tests (Single Command)
-
-**One command to run all tests** (frontend unit + backend + E2E):
-
-```bash
-./scripts/run-all-tests.sh
-```
-
-**Features:**
-- ✅ Automatically checks and starts test PostgreSQL (port 5433)
-- ✅ Runs sequentially:
-  1. Frontend Unit Tests (Karma): `npm run test:coverage`
-  2. Backend Tests (Maven): `./mvnw test`
-  3. E2E Tests (Playwright): `npm run test:e2e`
-- ✅ Stops at first failure
-- ✅ Displays detailed summary with results
-- ✅ Shows paths to coverage reports
-- ✅ Exit code 0 (success) or 1 (failure)
-
-**Output:**
-```
-============================================
-  TEST RESULTS SUMMARY
-============================================
-Frontend Unit Tests (Karma):    ✅ PASSED
-Backend Tests (Maven):           ✅ PASSED
-E2E Tests (Playwright):          ✅ PASSED
-============================================
-✓ All tests PASSED - OK to push!
-
-Coverage reports:
-- frontend/coverage/frontend/index.html
-- backend/target/site/jacoco/index.html
-- frontend/playwright-report/index.html
-```
-
-**Use cases:**
-- Before commit (manually or via pre-commit hook)
-- After major code changes
-- Verification before pull request
-- Local debugging
 
 ---
 
@@ -532,7 +537,7 @@ test('should login successfully', async ({ page }) => {
 - No new bugs
 - No new vulnerabilities
 - No new security hotspots
-- Coverage on new code: >70%
+- Coverage on new code: >80%
 - Duplicated lines: <3%
 - Maintainability rating: A
 

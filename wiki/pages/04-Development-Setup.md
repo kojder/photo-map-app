@@ -75,7 +75,56 @@ git clone <repository-url>
 cd photo-map-app
 ```
 
+
 ### Step 2: Database Setup
+
+**Recommended: Quick Setup Script**
+
+```bash
+# 1. Copy environment template
+cp .env.example .env
+
+# 2. Edit .env with your database credentials
+nano .env  # or use your preferred editor
+
+# 3. Run reset-data.sh to initialize everything
+./scripts/reset-data.sh
+```
+
+**What `reset-data.sh` does:**
+- ✅ Creates database schema (runs Flyway migrations automatically)
+- ✅ Sets up directory structure (`uploads/input/`, `uploads/original/`, `uploads/medium/`, `uploads/failed/`)
+- ✅ Checks PostgreSQL connection (starts Docker Compose if needed)
+- ✅ Admin user will be created on backend startup from `.env` credentials
+
+**Required .env variables for initialization:**
+```bash
+# Database Configuration
+DB_HOST=localhost
+DB_PORT=5432
+DB_NAME=photomap
+DB_USERNAME=photomap_user
+DB_PASSWORD=photomap_pass
+
+# JWT Configuration
+JWT_SECRET=<generate-with-openssl-rand-base64-32>
+
+# Admin Account (created on backend startup)
+ADMIN_EMAIL=admin@example.com
+ADMIN_PASSWORD=<your-secure-password>
+
+# Storage Configuration
+UPLOAD_DIR_INPUT=./uploads/input
+UPLOAD_DIR_ORIGINAL=./uploads/original
+UPLOAD_DIR_MEDIUM=./uploads/medium
+UPLOAD_DIR_FAILED=./uploads/failed
+```
+
+**After running `reset-data.sh`, proceed to Step 3 (Backend Setup).**
+
+---
+
+**Alternative: Manual Setup**
 
 **Option A: Docker Compose (Recommended)**
 

@@ -54,10 +54,9 @@ Database schema for Photo Map MVP consists of 4 main tables:
 - `users_role_idx` - INDEX on `role` (admin queries)
 
 **Permissions System:**
-- `can_view_photos` - Controls access to photo list and viewing endpoints
-- `can_rate` - Controls ability to rate photos
-- `can_upload` - Controls ability to upload new photos
-- `is_active` - Account enabled/disabled status
+- `can_view_photos` - Controls access to photo list and viewing endpoints (VIEW_PHOTOS permission)
+- `can_rate` - Controls ability to rate photos (RATE_PHOTOS permission)
+- `is_active` - Account enabled/disabled status (true by default, users can log in immediately)
 
 ---
 

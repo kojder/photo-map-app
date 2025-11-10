@@ -38,8 +38,7 @@
 
 | Page | Description |
 |------|-------------|
-| [**AI Development Methodology**](AI-Development-Methodology) | Claude Code, GitHub Copilot, Gemini CLI, prompt engineering |
-| [**Contributing**](Contributing) | Code conventions, git workflow, testing policy, PR process |
+| [**AI Development Methodology**](AI-Development-Methodology) | Claude Code, GitHub Copilot, Gemini CLI, prompt engineering, code conventions, git workflow |
 
 ---
 
@@ -48,10 +47,11 @@
 **New to the project? Follow this path:**
 
 1. **[Quick Start](Quick-Start)** - Get the app running in 5 minutes
-2. **[Development Setup](Development-Setup)** - Detailed environment setup and project structure
-3. **[Architecture](Architecture)** - Understand the tech stack and design decisions
-4. **[API Documentation](API-Documentation)** - Explore the REST API with Swagger UI
-5. **[Testing & Quality](Testing-Quality)** - Learn about testing strategy and CI/CD
+2. **[Scripts Reference](Scripts-Reference)** - Essential development scripts (`reset-data.sh`, `start-dev.sh`, `run-all-tests.sh`)
+3. **[Development Setup](Development-Setup)** - Detailed environment setup and project structure
+4. **[Architecture](Architecture)** - Understand the tech stack and design decisions
+5. **[API Documentation](API-Documentation)** - Explore the REST API with Swagger UI
+6. **[Testing & Quality](Testing-Quality)** - Learn about testing strategy and CI/CD
 
 ---
 

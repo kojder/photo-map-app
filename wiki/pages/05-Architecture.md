@@ -347,9 +347,9 @@ src/main/java/com/photomap/
 - `id` - Primary key (UUID)
 - `email` - Unique email address
 - `password_hash` - BCrypt hashed password
-- `is_active` - Account activation status (manual by admin)
+- `is_active` - Account active status (true by default)
 - `role` - User role (USER, ADMIN)
-- `permissions` - JSON array of permissions (VIEW_PHOTOS, UPLOAD_PHOTOS, RATE_PHOTOS)
+- `permissions` - JSON array of permissions (VIEW_PHOTOS, RATE_PHOTOS)
 - `created_at` - Registration timestamp
 
 **photos:**
@@ -476,9 +476,7 @@ uploads/
 
 **Permission-Based Access Control:**
 - `VIEW_PHOTOS` - View photos in Gallery and Map
-- `UPLOAD_PHOTOS` - Upload new photos
 - `RATE_PHOTOS` - Rate photos (1-5 stars)
-- `DELETE_PHOTOS` - Delete photos (future feature)
 
 ### CORS Configuration
 
@@ -543,21 +541,28 @@ uploads/
 
 ### Why PostgreSQL (not MongoDB)?
 
-**Reasons:**
-- ✅ Relational data (users, photos, ratings)
-- ✅ ACID compliance
+**Primary Reason:**
+- ✅ **Free shared PostgreSQL service on Mikrus VPS** - No additional server resources needed
+- ✅ **Already available at psql01.mikr.us** - No setup or maintenance required
+- ✅ **Cost-effective for MVP** - Included in VPS hosting without extra charges
+
+**Additional Benefits:**
+- ✅ Relational data model fits perfectly (users, photos, ratings)
+- ✅ ACID compliance for data integrity
 - ✅ Strong type safety
-- ✅ Better for structured data
+- ✅ Better for structured data with relationships
+- ✅ SQL standard for queries and migrations
 
 **Source:** `.decisions/tech-decisions.md`
 
-### Why Manual User Activation (not Email Verification)?
+### Why Permission-Based Access (not Email Verification)?
 
 **Reasons:**
-- ✅ Security: Prevents spam registrations
-- ✅ Control: Admin verifies each user
-- ✅ Privacy: Only trusted users access photos
-- ✅ MVP Scope: Email system planned for post-MVP
+- ✅ **Family & friends focus:** Designed for small trusted groups
+- ✅ **Security:** Prevents spam registrations and unauthorized access
+- ✅ **Privacy:** Only users with VIEW_PHOTOS permission can see photos
+- ✅ **Control:** Admin grants permissions to verified users
+- ✅ **MVP Scope:** Email verification planned for post-MVP
 
 **Source:** `.ai/prd.md`, `.decisions/prd-context.md`
 

@@ -23,34 +23,79 @@ The `scripts/` directory contains utilities for managing the Photo Map MVP devel
 
 ---
 
-## 🚀 Quick Start
+## 🚀 Quick Start - Most Important Scripts
 
-### 1. Start Application
+<!-- CORR_036: Najważniejsze skrypty powinny być na samym początku w kolejności przydatności a nie na samym dole w Tips. Co więcej link do skryptów powinien też być na górze home page oraz quick start project - szczegolnie flaga init - aby user jak najłatwiej zainicjalizował projekt a nie brnął w mało potrzebne detale -->
+
+### 🎯 Initial Setup (First Time Only)
+
+**Initialize project with one command:**
+
+```bash
+# 1. Copy environment template
+cp .env.example .env
+
+# 2. Edit .env with your credentials (database, admin password, JWT secret)
+nano .env
+
+# 3. Initialize everything (database schema, directories, admin user)
+./scripts/reset-data.sh
+```
+
+**What `reset-data.sh` does:**
+- ✅ Creates database schema (Flyway migrations)
+- ✅ Sets up upload directories (`uploads/input/`, `uploads/original/`, `uploads/medium/`, `uploads/failed/`)
+- ✅ Verifies PostgreSQL connection (starts Docker Compose if needed)
+- ✅ Admin user will be created on backend startup from `.env` credentials
+
+**After initialization, proceed to "Start Application" below.**
+
+---
+
+### 🏃 Daily Development
+
+#### 1. Start Application
 ```bash
 # Single command - PostgreSQL starts automatically if not running:
 ./scripts/start-dev.sh
-
-# Alternatively with explicit --with-db flag (same behavior):
-./scripts/start-dev.sh --with-db
 ```
 
-**IMPORTANT:**
+**What happens:**
 - ✅ **PostgreSQL starts automatically** if not running (docker-compose up -d)
-- ✅ Flag `--with-db` is optional - automatic detection works without it
-- `./scripts/stop-dev.sh` **does NOT stop PostgreSQL** - keeps running in background
-- PostgreSQL stops only after `docker-compose down` or system restart
+- ✅ Backend starts on port 8080
+- ✅ Frontend starts on port 4200
+- ✅ Health checks verify both services are ready
 
-### 2. Stop Application (backend + frontend)
+#### 2. Run All Tests
 ```bash
+# Run frontend unit + backend + E2E tests
+./scripts/run-all-tests.sh
+```
+
+**What happens:**
+- ✅ Test PostgreSQL starts automatically (port 5433)
+- ✅ Runs all test suites sequentially
+- ✅ Displays summary with coverage reports
+- ✅ Exits with 0 (success) or 1 (failure)
+
+#### 3. Stop Application
+```bash
+# Stops backend + frontend (PostgreSQL keeps running)
 ./scripts/stop-dev.sh
-# PostgreSQL keeps running - this is normal!
 ```
 
-### 3. Complete Shutdown (rarely needed)
+**Note:** PostgreSQL stays running in background (Docker container) - this is normal and saves startup time.
+
+#### 4. Complete Shutdown (End of Day)
 ```bash
-./scripts/stop-dev.sh --with-db
 # Stops backend + frontend + PostgreSQL
+./scripts/stop-dev.sh --with-db
+
+# Or manually:
+docker-compose down
 ```
+
+<!-- /CORR_036 -->
 
 ---
 
@@ -484,8 +529,10 @@ DEBUG=true ./scripts/stop-dev.sh
 
 ---
 
+<!-- CORR_036: Najważniejsze skrypty powinny być na samym początku w kolejności przydatności a nie na samym dole w Tips. Co więcej link do skryptów powinien też być na górze home page oraz quick start project - szczegolnie flaga init - aby user jak najłatwiej zainicjalizował projekt a nie brnął w mało potrzebne detale -->
 ## 💡 Tips
 
+<!-- /CORR_036 -->
 **Recommended workflow:**
 1. **Start application (always same command):**
    ```bash

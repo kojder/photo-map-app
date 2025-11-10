@@ -18,9 +18,9 @@
 
 - **Upload & Processing** - Automatic EXIF extraction (GPS, date) and thumbnail generation
 - **Gallery & Map** - Responsive grid view and interactive Leaflet.js map
-- **Rating System** - Rate photos 1-5 stars with average and personal ratings
-- **Security** - JWT authentication, BCrypt hashing, role-based access
-- **Admin Panel** - User management, permissions, and photo oversight
+- **Rating System** - Rate photos 1-5 stars with average rating from all users
+- **Security** - JWT authentication, BCrypt hashing, permission-based access
+- **Admin Panel** - User management and permissions (VIEW_PHOTOS, RATE_PHOTOS)
 
 ## 🛠️ Tech Stack
 
@@ -59,6 +59,38 @@
 - Git
 
 ### Installation
+
+**Option A: Quick Setup (Recommended - One Command)**
+
+```bash
+# 1. Clone repository
+git clone <repository-url>
+cd photo-map-app
+
+# 2. Copy environment template
+cp .env.example .env
+
+# 3. Edit .env with your credentials (database, admin password, JWT secret)
+nano .env
+
+# 4. Initialize everything (database schema, directories, admin user)
+./scripts/reset-data.sh
+
+# 5. Start application
+./scripts/start-dev.sh
+```
+
+**What happens:**
+- ✅ PostgreSQL starts automatically (Docker Compose)
+- ✅ Database schema created (Flyway migrations)
+- ✅ Upload directories set up
+- ✅ Admin user created from `.env` credentials
+- ✅ Backend runs on http://localhost:8080
+- ✅ Frontend runs on http://localhost:4200
+
+---
+
+**Option B: Manual Setup**
 
 **1. Clone repository:**
 ```bash
@@ -185,7 +217,6 @@ Interactive API docs available at: http://localhost:8080/swagger-ui/index.html
   - [Backend Dashboard](https://sonarcloud.io/summary/new_code?id=kojder_photo-map-app-backend)
   - [Frontend Dashboard](https://sonarcloud.io/summary/new_code?id=kojder_photo-map-app-frontend)
 - **GitHub Actions:** [Workflows](https://github.com/kojder/photo-map-app/actions)
-- **Production:** https://photos.tojest.dev/
 
 ## 🤝 Contributing
 
