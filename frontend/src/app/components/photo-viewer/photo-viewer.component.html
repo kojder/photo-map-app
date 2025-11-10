@@ -1,10 +1,7 @@
 @if (viewerState?.isOpen) {
-  <div
+  <button
     class="photo-viewer-overlay"
     (click)="close()"
-    (keydown.enter)="close()"
-    tabindex="0"
-    role="button"
     aria-label="Close viewer"
   >
     <div 
@@ -106,5 +103,5 @@
         ✕
       </button>
     </div>
-  </div>
+  </button>
 }

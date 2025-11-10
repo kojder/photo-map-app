@@ -206,7 +206,7 @@ export class MapComponent implements OnInit, AfterViewInit, OnDestroy {
       });
 
       marker.bindPopup(popup);
-      this.markerClusterGroup!.addLayer(marker);
+      this.markerClusterGroup.addLayer(marker);
     }
 
     const bounds = L.latLngBounds(photosWithGps.map(p => [p.gpsLatitude!, p.gpsLongitude!]));

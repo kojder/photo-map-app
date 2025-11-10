@@ -26,15 +26,12 @@
 
 <!-- Backdrop (overlay) -->
 @if (filtersOpen()) {
-  <div
+  <button
     (click)="closeFilters()"
-    (keydown.enter)="closeFilters()"
-    tabindex="0"
-    role="button"
     aria-label="Close filters"
-    class="fixed inset-0 bg-black bg-opacity-30 z-40 transition-opacity"
+    class="fixed inset-0 bg-black bg-opacity-30 z-40 transition-opacity border-0 p-0 cursor-pointer"
     data-testid="filter-backdrop"
-  ></div>
+  ></button>
 }
 
 <!-- Desktop Filter Panel (side slide-in, ≥ 768px) -->

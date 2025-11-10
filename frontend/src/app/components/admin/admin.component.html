@@ -232,13 +232,10 @@
   @if (selectedUser()) {
     <div class="fixed inset-0 z-50" data-testid="admin-sidebar-overlay">
       <!-- Backdrop -->
-      <div
-        class="absolute inset-0 bg-black/30 transition-opacity"
+      <button
+        class="absolute inset-0 bg-black/30 transition-opacity border-0 p-0 cursor-pointer"
         (click)="closeSidebar()"
-        (keydown.enter)="closeSidebar()"
-        tabindex="0"
-        role="button"
-        aria-label="Close sidebar"></div>
+        aria-label="Close sidebar"></button>
 
       <!-- Sidebar Panel -->
       <div class="absolute right-0 top-0 h-full w-full max-w-md bg-white shadow-2xl overflow-y-auto animate-slide-in">
