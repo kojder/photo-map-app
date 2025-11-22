@@ -192,23 +192,17 @@ describe('UploadDialogComponent', () => {
       component.onUpload();
     });
 
-    it('should set error message on upload failure', (done) => {
+    it('should set error message on upload failure', () => {
+      spyOn(console, 'error');
       const file = new File([''], 'test.jpg', { type: 'image/jpeg' });
       component.selectedFile.set(file);
       photoService.uploadPhoto.and.returnValue(throwError(() => new Error('Upload failed')));
 
-      component.uploadSuccess.subscribe({
-        complete: () => fail('Should not complete'),
-        error: () => fail('Should not error')
-      });
-
       component.onUpload();
 
-      setTimeout(() => {
-        expect(component.errorMessage()).toBe('Upload failed. Please try again.');
-        expect(component.uploading()).toBe(false);
-        done();
-      }, 100);
+      expect(component.errorMessage()).toBe('Upload failed. Please try again.');
+      expect(component.uploading()).toBe(false);
+      expect(console.error).toHaveBeenCalled();
     });
   });
 

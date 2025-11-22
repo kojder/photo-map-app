@@ -2,27 +2,165 @@
 
 **Created:** 2025-10-19
 **Status:** ✅ Core MVP Complete
-**Last Updated:** 2025-11-10
+**Last Updated:** 2025-11-22
+
+---
+
+## 🔄 Post-Transfer Setup (After moving to WSL)
+
+**📍 Use this checklist after transferring project to a new environment**
+
+### Step 1: Verify Project Integrity (1-2 min)
+
+```bash
+# Check Git status
+git status
+git log -1
+
+# Verify .env files exist (CRITICAL - contain passwords!)
+ls -lh .env deployment/.env frontend/.env.test
+
+# Optional: Restore from backup if needed
+# cp .backup-env/root.env .env
+# cp .backup-env/deployment.env deployment/.env
+# cp .backup-env/frontend-env.test frontend/.env.test
+```
+
+**✅ Expected:** Clean git status, all .env files present
+
+---
+
+### Step 2: Install Frontend Dependencies (2-5 min)
+
+```bash
+cd frontend
+npm install
+```
+
+**✅ Expected:**
+- `node_modules/` created (~420 MB)
+- No critical errors
+- Warnings OK (peer dependencies)
+
+---
+
+### Step 3: Build Backend (3-10 min)
+
+```bash
+cd ../backend
+./mvnw clean install -DskipTests
+```
+
+**✅ Expected:**
+- `target/` directory created (~75 MB)
+- BUILD SUCCESS message
+- Maven dependencies downloaded to `~/.m2/repository/`
+
+---
+
+### Step 4: Start Docker Services (2-5 min)
+
+```bash
+cd ..
+docker-compose up -d
+```
+
+**✅ Expected:**
+- PostgreSQL container running
+- Database initialized (Flyway migrations auto-run)
+- Check: `docker ps` shows `photomap-postgres`
+
+---
+
+### Step 5: Verify Application (3-5 min)
+
+**Backend:**
+```bash
+cd backend
+./mvnw spring-boot:run
+```
+- ✅ App starts on http://localhost:8080
+- ✅ Swagger UI: http://localhost:8080/swagger-ui.html
+- ✅ No database connection errors
+
+**Frontend (new terminal):**
+```bash
+cd frontend
+npm start
+```
+- ✅ App starts on http://localhost:4200
+- ✅ Login page loads
+- ✅ Can login with admin credentials from `.env`
+
+---
+
+### Step 6: Run Tests (5-10 min)
+
+```bash
+# Backend tests
+cd backend
+./mvnw test
+
+# Frontend tests
+cd ../frontend
+npm test
+
+# Or run all tests at once
+./scripts/run-all-tests.sh
+```
+
+**✅ Expected:** All tests pass (green)
+
+---
+
+### ✅ Setup Complete!
+
+**Total time:** ~15-30 minutes (depending on internet speed)
+
+**Project structure restored:**
+- ✅ Dependencies installed
+- ✅ Docker running
+- ✅ Application verified
+- ✅ Tests passing
 
 ---
 
 ## 🔄 Current Status
 
-### ✅ Last Completed (2025-11-10)
+### ✅ Last Completed (2025-11-22)
 
-**Wiki Content Corrections**
-- Reviewed and updated all 11 Wiki pages
-- Progress tracked separately in: `wiki/PROGRESS.md` (Phase 9)
+**Frontend Tests Fixed - All Tests Passing (331/331) ✅**
+- ✅ Fixed `UploadDialogComponent` test (console.error mocking)
+- ✅ Fixed `MapComponent` test (timer cleanup with flush())
+- ✅ Configured Puppeteer for WSL (Chrome headless)
+- ✅ Installed system dependencies for Chrome (libnss3, libnspr4, libasound2t64)
+- ✅ All 331 frontend tests passing
+- ✅ Backend: 90/90 tests passed
+- ✅ Organized transfer files (moved to .archive-transfer/)
+
+**Test Results:**
+- Backend: 90/90 tests passed ✅
+- Frontend: 331/331 tests passed ✅
+- Coverage: 83.89% statements, 67.7% branches
+
+**Puppeteer Configuration:**
+- Added puppeteer as devDependency
+- Updated karma.conf.js to use Puppeteer Chrome
+- No manual CHROME_BIN configuration needed
 
 ### 🎯 Currently Working On
 
-**Final project cleanup**
-- Removing server-specific deployment files
-- Cleanup documentation and .gitignore
+**Project fully operational in WSL environment**
+- ✅ Development environment ready
+- ✅ All services running correctly
+- ✅ All tests passing (100%)
 
 ### 🎯 Next Action
 
-**Project ready for handover**
+**Project ready for development**
+- All tests passing
+- Environment configured
+- Ready for new features or bug fixes
 
 ---
 

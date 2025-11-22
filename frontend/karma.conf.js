@@ -1,6 +1,9 @@
 // Karma configuration file for Angular 18
 // https://karma-runner.github.io/latest/config/configuration-file.html
 
+// Use Chrome from Puppeteer for WSL compatibility
+process.env.CHROME_BIN = require('puppeteer').executablePath();
+
 module.exports = function (config) {
   config.set({
     basePath: '',

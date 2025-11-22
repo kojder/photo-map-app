@@ -1,4 +1,4 @@
-import { ComponentFixture, TestBed, fakeAsync, tick } from '@angular/core/testing';
+import { ComponentFixture, TestBed, fakeAsync, tick, flush } from '@angular/core/testing';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { of, throwError, delay } from 'rxjs';
 import { MapComponent } from './map.component';
@@ -256,6 +256,7 @@ describe('MapComponent', () => {
     expect(markerClusterGroup!.clearLayers).toHaveBeenCalled();
     expect(markerClusterGroup!.addLayer).toHaveBeenCalledTimes(2);
 
+    flush();
     component.ngOnDestroy();
     component['map'] = undefined;
     document.body.removeChild(mapDiv);
